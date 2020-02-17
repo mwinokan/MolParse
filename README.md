@@ -10,6 +10,7 @@ Initialised at /users/mw00368/py/AseMolPlot on mw00368@login7.swmgmt.eureka
 
 * `git clone https://github.com/mwinokan/AseMolPlot.git`
 * Add `export MWAMPPATH=/path/to/directory` to your `.bash_profile`
+* Add `export PYTHONPATH=$PYTHONPATH:$MWAMPPATH` to your `.bash_profile`
 
 ### POVRAY on EUREKA
 
