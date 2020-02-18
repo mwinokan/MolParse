@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# purges and loads modules for ASE & PoV-Ray
 module purge
 module load Boost/1.63.0-intel-2017a-Python-2.7.13
 module load zlib/1.2.8-intel-2016a
