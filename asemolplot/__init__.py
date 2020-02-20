@@ -14,4 +14,6 @@ mout.out("PoV-Ray dependencies loaded.",
 
 # import functions
 from .povplot import makePovImage
+from .povplot import makePovImages
+from .povplot import makePovAnimation
 from . import styles
