@@ -3,9 +3,11 @@
 Extension to ASE's plotting allowing for easy plotting and animations of trajectories with ray-tracing support through PoV-Ray. Intended for use on EUREKA.
 
 *Ciprofloxacin with ASE's PNG Renderer:*
+
 ![ASE PNG Example](https://github.com/mwinokan/AseMolPlot/blob/master/amp.png "Standard ASE PNG Renderer")
 
 *Ciprofloxacin with ASE & PoV-Ray*
+
 ![ASE POV Example](https://github.com/mwinokan/AseMolPlot/blob/master/pov.png "ASE & PoV-Ray Render")
 
 ## Installation
