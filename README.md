@@ -37,6 +37,10 @@ Extension to ASE's plotting allowing for easy plotting and animations of traject
 * Add `export MWAMPPATH=/path/to/directory` to your `.bash_profile`
 * Add `export PYTHONPATH=$PYTHONPATH:$MWAMPPATH` to your `.bash_profile`
 
+![ASE PNG Example](https://github.com/mwinokan/AseMolPlot/blob/master/amp.png "Standard ASE PNG Renderer")
+
+![ASE POV Example](https://github.com/mwinokan/AseMolPlot/blob/master/pov.png "ASE & PoV-Ray Render")
+
 ## Usage
 
 The following examples have imported AMP as: `import asemolplot as amp`. See *test.py* for an example script.
