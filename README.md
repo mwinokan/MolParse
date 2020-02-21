@@ -1,6 +1,12 @@
 # AseMolPlot
 
-Extension to ASE's plotting allowing for easy plotting and animations of trajectories with ray-tracing support. Intended for use on EUREKA.
+Extension to ASE's plotting allowing for easy plotting and animations of trajectories with ray-tracing support through PoV-Ray. Intended for use on EUREKA.
+
+*Ciprofloxacin with ASE's PNG Renderer:*
+![ASE PNG Example](https://github.com/mwinokan/AseMolPlot/blob/master/amp.png "Standard ASE PNG Renderer")
+
+*Ciprofloxacin with ASE & PoV-Ray*
+![ASE POV Example](https://github.com/mwinokan/AseMolPlot/blob/master/pov.png "ASE & PoV-Ray Render")
 
 ## Installation
 
@@ -36,10 +42,6 @@ Extension to ASE's plotting allowing for easy plotting and animations of traject
 * `git clone https://github.com/mwinokan/AseMolPlot.git`
 * Add `export MWAMPPATH=/path/to/directory` to your `.bash_profile`
 * Add `export PYTHONPATH=$PYTHONPATH:$MWAMPPATH` to your `.bash_profile`
-
-![ASE PNG Example](https://github.com/mwinokan/AseMolPlot/blob/master/amp.png "Standard ASE PNG Renderer")
-
-![ASE POV Example](https://github.com/mwinokan/AseMolPlot/blob/master/pov.png "ASE & PoV-Ray Render")
 
 ## Usage
 
