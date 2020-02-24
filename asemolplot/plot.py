@@ -7,7 +7,7 @@ from . import styles
 
 def makeImage(filename,image,verbosity=1,**style):
   if (verbosity > 0):
-    mout.out("processing "+mcol.file+
+    mout.out("creating "+mcol.file+
              filename+".png"+
              mcol.clear+" ... ",
              printScript=True,
