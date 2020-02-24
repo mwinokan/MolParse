@@ -26,7 +26,7 @@ def loadPov(verbosity=1):
   global isPovLoaded 
   isPovLoaded = True
 
-def makePovImage(filename,image,verbosity=1,**style):
+def makePovImage(filename,image,verbosity=1,rmPovFiles=True,bonds=False,**style):
   if (not isPovLoaded):
     loadPov(verbosity=verbosity-1)
 
@@ -36,17 +36,30 @@ def makePovImage(filename,image,verbosity=1,**style):
              mcol.clear+" ... ",
              printScript=True,
              end='') # user output
+    
   if (not style['drawCell']):
       image.set_cell([0,0,0])
   del style['drawCell']
+
+  if (bonds):
+    from ase.io.pov import get_bondpairs, set_high_bondorder_pairs
+    bondpairs = get_bondpairs(image, radius = 1.1)
+    style['bondatoms'] = bondpairs
+
   io.write(filename+'.pov',image,
     run_povray=True,
     camera_type='perspective',
     **style)
+
+  if (rmPovFiles):
+    import os
+    os.system("rm "+filename+".ini")
+    os.system("rm "+filename+".pov")
+
   if (verbosity > 0):
     mout.out("Done.") # user output
 
-def makePovImages(filename,subdirectory="pov",interval=1,verbosity=1,**style):
+def makePovImages(filename,subdirectory="pov",interval=1,verbosity=1,rmPovFiles=True,**style):
   if (not isPovLoaded):
     loadPov(verbosity=verbosity-1)
 
@@ -59,10 +72,11 @@ def makePovImages(filename,subdirectory="pov",interval=1,verbosity=1,**style):
     if (n % interval != 0 and n != 100):
       continue
 
-    makePovImage(subdirectory+"/"+str(n).zfill(4),image,verbosity=verbosity-1,**style)
+    makePovImage(subdirectory+"/"+str(n).zfill(4),image,verbosity=verbosity-1,rmPovFiles=False,**style)
 
-  os.system("rm "+subdirectory+"/*.ini")
-  os.system("rm "+subdirectory+"/*.pov")
+  if (rmPovFiles):
+    os.system("rm "+subdirectory+"/*.ini")
+    os.system("rm "+subdirectory+"/*.pov")
 
 # Using ImageMagick (artefacting!):
 def makePovAnimationIM(filename,subdirectory="pov",interval=1,verbosity=1,**style):
