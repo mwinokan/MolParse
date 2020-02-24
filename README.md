@@ -61,6 +61,7 @@ The following examples have imported AMP as: `import asemolplot as amp`. See *te
     -   `<string> rotation`
     -   `<float> celllinewidth`
     -   `<bool> drawCell`
+    -   `<bool> bonds`
 
 *Use PoV-Ray to render a PNG for every image in a trajectory*
 
@@ -70,6 +71,10 @@ The following examples have imported AMP as: `import asemolplot as amp`. See *te
 
 `amp.makePovAnimation(filename,subdirectory="pov",interval=1,**style)`
 
+*Wrappers with verbosity control for ase.io.read and ase.io.write*
+
+*amp* contains functions `read()` and `write()` which call the relevant ASE functions, except that they include a verbosity control. Useful for example when user output is desired when loading/writing large structure files.
+
 ### Style templates for images
 
 *amp.styles* contains several style templates that can be passed to makePovImage. For example: `amp.makePovImage(filename,atoms,**amp.styles.standard)`
@@ -78,7 +83,7 @@ The following examples have imported AMP as: `import asemolplot as amp`. See *te
 
 Copy a style and modify one part:
 
-```custom_style = amp.styles.standard
+```custom_style = amp.styles.standard.copy()
 custom_style['celllinewidth'] = 0.07
 ```
 
