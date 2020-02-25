@@ -26,7 +26,7 @@ def loadPov(verbosity=1):
   global isPovLoaded 
   isPovLoaded = True
 
-def makePovImage(filename,image,verbosity=1,rmPovFiles=True,bonds=False,**style):
+def makePovImage(filename,image,verbosity=1,rmPovFiles=True,bonds=False,bondradius=1.1,**style):
   if (not isPovLoaded):
     loadPov(verbosity=verbosity-1)
 
@@ -38,13 +38,17 @@ def makePovImage(filename,image,verbosity=1,rmPovFiles=True,bonds=False,**style)
              end='') # user output
     
   if (not style['drawCell']):
-      image.set_cell([0,0,0])
+    image.set_cell([0,0,0])
   del style['drawCell']
 
   if (bonds):
     from ase.io.pov import get_bondpairs, set_high_bondorder_pairs
-    bondpairs = get_bondpairs(image, radius = 1.1)
-    style['bondatoms'] = bondpairs
+    bondpairs = get_bondpairs(image, radius=bondradius)
+    if (len(bondpairs) > 5000):
+      mout.warningOut("Too many bondpairs ("+str(len(bondpairs))+
+                      "), not drawing bonds!",end=' ')
+    else:
+      style['bondatoms'] = bondpairs
 
   io.write(filename+'.pov',image,
     run_povray=True,
