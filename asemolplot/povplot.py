@@ -7,11 +7,12 @@ from . import styles
 
 isPovLoaded = False
 
-def loadPov(verbosity=1):
+def loadPov(verbosity=1,purge=True):
   import module # https://github.com/mwinokan/MPyTools
 
   # load the correct modules for ASE/PoV-Ray
-  module.module('purge')
+  if (purge):
+    module.module('purge')
   module.module('--expert','load','Boost/1.63.0-intel-2017a-Python-2.7.13')
   module.module('--expert','load','zlib/1.2.8-intel-2016a')
   module.module('--expert','load','libpng/1.6.24-intel-2016a')
@@ -26,8 +27,8 @@ def loadPov(verbosity=1):
   global isPovLoaded 
   isPovLoaded = True
 
-def makePovImage(filename,image,verbosity=1,rmPovFiles=True,bonds=False,bondradius=1.1,**style):
-  if (not isPovLoaded):
+def makePovImage(filename,image,verbosity=1,rmPovFiles=True,bonds=False,bondradius=1.1,forceLoad=False,**style):
+  if (not isPovLoaded or forceLoad):
     loadPov(verbosity=verbosity-1)
 
   if (verbosity > 0):
@@ -63,8 +64,8 @@ def makePovImage(filename,image,verbosity=1,rmPovFiles=True,bonds=False,bondradi
   if (verbosity > 0):
     mout.out("Done.") # user output
 
-def makePovImages(filename,subdirectory="pov",interval=1,verbosity=1,rmPovFiles=True,**style):
-  if (not isPovLoaded):
+def makePovImages(filename,subdirectory="pov",interval=1,verbosity=1,rmPovFiles=True,forceLoad=False,**style):
+  if (not isPovLoaded or forceLoad):
     loadPov(verbosity=verbosity-1)
 
   import os
@@ -76,7 +77,7 @@ def makePovImages(filename,subdirectory="pov",interval=1,verbosity=1,rmPovFiles=
     if (n % interval != 0 and n != 100):
       continue
 
-    makePovImage(subdirectory+"/"+str(n).zfill(4),image,verbosity=verbosity-1,rmPovFiles=False,**style)
+    makePovImage(subdirectory+"/"+str(n).zfill(4),image,verbosity=verbosity-1,rmPovFiles=False,forceLoad=False,**style)
 
   if (rmPovFiles):
     os.system("rm "+subdirectory+"/*.ini")
@@ -84,7 +85,7 @@ def makePovImages(filename,subdirectory="pov",interval=1,verbosity=1,rmPovFiles=
 
 # Using ImageMagick (artefacting!):
 def makePovAnimationIM(filename,subdirectory="pov",interval=1,verbosity=1,**style):
-  if (not isPovLoaded):
+  if (not isPovLoaded or forceLoad):
     loadPov(verbosity=verbosity-1)
 
   import os
@@ -108,8 +109,8 @@ def makePovAnimationIM(filename,subdirectory="pov",interval=1,verbosity=1,**styl
 
 # Using imageio
 # https://stackoverflow.com/questions/753190/programmatically-generate-video-or-animated-gif-in-python
-def makePovAnimation(filename,subdirectory="pov",interval=1,gifstyle=styles.gif_standard,verbosity=1,**plotstyle):
-  if (not isPovLoaded):
+def makePovAnimation(filename,subdirectory="pov",interval=1,gifstyle=styles.gif_standard,verbosity=1,forceLoad=False,**plotstyle):
+  if (not isPovLoaded or forceLoad):
     loadPov(verbosity=verbosity-1)
 
   import os

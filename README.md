@@ -87,3 +87,8 @@ Copy a style and modify one part:
 custom_style['celllinewidth'] = 0.07
 ```
 
+### Common Errors
+
+*   `OSError: Povray command povray after.ini 2> pov.log failed with error code 32512`
+    -   Cause: The `povray` executable was called without the correct environment modules. This often happens if you call a `MakePov___()` function (loading the correct modules), then load/unload some modules for another package, and then call an AMP POV-Ray function again.
+    -   Fix: call `amp.loadPov()` before making images again. Alternatively add `forceLoad=True` to `MakePov___()` function calls.
