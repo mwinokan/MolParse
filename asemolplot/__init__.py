@@ -15,4 +15,9 @@ from .povplot import makePovImages
 from .povplot import makePovAnimation
 from .povplot import crop
 
+from .graphing import graph2D
+from .graphing import graphEnergy
+
+# import subpackages
+
 from . import styles
