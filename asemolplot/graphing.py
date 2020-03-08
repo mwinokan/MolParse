@@ -18,7 +18,7 @@ import numpy as np
 
 """
 
-def graphEnergy(trajectory,perAtom=True,filename=None,verbosity=1):
+def graphEnergy(trajectory,perAtom=True,filename=None,show=True,verbosity=1):
 
   if (verbosity > 0):
     mout.out("graphing "+mcol.varName+
@@ -50,7 +50,7 @@ def graphEnergy(trajectory,perAtom=True,filename=None,verbosity=1):
 
   # graph2D(xdata,epots,xlab='index',ylab='Potential Energy eV',filename=filename)
 
-  graph2DMany(xdata,[epots,ekins,etots],ytitles=["Potential","Kinetic","Total"],xlab="MD Steps",ylab=ylab,filename=filename,verbosity=verbosity-1)
+  graph2DMany(xdata,[epots,ekins,etots],ytitles=["Potential","Kinetic","Total"],show=show,xlab="MD Steps",ylab=ylab,filename=filename,verbosity=verbosity-1)
 
   if (verbosity > 0):
     mout.out("Done.") # user output
