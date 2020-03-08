@@ -64,7 +64,7 @@ def makePovImage(filename,image,verbosity=1,rmPovFiles=True,bonds=False,bondradi
   if (verbosity > 0):
     mout.out("Done.") # user output
 
-def makePovImages(filename,subdirectory="pov",interval=1,verbosity=1,rmPovFiles=True,forceLoad=False,**style):
+def makePovImages(filename,subdirectory="pov",interval=1,verbosity=1,rmPovFiles=True,bonds=False,bondradius=1.1,filenamePadding=4,forceLoad=False,**style):
   if (not isPovLoaded or forceLoad):
     loadPov(verbosity=verbosity-1)
 
@@ -77,7 +77,7 @@ def makePovImages(filename,subdirectory="pov",interval=1,verbosity=1,rmPovFiles=
     if (n % interval != 0 and n != 100):
       continue
 
-    makePovImage(subdirectory+"/"+str(n).zfill(4),image,verbosity=verbosity-1,rmPovFiles=False,forceLoad=False,**style)
+    makePovImage(subdirectory+"/"+str(n).zfill(filenamePadding),image,verbosity=verbosity-1,bonds=bonds,bondradius=bondradius,rmPovFiles=False,forceLoad=False,**style)
 
   if (rmPovFiles):
     os.system("rm "+subdirectory+"/*.ini")
@@ -122,6 +122,8 @@ def makePovAnimation(filename,subdirectory="pov",interval=1,gifstyle=styles.gif_
     crop_w = plotstyle["canvas_width"]
     crop_h = plotstyle["canvas_height"]
     del plotstyle["canvas_height"]
+  else:
+    cropping=False
   
   if "crop_xshift" in plotstyle:
     crop_x = plotstyle["crop_xshift"]
@@ -143,10 +145,15 @@ def makePovAnimation(filename,subdirectory="pov",interval=1,gifstyle=styles.gif_
     backwhite = False
 
   # Generate the PNG's
+  if (verbosity > 0):
+    mout.out("generating "+mcol.file+
+           subdirectory+"/*.png"+
+           mcol.clear+" ... ",
+           printScript=True) # user output
   makePovImages(filename,subdirectory=subdirectory,interval=interval,verbosity=verbosity-1,**plotstyle)
   
   # Load ImageMagick
-  if cropping:
+  if cropping or backwhite:
     import module # https://github.com/mwinokan/MPyTools
     module.module('--expert','load','ImageMagick/7.0.3-1-intel-2016a')
     if (verbosity > 0):
