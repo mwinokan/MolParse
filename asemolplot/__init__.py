@@ -21,6 +21,7 @@ from .povplot import crop
 from .graphing import showFigs
 from .graphing import graphEnergy
 from .graphing import graphDisplacement
+from .graphing import graphBondLength
 
 # import subpackages
 

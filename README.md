@@ -15,6 +15,7 @@ Extension to ASE's plotting allowing for easy plotting and animations of traject
 *   [Installation](#installation)
 *   [Usage](#usage)
     -   [Creating ray-traced images and animations](#creating-ray-traced-images and animations)
+        +   [Style templates for images](#style-templates-for-images)
     -   [Graphing and analysis of simulation results](#graphing-and-analysis-of-simulation-results)
         +   [General methods](#general-methods)
         +   [Specific analysis](#specific-analysis)
@@ -118,6 +119,18 @@ The following examples have imported AMP as: `import asemolplot as amp`. See *te
 `amp.write(filename,image,verbosity=1,**parameters)`
 `amp.read(filename,index=None,verbosity=1,**parameters)`
 
+#### Style templates for images
+
+*amp.styles* contains several style templates that can be passed to makePovImage. For example: `amp.makePovImage(filename,atoms,**amp.styles.standard)`
+
+*Custom styles*
+
+Copy a style and modify one part:
+
+```custom_style = amp.styles.standard.copy()
+custom_style['celllinewidth'] = 0.07
+```
+
 ## Graphing and analysis of simulation results
 
 ### General methods
@@ -137,37 +150,38 @@ mplot.graph2D(xdata,[ydata1,ydata2],ytitles=["ydata1","ydata2"],filename="test2.
 
 ### Specific analysis
 
-*Graph energies during an MD Simulation:*
+#### Graph energies during an MD Simulation
 
-`amp.graphEnergy(trajectory,perAtom=True,filename=None,show=True,verbosity=1))`
+`amp.graphEnergy(trajectory,perAtom=True,filename=None,show=True,verbosity=1,timestep=None)`
 
 *   `trajectory` ASE `Trajectory()` to be analysed.
 *   `perAtom` Scale the energies per atom?
 *   `filename` Output filename.
 *   `show` Open a GUI window with the plot?
 *   `verbosity` Verbosity level. Every nested function call will pass `verbosity=verbosity-1`.
+*   `timestep` Pass the timestep (in ASE units) of the simulation to plot time on the x-axis.
 
-*Graph atom displacements during an MD Simulation*
+#### Graph atom displacements during an MD Simulation
 
-`graphDisplacement(trajectory,show=True,filename=None,relative=True,verbosity=2)`
+`amp.graphDisplacement(trajectory,show=True,filename=None,relative=True,verbosity=2,timestep=None)`
 
 *   `trajectory` ASE `Trajectory()` to be analysed.
 *   `show` Open a GUI window with the plot?
 *   `filename` Output filename.
 *   `relative` Calculate the displacement relative to the initial positions? Else relative to the origin.
 *   `verbosity` Verbosity level. Every nested function call will pass `verbosity=verbosity-1`.
+*   `timestep` Pass the timestep (in ASE units) of the simulation to plot time on the x-axis.
 
-### Style templates for images
+#### Graph a bond length during an MD Simulation
 
-*amp.styles* contains several style templates that can be passed to makePovImage. For example: `amp.makePovImage(filename,atoms,**amp.styles.standard)`
+`amp.graphBondLength(trajectory,indices,show=True,filename=None,verbosity=2,timestep=None)`
 
-*Custom styles*
-
-Copy a style and modify one part:
-
-```custom_style = amp.styles.standard.copy()
-custom_style['celllinewidth'] = 0.07
-```
+*   `trajectory` ASE `Trajectory()` to be analysed.
+*   `indices` Index pair i.e. `[0,1]` or list of index pairs `[[0,1],[1,2]]`
+*   `show` Open a GUI window with the plot?
+*   `filename` Output filename.
+*   `verbosity` Verbosity level. Every nested function call will pass `verbosity=verbosity-1`.
+*   `timestep` Pass the timestep (in ASE units) of the simulation to plot time on the x-axis.
 
 ### Common Errors
 
