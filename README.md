@@ -10,6 +10,16 @@ Extension to ASE's plotting allowing for easy plotting and animations of traject
 
 ![ASE POV Example](https://github.com/mwinokan/AseMolPlot/blob/master/pov.png "ASE & PoV-Ray Render")
 
+## Contents
+
+*   [Installation](#installation)
+*   [Usage](#usage)
+    -   [Creating ray-traced images and animations](#creating-ray-traced-images and animations)
+    -   [Graphing and analysis of simulation results](#graphing-and-analysis-of-simulation-results)
+        +   [General methods](#general-methods)
+        +   [Specific analysis](#specific-analysis)
+*   [Common Errors](#common-errors)   
+
 ## Installation
 
 ### Requirements
@@ -48,7 +58,9 @@ Extension to ASE's plotting allowing for easy plotting and animations of traject
 
 ## Usage
 
-The following examples have imported AMP as: `import asemolplot as amp`. See *test.py* for an example script.
+### Creating ray-traced images and animations
+
+The following examples have imported AMP as: `import asemolplot as amp`. See *test.py* for an example script. Most of these functions have non-ray-traced equivalents i.e. `amp.makeImage()`. See `asemolplot/plot.py`.
 
 *Use PoV-Ray to render a PNG from an atomic image*
 
@@ -106,6 +118,45 @@ The following examples have imported AMP as: `import asemolplot as amp`. See *te
 `amp.write(filename,image,verbosity=1,**parameters)`
 `amp.read(filename,index=None,verbosity=1,**parameters)`
 
+## Graphing and analysis of simulation results
+
+### General methods
+
+*Plotting 2D data:*
+
+AMP uses functions from `mplot` of [MPyTools](#https://github.com/mwinokan/MPyTools) to call matplotlib. Full documentation can be found in the README.md of MPyTools](#https://github.com/mwinokan/MPyTools). To make a general 2D plot:
+
+```
+import mplot
+xdata = [1,2,3,4]
+ydata1 = [1,2,3,4]
+ydata2 = [3,4,5,6]
+mplot.graph2D(xdata,ydata1,filename="test1.png",title="Test 1")
+mplot.graph2D(xdata,[ydata1,ydata2],ytitles=["ydata1","ydata2"],filename="test2.png",title="Test 2")
+```
+
+### Specific analysis
+
+*Graph energies during an MD Simulation:*
+
+`amp.graphEnergy(trajectory,perAtom=True,filename=None,show=True,verbosity=1))`
+
+*   `trajectory` ASE `Trajectory()` to be analysed.
+*   `perAtom` Scale the energies per atom?
+*   `filename` Output filename.
+*   `show` Open a GUI window with the plot?
+*   `verbosity` Verbosity level. Every nested function call will pass `verbosity=verbosity-1`.
+
+*Graph atom displacements during an MD Simulation*
+
+`graphDisplacement(trajectory,show=True,filename=None,relative=True,verbosity=2)`
+
+*   `trajectory` ASE `Trajectory()` to be analysed.
+*   `show` Open a GUI window with the plot?
+*   `filename` Output filename.
+*   `relative` Calculate the displacement relative to the initial positions? Else relative to the origin.
+*   `verbosity` Verbosity level. Every nested function call will pass `verbosity=verbosity-1`.
+
 ### Style templates for images
 
 *amp.styles* contains several style templates that can be passed to makePovImage. For example: `amp.makePovImage(filename,atoms,**amp.styles.standard)`
@@ -131,3 +182,5 @@ PoV-Ray animations (`makePovAnimation()`):
 *   `ValueError: operands could not be broadcast together with shapes (211,300,4) (184,300,4) `
     -   Cause: `imagio.mimsave()` does not like processing images which aren't of the same size.
     -   Fix: generate the images using a style containing both a `canvas_width` and `canvas_height` so that the PoV-Ray images are of a uniform size. Canvas height is not usually set.
+
+

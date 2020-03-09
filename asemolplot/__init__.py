@@ -1,22 +1,26 @@
-import mout # https://github.com/mwinokan/MPyTools
 
 # import functions
 
+# ase.io wrappers
 from .io import read
 from .io import write
 
+# ase standard rendering
 from .plot import makeImage
 from .plot import makeImages
 from .plot import makeAnimation
 
+# PoV-Ray rendering
 from .povplot import loadPov
 from .povplot import makePovImage
 from .povplot import makePovImages
 from .povplot import makePovAnimation
 from .povplot import crop
 
-from .graphing import graph2D
+# Graphing/Analysis
+from .graphing import showFigs
 from .graphing import graphEnergy
+from .graphing import graphDisplacement
 
 # import subpackages
 

@@ -1,24 +1,20 @@
 
 import mcol # https://github.com/mwinokan/MPyTools
 import mout # https://github.com/mwinokan/MPyTools
-
-import matplotlib
-matplotlib.use("tkagg")
-import matplotlib.pyplot as plt
-# from ase.io.trajectory import Trajectory
+import mplot # https://github.com/mwinokan/MPyTools
 
 import numpy as np
 
 """
 
   To-Do's
-    * graph2D (include the graph2DMany functionality and check the shape of ydata to allow lists and lists of lists.)
-    * graph2D (check if ytitles is passed)
-    * Verbosity
+    * Time on x-axis
+    * graphVelocity
+    * graphBondLength
 
 """
 
-def graphEnergy(trajectory,perAtom=True,filename=None,show=True,verbosity=1):
+def graphEnergy(trajectory,perAtom=True,filename=None,show=True,verbosity=2):
 
   if (verbosity > 0):
     mout.out("graphing "+mcol.varName+
@@ -48,41 +44,44 @@ def graphEnergy(trajectory,perAtom=True,filename=None,show=True,verbosity=1):
     ekins.append(ekin)
     etots.append(epot+ekin)
 
-  # graph2D(xdata,epots,xlab='index',ylab='Potential Energy eV',filename=filename)
-
-  graph2DMany(xdata,[epots,ekins,etots],ytitles=["Potential","Kinetic","Total"],show=show,xlab="MD Steps",ylab=ylab,filename=filename,verbosity=verbosity-1)
+  mplot.graph2D(xdata,[epots,ekins,etots],ytitles=["Potential","Kinetic","Total"],show=show,xlab="MD Steps",ylab=ylab,filename=filename,verbosity=verbosity-1)
 
   if (verbosity > 0):
     mout.out("Done.") # user output
 
+def graphDisplacement(trajectory,show=True,filename=None,relative=True,verbosity=2):
+  """
+    Root Mean Square Displacement 
 
-# def graph2D(xdata,ydata,show=True,xmin=None,xmax=None,ymin=None,ymax=None):
-def graph2D(xdata,ydata,filename=None,show=True,xmin=None,xmax=None,ymin=None,ymax=None,xlab='x',ylab='y',title=None):
-  plt.plot(xdata,ydata)
-  plt.axis([xmin,xmax,ymin,ymax])
-  plt.xlabel(xlab)
-  plt.ylabel(ylab)
-  plt.suptitle(title)
-  if show:
-    plt.show()
-  if filename is not None:
-    plt.savefig(filename)
+  """
 
-def graph2DMany(xdata,ydata,ytitles=None,filename=None,show=True,xmin=None,xmax=None,ymin=None,ymax=None,xlab='x',ylab='y',title=None,verbosity=1):
+  if (verbosity > 0):
+    mout.out("graphing "+mcol.varName+
+             "RMSD"+
+             mcol.clear+" ... ",
+             printScript=True,
+             end='') # user output
 
-  for curve, label in zip(ydata,ytitles):
-    plt.plot(xdata,curve,label=label)
+  xdata=[]
+  rmsd=[]
 
-  plt.axis([xmin,xmax,ymin,ymax])
-  plt.xlabel(xlab)
-  plt.ylabel(ylab)
-  plt.suptitle(title)
-  plt.legend()
-  if show:
-    if (verbosity > 0):
-      mout.out("showing ... ",end='')
-    plt.show()
-  if filename is not None:
-    if (verbosity > 0):
-      mout.out("saving as " + mcol.file + filename + mcol.clear + " ... ",end='')
-    plt.savefig(filename)
+  for n, atoms in enumerate(trajectory):
+
+    xdata.append(n) # set x-axis to array index
+
+    positions = atoms.get_positions()
+    
+    if relative:
+      if (n==0):
+        reference=positions.copy()
+      positions -= reference
+
+    rmsd.append(np.sqrt(np.mean(positions**2)))
+
+  mplot.graph2D(xdata,rmsd,show=show,xlab="MD Steps",ylab="RMS Displacement",filename=filename,verbosity=verbosity-1)
+
+  if (verbosity > 0):
+    mout.out("Done.") # user output
+
+def showFigs(verbosity=1):
+  mplot.show(verbosity=verbosity)
