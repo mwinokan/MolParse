@@ -7,7 +7,7 @@ from . import styles
 
 isPovLoaded = False
 
-def loadPov(verbosity=1,purge=True):
+def loadPov(verbosity=1,purge=True,anaconda=False):
   import module # https://github.com/mwinokan/MPyTools
 
   # load the correct modules for ASE/PoV-Ray
@@ -18,7 +18,7 @@ def loadPov(verbosity=1,purge=True):
   module.module('--expert','load','libpng/1.6.24-intel-2016a')
   module.module('--expert','load','libjpeg-turbo/1.5.0-intel-2016a')
   module.module('--expert','load','LibTIFF/4.0.6-intel-2016a')
-  module.module('--expert','load','anaconda3/2019.03')
+  if anaconda: module.module('--expert','load','anaconda3/2019.03')
 
   if (verbosity > 0):
     mout.out("PoV-Ray dependencies loaded.",
