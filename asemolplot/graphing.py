@@ -17,7 +17,7 @@ from ase import units
 
 """
 
-def graphEnergy(trajectory,perAtom=True,filename=None,show=True,verbosity=2,timestep=None):
+def graphEnergy(trajectory,perAtom=True,filename=None,show=True,verbosity=2,kJpermol=False,xlab=None,timestep=None):
 
   if (verbosity > 0):
     mout.out("graphing "+mcol.varName+
@@ -33,7 +33,8 @@ def graphEnergy(trajectory,perAtom=True,filename=None,show=True,verbosity=2,time
 
   for n, atoms in enumerate(trajectory):
     if timestep is None:
-      xlab = "MD Steps"
+      if xlab is None:
+        xlab = "MD Steps"
       xdata.append(n)
     else:
       xlab = "Time [fs]"
@@ -41,12 +42,17 @@ def graphEnergy(trajectory,perAtom=True,filename=None,show=True,verbosity=2,time
     epot = atoms.get_potential_energy()
     ekin = atoms.get_kinetic_energy()
 
-    if perAtom:
-      epot /= len(atoms)
-      ekin /= len(atoms)
-      ylab = "Energy eV/atom"
+    if not kJpermol:
+      if perAtom:
+        epot /= len(atoms)
+        ekin /= len(atoms)
+        ylab = "Energy [eV/atom]"
+      else:
+        ylab = "Energy [eV]"
     else:
-      ylab = "Energy eV"
+      epot *= units.eV / units.kJ * units.mol
+      ekin *= units.eV / units.kJ * units.mol
+      ylab = "Energy [kJ/mol]"
 
     epots.append(epot)
     ekins.append(ekin)

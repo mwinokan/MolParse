@@ -152,13 +152,15 @@ mplot.graph2D(xdata,[ydata1,ydata2],ytitles=["ydata1","ydata2"],filename="test2.
 
 #### Graph energies during an MD Simulation
 
-`amp.graphEnergy(trajectory,perAtom=True,filename=None,show=True,verbosity=1,timestep=None)`
+`amp.graphEnergy(trajectory,perAtom=True,filename=None,show=True,verbosity=2,kJpermol=False,xlab=None,timestep=None)`
 
 *   `trajectory` ASE `Trajectory()` to be analysed.
 *   `perAtom` Scale the energies per atom?
 *   `filename` Output filename.
 *   `show` Open a GUI window with the plot?
 *   `verbosity` Verbosity level. Every nested function call will pass `verbosity=verbosity-1`.
+*   `kJpermol` Show energies in units of kJ/mol?
+*   `xlab` Custom x-axis label.
 *   `timestep` Pass the timestep (in ASE units) of the simulation to plot time on the x-axis.
 
 #### Graph atom displacements during an MD Simulation
