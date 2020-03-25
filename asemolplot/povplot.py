@@ -109,13 +109,13 @@ def makePovAnimationIM(filename,subdirectory="pov",interval=1,verbosity=1,**styl
 
 # Using imageio
 # https://stackoverflow.com/questions/753190/programmatically-generate-video-or-animated-gif-in-python
-def makePovAnimation(filename,subdirectory="pov",interval=1,gifstyle=styles.gif_standard,verbosity=1,forceLoad=False,**plotstyle):
+def makePovAnimation(filename,subdirectory="pov",interval=1,gifstyle=styles.gif_standard,verbosity=1,forceLoad=False,useExisting=False,**plotstyle):
   if (not isPovLoaded or forceLoad):
     loadPov(verbosity=verbosity-1)
 
   import os
   import imageio
-
+  
   # Check if a crop is desired
   if "canvas_height" in plotstyle:
     cropping=True
@@ -124,6 +124,13 @@ def makePovAnimation(filename,subdirectory="pov",interval=1,gifstyle=styles.gif_
     del plotstyle["canvas_height"]
   else:
     cropping=False
+
+  if plotstyle["crop_w"]:
+    cropping=True
+    crop_w = plotstyle["crop_w"]
+  if plotstyle["crop_h"]:
+    cropping=True
+    crop_h = plotstyle["crop_h"]
   
   if "crop_xshift" in plotstyle:
     crop_x = plotstyle["crop_xshift"]
@@ -150,7 +157,8 @@ def makePovAnimation(filename,subdirectory="pov",interval=1,gifstyle=styles.gif_
            subdirectory+"/*.png"+
            mcol.clear+" ... ",
            printScript=True) # user output
-  makePovImages(filename,subdirectory=subdirectory,interval=interval,verbosity=verbosity-1,**plotstyle)
+  if not useExisting:
+    makePovImages(filename,subdirectory=subdirectory,interval=interval,verbosity=verbosity-1,**plotstyle)
   
   # Load ImageMagick
   if cropping or backwhite:
