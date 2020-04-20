@@ -23,6 +23,10 @@ from .graphing import graphEnergy
 from .graphing import graphDisplacement
 from .graphing import graphBondLength
 
+from .console_io import printEnergy # needs documentation
+from .convert import pdb2traj # needs documentation
+
 # import subpackages
 
 from . import styles
+from . import analysis
