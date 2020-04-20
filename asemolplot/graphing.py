@@ -102,7 +102,7 @@ def graphDisplacement(trajectory,show=True,filename=None,relative=True,verbosity
   if (verbosity > 0):
     mout.out("Done.") # user output
 
-def graphBondLength(trajectory,indices,show=True,filename=None,verbosity=2,timestep=None):
+def graphBondLength(trajectory,indices,printScript=False,show=True,filename=None,verbosity=2,timestep=None,title=None,fitOrder=None):
   """
     Graph the bond lengths (displacement) between atoms.
 
@@ -110,9 +110,9 @@ def graphBondLength(trajectory,indices,show=True,filename=None,verbosity=2,times
 
   if (verbosity > 0):
     mout.out("graphing "+mcol.varName+
-             "Bond Length"+
+             title+
              mcol.clear+" ... ",
-             printScript=True,
+             printScript=printScript,
              end='') # user output
 
   many = any(isinstance(el,list) for el in indices)
@@ -142,10 +142,13 @@ def graphBondLength(trajectory,indices,show=True,filename=None,verbosity=2,times
         if (i==0):
           if timestep is None:
             xlab = "MD Steps"
+            xUnit = "MD Step"
             xdata.append(n)
           else:
-            xlab = "Time [fs]"
-            xdata.append(n*timestep/units.fs)
+            xlab = "Time [ps]"
+            xUnit = "picosecond"
+            xdata.append(n*timestep)
+            # xdata.append(n*timestep/units.fs)
 
         dist = atoms.get_distance(index1,index2)
 
@@ -153,7 +156,18 @@ def graphBondLength(trajectory,indices,show=True,filename=None,verbosity=2,times
 
       ydata.append(this_data)
 
-    mplot.graph2D(xdata,ydata,ytitles=labels,show=show,xlab=xlab,ylab="Distance [Angstrom]",filename=filename,verbosity=verbosity-1)
+    if len(xdata) < fitOrder+1:
+      mout.warningOut("Not enough data-points for fitting.")
+      fitOrder = None
+
+    if fitOrder is None:
+      mplot.graph2D(xdata,ydata,ytitles=labels,show=show,xlab=xlab,ylab="Distance [Angstrom]",filename=filename,title=title,verbosity=verbosity-1)
+    else:
+      if verbosity > 1:
+        print("")
+      val,err,fit_func = mplot.fit(xdata,ydata,rank=fitOrder,verbosity=verbosity-1,title=title,yUnit="Angstroms",xUnit=xUnit)
+      text = mplot.getCoeffStr(val,err,1,yUnit="Angstroms",xUnit=xUnit)
+      mplot.graph2D(xdata,ydata,fitFunc=fit_func,ytitles=labels,show=show,xlab=xlab,ylab="Distance [Angstrom]",filename=filename,title=title,verbosity=verbosity-1,subtitle=text)
 
   else:
     index1 = indices[0]
@@ -166,22 +180,41 @@ def graphBondLength(trajectory,indices,show=True,filename=None,verbosity=2,times
 
     ydata=[]
 
+    if timestep is None:
+      xlab = "MD Steps"
+      xUnit = "MD Step"
+    else:  
+      xlab = "Time [fs]"
+      xUnit = "picosecond"
+
     for n, atoms in enumerate(trajectory):
       if timestep is None:
-        xlab = "MD Steps"
         xdata.append(n)
       else:
-        xlab = "Time [fs]"
         xdata.append(n*timestep/units.fs)
 
       dist = atoms.get_distance(index1,index2)
 
       ydata.append(dist)
 
-    mplot.graph2D(xdata,ydata,show=show,xlab=xlab,ylab="Distance [Angstrom]",filename=filename,verbosity=verbosity-1,title=label)
+    if fitOrder is None:
+      mplot.graph2D(xdata,ydata,show=show,xlab=xlab,ylab="Distance [Angstrom]",filename=filename,title=label,verbosity=verbosity-1)
+    else:
+      if verbosity > 1:
+        print("")
+      val,err,fit_func = mplot.fit(xdata,ydata,rank=fitOrder,verbosity=verbosity-1,title=title,yUnit="Angstroms",xUnit=xUnit)
+      text = mplot.getCoeffStr(val,err,1,yUnit="Angstroms",xUnit=xUnit)
+      mplot.graph2D(xdata,ydata,fitFunc=fit_func,show=show,xlab=xlab,ylab="Distance [Angstrom]",filename=filename,title=label,verbosity=verbosity-1,subtitle=text)
 
-  if (verbosity > 0):
+  if (verbosity > 1):
+    mout.out("") # user output
+  if (verbosity == 1):
     mout.out("Done.") # user output
+
+  if fitOrder is not None:
+    return val, err, fit_func
+  else:
+    return None, None, None
 
 # just a wrapper for mplot.show()
 def showFigs(verbosity=1):
