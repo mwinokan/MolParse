@@ -128,9 +128,11 @@ def makePovAnimation(filename,subdirectory="pov",interval=1,gifstyle=styles.gif_
   if plotstyle["crop_w"]:
     cropping=True
     crop_w = plotstyle["crop_w"]
+    del plotstyle["crop_w"]
   if plotstyle["crop_h"]:
     cropping=True
     crop_h = plotstyle["crop_h"]
+    del plotstyle["crop_h"]
   
   if "crop_xshift" in plotstyle:
     crop_x = plotstyle["crop_xshift"]
