@@ -64,7 +64,7 @@ def makePovImage(filename,image,verbosity=1,rmPovFiles=True,bonds=False,bondradi
   if (verbosity > 0):
     mout.out("Done.") # user output
 
-def makePovImages(filename,subdirectory="pov",interval=1,verbosity=1,rmPovFiles=True,bonds=False,bondradius=1.1,filenamePadding=4,forceLoad=False,**style):
+def makePovImages(filename,subdirectory="pov",interval=1,verbosity=1,rmPovFiles=True,bonds=False,bondradius=1.1,filenamePadding=4,forceLoad=False,index=":",**style):
   if (not isPovLoaded or forceLoad):
     loadPov(verbosity=verbosity-1)
 
@@ -73,11 +73,15 @@ def makePovImages(filename,subdirectory="pov",interval=1,verbosity=1,rmPovFiles=
   os.system("mkdir -p "+subdirectory)
   os.system("rm "+subdirectory+"/* 2> /dev/null")
 
-  for n, image in enumerate(io.read(filename,index=":")):
-    if (n % interval != 0 and n != 100):
-      continue
+  if index != ":":
+    image = io.read(filename,index=index)
+    makePovImage(subdirectory+"/"+str(index).zfill(filenamePadding),image,verbosity=verbosity-1,bonds=bonds,bondradius=bondradius,rmPovFiles=False,forceLoad=False,**style)
+  else:
+    for n, image in enumerate(io.read(filename,index=index)):
+      if (n % interval != 0 and n != 100):
+        continue
 
-    makePovImage(subdirectory+"/"+str(n).zfill(filenamePadding),image,verbosity=verbosity-1,bonds=bonds,bondradius=bondradius,rmPovFiles=False,forceLoad=False,**style)
+      makePovImage(subdirectory+"/"+str(n).zfill(filenamePadding),image,verbosity=verbosity-1,bonds=bonds,bondradius=bondradius,rmPovFiles=False,forceLoad=False,**style)
 
   if (rmPovFiles):
     os.system("rm "+subdirectory+"/*.ini")
@@ -109,12 +113,15 @@ def makePovAnimationIM(filename,subdirectory="pov",interval=1,verbosity=1,**styl
 
 # Using imageio
 # https://stackoverflow.com/questions/753190/programmatically-generate-video-or-animated-gif-in-python
-def makePovAnimation(filename,subdirectory="pov",interval=1,gifstyle=styles.gif_standard,verbosity=1,forceLoad=False,useExisting=False,**plotstyle):
+def makePovAnimation(filename,subdirectory="pov",interval=1,gifstyle=styles.gif_standard,verbosity=1,forceLoad=False,useExisting=False,dryRun=False,**plotstyle):
   if (not isPovLoaded or forceLoad):
     loadPov(verbosity=verbosity-1)
 
   import os
   import imageio
+
+  crop_w = None
+  crop_h = None
   
   # Check if a crop is desired
   if "canvas_height" in plotstyle:
@@ -125,11 +132,12 @@ def makePovAnimation(filename,subdirectory="pov",interval=1,gifstyle=styles.gif_
   else:
     cropping=False
 
-  if plotstyle["crop_w"]:
+  if "crop_w" in plotstyle:
     cropping=True
     crop_w = plotstyle["crop_w"]
     del plotstyle["crop_w"]
-  if plotstyle["crop_h"]:
+
+  if "crop_h" in plotstyle:
     cropping=True
     crop_h = plotstyle["crop_h"]
     del plotstyle["crop_h"]
@@ -153,6 +161,7 @@ def makePovAnimation(filename,subdirectory="pov",interval=1,gifstyle=styles.gif_
   else:
     backwhite = False
 
+  # if not dryRun:
   # Generate the PNG's
   if (verbosity > 0):
     mout.out("generating "+mcol.file+
@@ -160,7 +169,12 @@ def makePovAnimation(filename,subdirectory="pov",interval=1,gifstyle=styles.gif_
            mcol.clear+" ... ",
            printScript=True) # user output
   if not useExisting:
-    makePovImages(filename,subdirectory=subdirectory,interval=interval,verbosity=verbosity-1,**plotstyle)
+    if not dryRun:
+      # Generate all the images
+      makePovImages(filename,subdirectory=subdirectory,interval=interval,verbosity=verbosity-1,**plotstyle)
+    else:
+      # Generate just the first image
+      makePovImages(filename,subdirectory=subdirectory,interval=interval,verbosity=verbosity-1,index=0,**plotstyle)
   
   # Load ImageMagick
   if cropping or backwhite:
@@ -176,10 +190,19 @@ def makePovAnimation(filename,subdirectory="pov",interval=1,gifstyle=styles.gif_
            mcol.clear+" ... ",
            printScript=True,
            end='') # user output
+
   images = []
+
+  # loop over all files in the subdirectory:
   for file in os.listdir(subdirectory):
+
+    # get the relative path to the file:
     filename = subdirectory+"/"+file
+
+    # check if the file is a PNG:
     if file.endswith(".png"):
+
+      # use ImageMagick to crop:
       if cropping:
         os.system("convert "+filename+
             " -crop "+str(crop_w)+
@@ -187,12 +210,24 @@ def makePovAnimation(filename,subdirectory="pov",interval=1,gifstyle=styles.gif_
             "+"+str(crop_x)+
             "+"+str(crop_y)+
             " "+filename)
+
+      # use ImageMagick to add a white background
       if backwhite:
         os.system("convert "+filename+
                   " -fill white -opaque none "+
                   filename)
+
+      # use ImageMagick to place the image on a blank white canvas (of consistent size)
+      if crop_h is not None:
+        os.system("convert "+filename+
+                  " -background white -extent "+
+                  str(crop_w)+"x"+str(crop_h)+" "+
+                  filename)
+
+      # Read in the image and append to the image array
       image = imageio.imread(filename)
       images.append(image)
+
   if (verbosity > 0):
     mout.out("Done.") # user output
 
@@ -202,7 +237,10 @@ def makePovAnimation(filename,subdirectory="pov",interval=1,gifstyle=styles.gif_
            mcol.clear+" ... ",
            printScript=True,
            end='') # user output
+
+  # Generate the animated GIF:
   imageio.mimsave(subdirectory+".gif",images,**gifstyle)
+
   if (verbosity > 0):
     mout.out("Done.") # user output
 
