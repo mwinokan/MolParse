@@ -120,55 +120,37 @@ def makePovAnimation(filename,subdirectory="pov",interval=1,gifstyle=styles.gif_
   import os
   import imageio
 
-  crop_w = None
-  crop_h = None
-  
-  # Check if a crop is desired
+  # Set canvas sizes:
+  canv_w = plotstyle["canvas_width"]
   if "canvas_height" in plotstyle:
-    cropping=True
-    crop_w = plotstyle["canvas_width"]
-    crop_h = plotstyle["canvas_height"]
+    canv_h = plotstyle["canvas_height"]
     del plotstyle["canvas_height"]
   else:
-    cropping=False
+    mout.errorOut("No canvas_height specified in plotstyle!",fatal=True)
 
-  if "crop_w" in plotstyle:
-    cropping=True
+  # Check if cropping:
+  if "crop_w" in plotstyle and "crop_w" in plotstyle:
+    cropping = True
     crop_w = plotstyle["crop_w"]
-    del plotstyle["crop_w"]
-
-  if "crop_h" in plotstyle:
-    cropping=True
     crop_h = plotstyle["crop_h"]
-    del plotstyle["crop_h"]
-  
-  if "crop_xshift" in plotstyle:
-    crop_x = plotstyle["crop_xshift"]
-    del plotstyle["crop_xshift"]
-  else:
-    crop_x = 0
+  if "crop_w" in plotstyle: del plotstyle["crop_w"]
+  if "crop_h" in plotstyle: del plotstyle["crop_h"]
 
-  if "crop_yshift" in plotstyle:
-    crop_y = plotstyle["crop_yshift"]
-    del plotstyle["crop_yshift"]
-  else:
-    crop_y = 0
-  
-  if "background" in gifstyle:
-    if (gifstyle["background"] == "white"):
-      backwhite=True
-    del gifstyle["background"]
-  else:
-    backwhite = False
+  # Check if crop offset:
+  if "crop_x" in plotstyle:
+    shifting = True
+    crop_x = plotstyle["crop_x"]
+    crop_y = plotstyle["crop_y"]
+  if "crop_x" in plotstyle: del plotstyle["crop_x"]
+  if "crop_y" in plotstyle: del plotstyle["crop_y"]
 
-  # if not dryRun:
   # Generate the PNG's
-  if (verbosity > 0):
-    mout.out("generating "+mcol.file+
-           subdirectory+"/*.png"+
-           mcol.clear+" ... ",
-           printScript=True) # user output
   if not useExisting:
+    if (verbosity > 0):
+      mout.out("generating "+mcol.file+
+             subdirectory+"/*.png"+
+             mcol.clear+" ... ",
+             printScript=True) # user output
     if not dryRun:
       # Generate all the images
       makePovImages(filename,subdirectory=subdirectory,interval=interval,verbosity=verbosity-1,**plotstyle)
@@ -177,11 +159,11 @@ def makePovAnimation(filename,subdirectory="pov",interval=1,gifstyle=styles.gif_
       makePovImages(filename,subdirectory=subdirectory,interval=interval,verbosity=verbosity-1,index=0,**plotstyle)
   
   # Load ImageMagick
-  if cropping or backwhite:
-    import module # https://github.com/mwinokan/MPyTools
-    module.module('--expert','load','ImageMagick/7.0.3-1-intel-2016a')
-    if (verbosity > 0):
-      mout.out("ImageMagick loaded.",printScript=True)
+  # if cropping or backwhite:
+  import module # https://github.com/mwinokan/MPyTools
+  module.module('--expert','load','ImageMagick/7.0.3-1-intel-2016a')
+  if (verbosity > 0):
+    mout.out("ImageMagick loaded.",printScript=True)
 
   # Combine the images
   if (verbosity > 0):
@@ -202,33 +184,41 @@ def makePovAnimation(filename,subdirectory="pov",interval=1,gifstyle=styles.gif_
     # check if the file is a PNG:
     if file.endswith(".png"):
 
-      # use ImageMagick to crop:
-      if cropping:
-        os.system("convert "+filename+
-            " -crop "+str(crop_w)+
-            "x"+str(crop_h)+
-            "+"+str(crop_x)+
-            "+"+str(crop_y)+
-            " "+filename)
-
-      # use ImageMagick to add a white background
-      if backwhite:
-        os.system("convert "+filename+
-                  " -fill white -opaque none "+
-                  filename)
-
-      # use ImageMagick to place the image on a blank white canvas (of consistent size)
-      if crop_h is not None:
+      # run different IM commands depending on cropping and shifting:
+      if not cropping and not shifting:
         os.system("convert "+filename+
                   " -background white -extent "+
-                  str(crop_w)+"x"+str(crop_h)+" "+
+                  str(canv_w)+"x"+
+                  str(canv_h)+" "+
+                  filename)
+      elif cropping and not shifting:
+        os.system("convert "+filename+
+                  " -crop "+str(crop_w)+"x"+str(crop_h)+
+                  " -background white -extent "+
+                  str(crop_w)+"x"+
+                  str(crop_h)+" "+
+                  filename)
+      elif shifting and not cropping:
+        os.system("convert "+filename+
+                  " -crop +"+str(crop_x)+"+"+str(crop_y)+
+                  " -background white -extent "+
+                  str(canv_w)+"x"+
+                  str(canv_h)+" "+
+                  filename)
+      else:
+        os.system("convert "+filename+
+                  " -crop "+str(crop_w)+"x"+str(crop_h)+
+                  "+"+str(crop_x)+"+"+str(crop_y)+
+                  " -background white -extent "+
+                  str(crop_w)+"x"+
+                  str(crop_h)+" "+
                   filename)
 
       # Read in the image and append to the image array
       image = imageio.imread(filename)
       images.append(image)
 
-  if (verbosity > 0):
+  if (verbosity > 0) and not useExisting:
     mout.out("Done.") # user output
 
   if (verbosity > 0):
