@@ -22,6 +22,4 @@ standard_cell={"canvas_width":2000,
 
 gif_standard={"loop":0,
               "fps":25,
-              "subrectangles":True,
-              "background":"white"
-              }
+              "subrectangles":True}
