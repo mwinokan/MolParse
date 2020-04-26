@@ -32,4 +32,4 @@ from .convert import pdb2traj # needs documentation
 # import subpackages
 
 from . import styles
-from . import analysis
+# from . import analysis
