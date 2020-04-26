@@ -77,7 +77,12 @@ def makePovImages(filename,subdirectory="pov",interval=1,verbosity=1,rmPovFiles=
     image = io.read(filename,index=index)
     makePovImage(subdirectory+"/"+str(index).zfill(filenamePadding),image,verbosity=verbosity-1,bonds=bonds,bondradius=bondradius,rmPovFiles=False,forceLoad=False,**style)
   else:
-    for n, image in enumerate(io.read(filename,index=index)):
+    traj = io.read(filename,index=index)
+
+    if verbosity > 0:
+      mout.varOut("Images in trajectory",len(traj))
+    
+    for n, image in enumerate(traj):
       if (n % interval != 0 and n != 100):
         continue
 
@@ -120,6 +125,9 @@ def makePovAnimation(filename,subdirectory="pov",interval=1,gifstyle=styles.gif_
   import os
   import imageio
 
+  cropping = False
+  shifting = False
+
   # Set canvas sizes:
   canv_w = plotstyle["canvas_width"]
   if "canvas_height" in plotstyle:
@@ -151,12 +159,18 @@ def makePovAnimation(filename,subdirectory="pov",interval=1,gifstyle=styles.gif_
              subdirectory+"/*.png"+
              mcol.clear+" ... ",
              printScript=True) # user output
+    if (verbosity > 1):
+      mout.out(" ")
+
     if not dryRun:
       # Generate all the images
       makePovImages(filename,subdirectory=subdirectory,interval=interval,verbosity=verbosity-1,**plotstyle)
     else:
       # Generate just the first image
       makePovImages(filename,subdirectory=subdirectory,interval=interval,verbosity=verbosity-1,index=0,**plotstyle)
+    
+    if (verbosity == 1):
+      mout.out("Done.")
   
   # Load ImageMagick
   # if cropping or backwhite:
