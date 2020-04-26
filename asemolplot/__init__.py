@@ -5,6 +5,9 @@
 from .io import read
 from .io import write
 
+# ase.visualize wrappers
+from .gui import view
+
 # ase standard rendering
 from .plot import makeImage
 from .plot import makeImages
