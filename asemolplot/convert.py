@@ -5,6 +5,8 @@ import mplot # https://github.com/mwinokan/MPyTools
 
 from ase.io.trajectory import Trajectory
 
+from .io import read,write
+
 def pdb2traj(input,output,verbosity=1,printScript=False): # move to AMP
   if (verbosity > 0):
     mout.out("Converting "+
@@ -16,8 +18,8 @@ def pdb2traj(input,output,verbosity=1,printScript=False): # move to AMP
     if (verbosity > 1):
       mout.out("")
 
-  in_traj = amp.read(input,index=":",verbosity=verbosity-1)
-  amp.write(output,in_traj)
+  in_traj = read(input,index=":",verbosity=verbosity-1)
+  write(output,in_traj)
 
   if (verbosity > 0):
     mout.out("Done.")
