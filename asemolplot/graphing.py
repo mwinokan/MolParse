@@ -124,6 +124,7 @@ def graphBondLength(trajectory,indices,printScript=False,show=True,filename=None
   if many:
     
     atom_symbols = trajectory[0].get_chemical_symbols()
+    atom_tags = trajectory[0].get_tags()
 
     for i, pair in enumerate(indices):
       this_data=[]
@@ -134,7 +135,17 @@ def graphBondLength(trajectory,indices,printScript=False,show=True,filename=None
       atom_symbol1 = atom_symbols[index1]
       atom_symbol2 = atom_symbols[index2]
 
-      labels.append(atom_symbol1+atom_symbol2+
+      if atom_tags[index1] != 0:
+        atom_tag1 = str(atom_tags[index1])
+      else:
+        atom_tag1 = ""
+      if atom_tags[index2] != 0:
+        atom_tag2 = str(atom_tags[index2])
+      else:
+        atom_tag2 = ""
+
+      labels.append(atom_symbol1+str(atom_tag1)+"-"+
+                    atom_symbol2+str(atom_tag2)+
                     " bond ["+str(index1)+"-"+
                     str(index2)+"]")
 
@@ -215,6 +226,39 @@ def graphBondLength(trajectory,indices,printScript=False,show=True,filename=None
     return val, err, fit_func
   else:
     return None, None, None
+
+def graphBondVibSpec(trajectory,indices,printScript=False,show=True,filename=None,verbosity=2,timestep=None,title=None):
+  """
+    Graph the fourier transfort of bond lengths (displacement) between atoms.
+
+  """
+
+  # if (verbosity > 0):
+  #   mout.out("graphing "+mcol.varName+
+  #            title+
+  #            mcol.clear+" ... ",
+  #            printScript=printScript,
+  #            end='') # user output
+
+  many = any(isinstance(el,list) for el in indices)
+
+  xdata=[]
+  ydata=[]
+  labels=[]
+
+  index1 = indices[0]
+  index2 = indices[1]
+
+  for n, atoms in enumerate(trajectory):
+    if timestep is None:
+      xdata.append(n)
+
+    dist = atoms.get_distance(index1,index2)
+    ydata.append(dist)
+
+  ydata = np.fft.fft(ydata)
+
+  mplot.graph2D(xdata,ydata,show=show,filename=filename,verbosity=verbosity-1)
 
 # just a wrapper for mplot.show()
 def showFigs(verbosity=1):
