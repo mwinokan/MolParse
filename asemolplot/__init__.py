@@ -29,6 +29,7 @@ from .graphing import graphBondVibSpec
 
 from .console_io import printEnergy # needs documentation
 from .convert import pdb2traj # needs documentation
+from .convert import gro2traj # needs documentation
 
 # import subpackages
 
