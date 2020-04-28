@@ -167,15 +167,15 @@ def graphBondLength(trajectory,indices,printScript=False,show=True,filename=None
 
       ydata.append(this_data)
 
-    if len(xdata) < fitOrder+1:
-      mout.warningOut("Not enough data-points for fitting.")
-      fitOrder = None
 
     if fitOrder is None:
       mplot.graph2D(xdata,ydata,ytitles=labels,show=show,xlab=xlab,ylab="Distance [Angstrom]",filename=filename,title=title,verbosity=verbosity-1)
     else:
       if verbosity > 1:
         print("")
+      if len(xdata) < fitOrder+1:
+        mout.warningOut("Not enough data-points for fitting.")
+        fitOrder = None
       val,err,fit_func = mplot.fit(xdata,ydata,rank=fitOrder,verbosity=verbosity-1,title=title,yUnit="Angstroms",xUnit=xUnit)
       text = mplot.getCoeffStr(val,err,1,yUnit="Angstroms",xUnit=xUnit)
       mplot.graph2D(xdata,ydata,fitFunc=fit_func,ytitles=labels,show=show,xlab=xlab,ylab="Distance [Angstrom]",filename=filename,title=title,verbosity=verbosity-1,subtitle=text)
@@ -213,6 +213,9 @@ def graphBondLength(trajectory,indices,printScript=False,show=True,filename=None
     else:
       if verbosity > 1:
         print("")
+      if len(xdata) < fitOrder+1:
+        mout.warningOut("Not enough data-points for fitting.")
+        fitOrder = None
       val,err,fit_func = mplot.fit(xdata,ydata,rank=fitOrder,verbosity=verbosity-1,title=title,yUnit="Angstroms",xUnit=xUnit)
       text = mplot.getCoeffStr(val,err,1,yUnit="Angstroms",xUnit=xUnit)
       mplot.graph2D(xdata,ydata,fitFunc=fit_func,show=show,xlab=xlab,ylab="Distance [Angstrom]",filename=filename,title=label,verbosity=verbosity-1,subtitle=text)
