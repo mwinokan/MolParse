@@ -75,7 +75,7 @@ def makePovImages(filename,subdirectory="pov",interval=1,verbosity=1,rmPovFiles=
 
   if index != ":":
     image = io.read(filename,index=index)
-    makePovImage(subdirectory+"/"+str(index).zfill(filenamePadding),image,verbosity=verbosity-1,bonds=bonds,bondradius=bondradius,rmPovFiles=False,forceLoad=False,**style)
+    makePovImage(subdirectory+"/"+str(index).zfill(filenamePadding),image,verbosity=verbosity-1,bonds=bonds,bondradius=bondradius,rmPovFiles=False,forceLoad=forceLoad,**style)
   else:
     traj = io.read(filename,index=index)
 
@@ -86,7 +86,7 @@ def makePovImages(filename,subdirectory="pov",interval=1,verbosity=1,rmPovFiles=
       if (n % interval != 0 and n != 100):
         continue
 
-      makePovImage(subdirectory+"/"+str(n).zfill(filenamePadding),image,verbosity=verbosity-1,bonds=bonds,bondradius=bondradius,rmPovFiles=False,forceLoad=False,**style)
+      makePovImage(subdirectory+"/"+str(n).zfill(filenamePadding),image,verbosity=verbosity-1,bonds=bonds,bondradius=bondradius,rmPovFiles=False,forceLoad=forceLoad,**style)
 
   if (rmPovFiles):
     os.system("rm "+subdirectory+"/*.ini")
@@ -158,7 +158,7 @@ def makePovAnimation(filename,subdirectory="pov",interval=1,gifstyle=styles.gif_
       mout.out("generating "+mcol.file+
              subdirectory+"/*.png"+
              mcol.clear+" ... ",
-             printScript=True) # user output
+             printScript=True,end='') # user output
     if (verbosity > 1):
       mout.out(" ")
 
@@ -175,8 +175,8 @@ def makePovAnimation(filename,subdirectory="pov",interval=1,gifstyle=styles.gif_
   # Load ImageMagick
   # if cropping or backwhite:
   import module # https://github.com/mwinokan/MPyTools
-  module.module('--expert','load','ImageMagick/7.0.3-1-intel-2016a')
-  if (verbosity > 0):
+  ret = module.module('--expert','load','ImageMagick/7.0.3-1-intel-2016a')
+  if ret == 0 and verbosity > 0:
     mout.out("ImageMagick loaded.",printScript=True)
 
   # Combine the images
