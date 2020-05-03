@@ -48,6 +48,8 @@ args = argparser.parse_args()
 infile = args.input
 printScript = args.print_script
 
+verbosity = 2
+
 if args.output is None:
   out_prefix = "amp_out"
   mout.warningOut("Defaulted to output keyword 'amp_out'.",printScript=printScript,code=3)
@@ -78,11 +80,16 @@ if args.rotate_x is not None or args.rotate_y is not None or args.rotate_z is no
 
 custom_style["canvas_width"] = 1200
 custom_style["canvas_height"] = 1200
-custom_style["scale"] = custom_style["canvas_width"]/500 * 20
+
+if not args.povray:
+  custom_style["scale"] = custom_style["canvas_width"]/500 * 20
 
 # print(custom_style["rotation"])
 
 if infile.endswith(".pdb"):
-  amp.makeAnimation(infile,verbosity=10,interval=args.interval,dryRun=args.dry_run,**custom_style)
+  if args.povray:
+    amp.makePovAnimation(infile,subdirectory=out_prefix,verbosity=verbosity,interval=args.interval,dryRun=args.dry_run,**custom_style)
+  else:
+    amp.makeAnimation(infile,subdirectory=out_prefix,verbosity=verbosity,interval=args.interval,dryRun=args.dry_run,**custom_style)
 else:
-  mout.errorOut("Unrecognised file extension!",fatal=True)  
+  mout.errorOut("Unrecognised file type!",fatal=True)  
