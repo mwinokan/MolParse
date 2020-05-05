@@ -20,15 +20,21 @@ from .povplot import makePovImages
 from .povplot import makePovAnimation
 from .povplot import crop
 
-# Graphing/Analysis
+# Analysis
+from .analysis import bondLengthStats
+from .analysis import bondAngleStats
+
+# Graphing
 from .graphing import showFigs
 from .graphing import graphEnergy
 from .graphing import graphDisplacement
 from .graphing import graphBondLength
 from .graphing import graphBondVibSpec
 
+# Console IO
 from .console_io import printEnergy # needs documentation
 
+# File conversion
 from .convert import pdb2traj # needs documentation
 from .convert import gro2traj # needs documentation
 from .convert import xyz2traj # needs documentation
