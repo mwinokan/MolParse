@@ -7,7 +7,7 @@ from ase.io.trajectory import Trajectory
 
 from .io import read,write
 
-def pdb2traj(input,output,verbosity=1,printScript=False,tagging=True): # move to AMP
+def pdb2traj(input,output,verbosity=1,printScript=False,tagging=True):
   if not input.endswith(".pdb"):
     mout.errorOut("Input is not a PDB!")
     return None
@@ -109,6 +109,30 @@ def gro2traj(input,output,verbosity=1,printScript=False,tagging=True):
       for atoms in in_traj:
         for index,tag in enumerate(taglist):
           atoms[index].tag = tag
+
+  write(output,in_traj,verbosity=verbosity-1)
+
+  if (verbosity == 1):
+    mout.out("Done.")
+
+  return in_traj
+
+def xyz2traj(input,output,verbosity=1,printScript=False):
+  if not input.endswith(".xyz"):
+    mout.errorOut("Input is not a .xyz file!")
+    return None
+
+  if (verbosity > 0):
+    mout.out("Converting "+
+             mcol.file+input+
+             mcol.clear+" to "+
+             mcol.file+output+
+             mcol.clear+" ... ",
+             printScript=printScript,end='')
+    if (verbosity > 1):
+      mout.out("")
+
+  in_traj = read(input,index=":",verbosity=verbosity-1)
 
   write(output,in_traj,verbosity=verbosity-1)
 
