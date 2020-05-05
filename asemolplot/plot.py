@@ -5,12 +5,12 @@ import mout # https://github.com/mwinokan/MPyTools
 
 from . import styles
 
-def makeImage(filename,image,verbosity=1,**style):
+def makeImage(filename,image,verbosity=1,printScript=False,**style):
   if (verbosity > 0):
     mout.out("creating "+mcol.file+
              filename+".png"+
              mcol.clear+" ... ",
-             printScript=True,
+             printScript=printScript,
              end='') # user output
 
   if not 'drawCell' in style:
@@ -45,9 +45,10 @@ def makeImage(filename,image,verbosity=1,**style):
   if (verbosity > 0):
     mout.out("Done.") # user output
 
-def makeImages(filename,subdirectory="amp",interval=1,verbosity=1,filenamePadding=4,index=":",**style):
+def makeImages(filename,subdirectory="amp",interval=1,verbosity=1,filenamePadding=4,printScript=False,index=":",**style):
   
   import os
+  import math
   
   os.system("mkdir -p "+subdirectory)
   os.system("rm "+subdirectory+"/* 2> /dev/null")
@@ -58,22 +59,33 @@ def makeImages(filename,subdirectory="amp",interval=1,verbosity=1,filenamePaddin
   else:
     traj = io.read(filename,index=index)
 
+    global num_traj_images
+    global num_frames
+    num_traj_images = len(traj)
+    num_frames = math.ceil(num_traj_images/interval)
     if verbosity > 0:
-      mout.varOut("Images in trajectory",len(traj))
+      mout.varOut("Trajectory",num_traj_images,unit="images")
+      mout.varOut("Animation",num_frames,unit="frames")
     
     for n, image in enumerate(traj):
       if (n % interval != 0 and n != 100):
         continue
 
-      makeImage(subdirectory+"/"+str(n).zfill(filenamePadding),image,verbosity=verbosity-1,**style)
+      if verbosity == 1:
+        mout.progress(n+1,num_traj_images,prepend="Creating images",printScript=printScript)
+      
+      makeImage(subdirectory+"/"+str(n).zfill(filenamePadding),image,verbosity=verbosity-1,printScript=printScript,**style)
 
 # Using imageio
 # https://stackoverflow.com/questions/753190/programmatically-generate-video-or-animated-gif-in-python
-def makeAnimation(filename,subdirectory="amp",interval=1,gifstyle=styles.gif_standard,verbosity=1,useExisting=False,dryRun=False,**plotstyle):
+def makeAnimation(filename,subdirectory="amp",interval=1,gifstyle=styles.gif_standard,verbosity=1,printScript=False,useExisting=False,dryRun=False,**plotstyle):
   
   if plotstyle == {}:
     plotstyle=styles.standard
   # print(plotstyle)
+
+  global num_traj_images
+  global num_frames
 
   import os
   import imageio
@@ -111,7 +123,7 @@ def makeAnimation(filename,subdirectory="amp",interval=1,gifstyle=styles.gif_sta
       mout.out("generating "+mcol.file+
              subdirectory+"/*.png"+
              mcol.clear+" ... ",
-             printScript=True,end='') # user output
+             printScript=printScript,end='') # user output
     if (verbosity > 1):
       mout.out(" ")
 
@@ -130,14 +142,14 @@ def makeAnimation(filename,subdirectory="amp",interval=1,gifstyle=styles.gif_sta
   import module # https://github.com/mwinokan/MPyTools
   ret = module.module('--expert','load','ImageMagick/7.0.3-1-intel-2016a')
   if ret == 0 and verbosity > 0:
-    mout.out("ImageMagick loaded.",printScript=True)
+    mout.out("ImageMagick loaded.",printScript=printScript)
 
   # Combine the images
   if (verbosity > 0):
     mout.out("loading "+mcol.file+
            subdirectory+"/*.png"+
            mcol.clear+" ... ",
-           printScript=True,
+           printScript=printScript,
            end='') # user output
 
   images = []
@@ -185,6 +197,9 @@ def makeAnimation(filename,subdirectory="amp",interval=1,gifstyle=styles.gif_sta
       image = imageio.imread(filename)
       images.append(image)
 
+      if verbosity > 0:
+        mout.progress(len(images),num_frames,prepend="Cropping & loading images",printScript=printScript)
+
   if (verbosity > 0) and not useExisting:
     mout.out("Done.") # user output
 
@@ -192,7 +207,7 @@ def makeAnimation(filename,subdirectory="amp",interval=1,gifstyle=styles.gif_sta
     mout.out("creating "+mcol.file+
            subdirectory+".gif"+
            mcol.clear+" ... ",
-           printScript=True,
+           printScript=printScript,
            end='') # user output
 
   # Generate the animated GIF:

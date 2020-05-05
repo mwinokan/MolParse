@@ -27,7 +27,7 @@ def loadPov(verbosity=1,purge=True,anaconda=False):
   global isPovLoaded 
   isPovLoaded = True
 
-def makePovImage(filename,image,verbosity=1,rmPovFiles=True,bonds=False,bondradius=1.1,forceLoad=False,**style):
+def makePovImage(filename,image,verbosity=1,rmPovFiles=True,bonds=False,bondradius=1.1,forceLoad=False,printScript=False,**style):
   if (not isPovLoaded or forceLoad):
     loadPov(verbosity=verbosity-1)
 
@@ -35,7 +35,7 @@ def makePovImage(filename,image,verbosity=1,rmPovFiles=True,bonds=False,bondradi
     mout.out("processing "+mcol.file+
              filename+".pov"+
              mcol.clear+" ... ",
-             printScript=True,
+             printScript=printScript,
              end='') # user output
     
   if (not style['drawCell']):
@@ -64,29 +64,38 @@ def makePovImage(filename,image,verbosity=1,rmPovFiles=True,bonds=False,bondradi
   if (verbosity > 0):
     mout.out("Done.") # user output
 
-def makePovImages(filename,subdirectory="pov",interval=1,verbosity=1,rmPovFiles=True,bonds=False,bondradius=1.1,filenamePadding=4,forceLoad=False,index=":",**style):
+def makePovImages(filename,subdirectory="pov",interval=1,verbosity=1,rmPovFiles=True,bonds=False,bondradius=1.1,filenamePadding=4,printScript=False,forceLoad=False,index=":",**style):
   if (not isPovLoaded or forceLoad):
     loadPov(verbosity=verbosity-1)
 
   import os
+  import math
   
   os.system("mkdir -p "+subdirectory)
   os.system("rm "+subdirectory+"/* 2> /dev/null")
 
   if index != ":":
     image = io.read(filename,index=index)
-    makePovImage(subdirectory+"/"+str(index).zfill(filenamePadding),image,verbosity=verbosity-1,bonds=bonds,bondradius=bondradius,rmPovFiles=False,forceLoad=forceLoad,**style)
+    makePovImage(subdirectory+"/"+str(index).zfill(filenamePadding),image,verbosity=verbosity-1,bonds=bonds,bondradius=bondradius,printScript=printScript,rmPovFiles=False,forceLoad=forceLoad,**style)
   else:
     traj = io.read(filename,index=index)
 
+    global num_traj_images
+    global num_frames
+    num_traj_images = len(traj)
+    num_frames = math.ceil(num_traj_images/interval)
     if verbosity > 0:
-      mout.varOut("Images in trajectory",len(traj))
+      mout.varOut("Trajectory",num_traj_images,unit="images")
+      mout.varOut("Animation",num_frames,unit="frames")
     
     for n, image in enumerate(traj):
       if (n % interval != 0 and n != 100):
         continue
 
-      makePovImage(subdirectory+"/"+str(n).zfill(filenamePadding),image,verbosity=verbosity-1,bonds=bonds,bondradius=bondradius,rmPovFiles=False,forceLoad=forceLoad,**style)
+      if verbosity == 1:
+        mout.progress(n+1,num_traj_images,prepend="Creating images",printScript=printScript)
+      
+      makePovImage(subdirectory+"/"+str(n).zfill(filenamePadding),image,verbosity=verbosity-1,bonds=bonds,bondradius=bondradius,printScript=printScript,rmPovFiles=False,forceLoad=forceLoad,**style)
 
   if (rmPovFiles):
     os.system("rm "+subdirectory+"/*.ini")
@@ -118,9 +127,16 @@ def makePovAnimationIM(filename,subdirectory="pov",interval=1,verbosity=1,**styl
 
 # Using imageio
 # https://stackoverflow.com/questions/753190/programmatically-generate-video-or-animated-gif-in-python
-def makePovAnimation(filename,subdirectory="pov",interval=1,gifstyle=styles.gif_standard,verbosity=1,forceLoad=False,useExisting=False,dryRun=False,**plotstyle):
+def makePovAnimation(filename,subdirectory="pov",interval=1,gifstyle=styles.gif_standard,verbosity=1,printScript=False,forceLoad=False,useExisting=False,dryRun=False,**plotstyle):
   if (not isPovLoaded or forceLoad):
     loadPov(verbosity=verbosity-1)
+
+  if plotstyle == {}:
+    plotstyle=styles.standard
+  # print(plotstyle)
+
+  global num_traj_images
+  global num_frames
 
   import os
   import imageio
@@ -158,16 +174,16 @@ def makePovAnimation(filename,subdirectory="pov",interval=1,gifstyle=styles.gif_
       mout.out("generating "+mcol.file+
              subdirectory+"/*.png"+
              mcol.clear+" ... ",
-             printScript=True,end='') # user output
+             printScript=printScript,end='') # user output
     if (verbosity > 1):
       mout.out(" ")
 
     if not dryRun:
       # Generate all the images
-      makePovImages(filename,subdirectory=subdirectory,interval=interval,verbosity=verbosity-1,**plotstyle)
+      makePovImages(filename,subdirectory=subdirectory,interval=interval,printScript=printScript,verbosity=verbosity-1,**plotstyle)
     else:
       # Generate just the first image
-      makePovImages(filename,subdirectory=subdirectory,interval=interval,verbosity=verbosity-1,index=0,**plotstyle)
+      makePovImages(filename,subdirectory=subdirectory,interval=interval,printScript=printScript,verbosity=verbosity-1,index=0,**plotstyle)
     
     if (verbosity == 1):
       mout.out("Done.")
@@ -177,14 +193,14 @@ def makePovAnimation(filename,subdirectory="pov",interval=1,gifstyle=styles.gif_
   import module # https://github.com/mwinokan/MPyTools
   ret = module.module('--expert','load','ImageMagick/7.0.3-1-intel-2016a')
   if ret == 0 and verbosity > 0:
-    mout.out("ImageMagick loaded.",printScript=True)
+    mout.out("ImageMagick loaded.",printScript=printScript)
 
   # Combine the images
   if (verbosity > 0):
     mout.out("loading "+mcol.file+
            subdirectory+"/*.png"+
            mcol.clear+" ... ",
-           printScript=True,
+           printScript=printScript,
            end='') # user output
 
   images = []
@@ -200,11 +216,13 @@ def makePovAnimation(filename,subdirectory="pov",interval=1,gifstyle=styles.gif_
 
       # run different IM commands depending on cropping and shifting:
       if not cropping and not shifting:
+        # os.system("convert "+filename+
+        #           " -background white -extent "+
+        #           str(canv_w)+"x"+
+        #           str(canv_h)+" "+
+        #           filename)
         os.system("convert "+filename+
-                  " -background white -extent "+
-                  str(canv_w)+"x"+
-                  str(canv_h)+" "+
-                  filename)
+                  " -flatten "+filename)
       elif cropping and not shifting:
         os.system("convert "+filename+
                   " -crop "+str(crop_w)+"x"+str(crop_h)+
@@ -232,6 +250,9 @@ def makePovAnimation(filename,subdirectory="pov",interval=1,gifstyle=styles.gif_
       image = imageio.imread(filename)
       images.append(image)
 
+      if verbosity > 0 and not dryRun:
+        mout.progress(len(images),num_frames,prepend="Cropping & loading images",printScript=printScript)
+
   if (verbosity > 0) and not useExisting:
     mout.out("Done.") # user output
 
@@ -239,7 +260,7 @@ def makePovAnimation(filename,subdirectory="pov",interval=1,gifstyle=styles.gif_
     mout.out("creating "+mcol.file+
            subdirectory+".gif"+
            mcol.clear+" ... ",
-           printScript=True,
+           printScript=printScript,
            end='') # user output
 
   # Generate the animated GIF:
@@ -256,7 +277,7 @@ def crop(filename,width=500,height=500,xshift=0,yshift=0,verbosity=1):
   global isPovLoaded
   isPovLoaded = False
   if (verbosity > 0):
-    mout.out("ImageMagick loaded.",printScript=True)
+    mout.out("ImageMagick loaded.",printScript=printScript)
 
   os.system("convert "+filename+
             " -crop "+str(width)+
