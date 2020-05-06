@@ -37,19 +37,27 @@ def bondLengthStats(trajectory,index_pair,printScript=False,verbosity=1,timestep
     xlab = "Time [fs]"
     xUnit = "picosecond"
 
-  for n, atoms in enumerate(trajectory):
-    if timestep is None:
-      xdata.append(n)
-    else:
-      xdata.append(n*timestep/units.fs)
+  if len(trajectory) > 1:
 
-    dist = atoms.get_distance(index1,index2)
+    for n, atoms in enumerate(trajectory):
+      if timestep is None:
+        xdata.append(n)
+      else:
+        xdata.append(n*timestep/units.fs)
 
-    ydata.append(dist)
+      dist = atoms.get_distance(index1,index2)
 
-  val,err,fit_func = mplot.fit(xdata,ydata,rank=0,verbosity=verbosity-1,title=bond_title,yUnit=yUnit,xUnit=xUnit)
+      ydata.append(dist)
 
-  mout.varOut(bond_title,val,error=err,unit=yUnit,valCol=mcol.result)
+    val,err,fit_func = mplot.fit(xdata,ydata,rank=0,verbosity=verbosity-1,title=bond_title,yUnit=yUnit,xUnit=xUnit)
+
+  else:
+
+    val = trajectory[0].get_distance(index1,index2)
+    err = None
+
+  if verbosity > 0:
+    mout.varOut(bond_title,val,error=err,unit=yUnit,valCol=mcol.result)
 
   if returnData:
     return val, err, bond_title, xdata, ydata
@@ -99,17 +107,23 @@ def bondAngleStats(trajectory,index_triplet,printScript=False,verbosity=1,timest
     xlab = "Time [fs]"
     xUnit = "picosecond"
 
-  for n, atoms in enumerate(trajectory):
-    if timestep is None:
-      xdata.append(n)
-    else:
-      xdata.append(n*timestep/units.fs)
+  if len(trajectory) > 1:
 
-    ang = atoms.get_angle(index1,index2,index3)
+    for n, atoms in enumerate(trajectory):
+      if timestep is None:
+        xdata.append(n)
+      else:
+        xdata.append(n*timestep/units.fs)
 
-    ydata.append(ang)
+      ang = atoms.get_angle(index1,index2,index3)
 
-  val,err,fit_func = mplot.fit(xdata,ydata,rank=0,verbosity=verbosity-1,title=bond_title,yUnit=yUnit,xUnit=xUnit)
+      ydata.append(ang)
+
+    val,err,fit_func = mplot.fit(xdata,ydata,rank=0,verbosity=verbosity-1,title=bond_title,yUnit=yUnit,xUnit=xUnit)
+
+  else:
+    val = trajectory[0].get_angle(index1,index2,index3)
+    err = None
 
   mout.varOut(bond_title,val,error=err,unit=yUnit,valCol=mcol.result)
 
