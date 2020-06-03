@@ -131,3 +131,13 @@ def bondAngleStats(trajectory,index_triplet,printScript=False,verbosity=1,timest
     return val, err, bond_title, xdata, ydata
   else:
     return val, err, bond_title
+
+def getCentreOfMass(atoms):
+
+  positions = atoms.get_positions()
+
+  this_com = [sum([pos[0] for pos in positions])/len(positions),
+              sum([pos[1] for pos in positions])/len(positions),
+              sum([pos[2] for pos in positions])/len(positions)]
+
+  print(this_com)

@@ -23,6 +23,7 @@ from .povplot import crop
 # Analysis
 from .analysis import bondLengthStats
 from .analysis import bondAngleStats
+from .analysis import getCentreOfMass
 
 # Graphing
 from .graphing import showFigs
