@@ -104,7 +104,7 @@ def graphDisplacement(trajectory,show=True,filename=None,relative=True,verbosity
   if (verbosity > 0):
     mout.out("Done.") # user output
 
-def graphBondLength(trajectory,indices,printScript=False,show=True,filename=None,verbosity=2,timestep=None,title=None,fitOrder=None,yUnit="Angstroms"):
+def graphBondLength(trajectory,indices,printScript=False,show=True,filename=None,fitMin=None,fitMax=None,verbosity=2,timestep=None,title=None,fitOrder=None,yUnit="Angstroms"):
   """
     Graph the bond lengths (displacement) between atoms.
 
@@ -148,7 +148,7 @@ def graphBondLength(trajectory,indices,printScript=False,show=True,filename=None
       if len(xdata) < fitOrder+1:
         mout.warningOut("Not enough data-points for fitting.")
         fitOrder = None
-      val,err,fit_func = mplot.fit(xdata,ydata,rank=fitOrder,verbosity=verbosity-1,title=title,yUnit=yUnit,xUnit=xUnit)
+      val,err,fit_func = mplot.fit(xdata,ydata,rank=fitOrder,verbosity=verbosity-1,title=title,fitMin=fitMin,fitMax=fitMax,yUnit=yUnit,xUnit=xUnit)
       text = mplot.getCoeffStr(val,err,1,yUnit=yUnit,xUnit=xUnit)
       mplot.graph2D(xdata,ydata,fitFunc=fit_func,ytitles=labels,show=show,xlab=xlab,ylab="Distance [Angstrom]",filename=filename,title=title,verbosity=verbosity-1,subtitle=text)
 
@@ -166,7 +166,7 @@ def graphBondLength(trajectory,indices,printScript=False,show=True,filename=None
       if len(xdata) < fitOrder+1:
         mout.warningOut("Not enough data-points for fitting.")
         fitOrder = None
-      val,err,fit_func = mplot.fit(xdata,ydata,rank=fitOrder,verbosity=verbosity-1,title=title,yUnit=yUnit,xUnit=xUnit)
+      val,err,fit_func = mplot.fit(xdata,ydata,rank=fitOrder,verbosity=verbosity-1,fitMin=fitMin,fitMax=fitMax,title=title,yUnit=yUnit,xUnit=xUnit)
       text = mplot.getCoeffStr(val,err,1,yUnit=yUnit,xUnit=xUnit)
       mplot.graph2D(xdata,ydata,fitFunc=fit_func,show=show,xlab=xlab,ylab="Distance [Angstrom]",filename=filename,title=label,verbosity=verbosity-1,subtitle=text)
 
