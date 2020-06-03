@@ -40,6 +40,11 @@ argparser.add_argument("-rx","--rotate-x",type=float,help="Rotation x")
 argparser.add_argument("-ry","--rotate-y",type=float,help="Rotation x")
 argparser.add_argument("-rz","--rotate-z",type=float,help="Rotation x")
 
+argparser.add_argument("-cw","--width",type=int,help="Canvas Width")
+argparser.add_argument("-ch","--height",type=int,help="Canvas Height")
+argparser.add_argument("-c","--crop",nargs=2,help="Crop width and height")
+argparser.add_argument("-cs","--crop-shift",nargs=2,help="Crop-shift x and y")
+
 args = argparser.parse_args()
 
 ##########################################################################
@@ -80,6 +85,18 @@ if args.rotate_x is not None or args.rotate_y is not None or args.rotate_z is no
 
 custom_style["canvas_width"] = 1200
 custom_style["canvas_height"] = 1200
+
+if args.width is not None:
+  custom_style["canvas_width"] = args.width
+if args.height is not None:
+  custom_style["canvas_height"] = args.height
+
+if args.crop is not None:
+  custom_style["crop_w"] = args.crop[0]
+  custom_style["crop_h"] = args.crop[1]
+if args.crop_shift is not None:
+  custom_style["crop_x"] = args.crop_shift[0]
+  custom_style["crop_y"] = args.crop_shift[1]
 
 if not args.povray:
   custom_style["scale"] = custom_style["canvas_width"]/500 * 20
