@@ -3,7 +3,7 @@ import mcol # https://github.com/mwinokan/MPyTools
 import mout # https://github.com/mwinokan/MPyTools
 import mplot # https://github.com/mwinokan/MPyTools
 
-def bondLengthStats(trajectory,index_pair,printScript=False,verbosity=1,timestep=None,yUnit="Angstroms",returnData=False):
+def bondLengthStats(trajectory,index_pair,printScript=False,verbosity=1,timestep=None,yUnit="Angstroms",fitMin=None,fitMax=None,returnData=False):
 
   atom_symbols = trajectory[0].get_chemical_symbols()
   atom_tags = trajectory[0].get_tags()
@@ -40,6 +40,7 @@ def bondLengthStats(trajectory,index_pair,printScript=False,verbosity=1,timestep
   if len(trajectory) > 1:
 
     for n, atoms in enumerate(trajectory):
+
       if timestep is None:
         xdata.append(n)
       else:
@@ -49,7 +50,7 @@ def bondLengthStats(trajectory,index_pair,printScript=False,verbosity=1,timestep
 
       ydata.append(dist)
 
-    val,err,fit_func = mplot.fit(xdata,ydata,rank=0,verbosity=verbosity-1,title=bond_title,yUnit=yUnit,xUnit=xUnit)
+    val,err,fit_func = mplot.fit(xdata,ydata,rank=0,verbosity=verbosity-1,fitMin=fitMin,fitMax=fitMax,title=bond_title,yUnit=yUnit,xUnit=xUnit)
 
   else:
 
@@ -65,7 +66,7 @@ def bondLengthStats(trajectory,index_pair,printScript=False,verbosity=1,timestep
     return val, err, bond_title
 
 
-def bondAngleStats(trajectory,index_triplet,printScript=False,verbosity=1,timestep=None,yUnit="degrees",returnData=False):
+def bondAngleStats(trajectory,index_triplet,printScript=False,verbosity=1,timestep=None,fitMin=None,fitMax=None,yUnit="degrees",returnData=False):
 
   atom_symbols = trajectory[0].get_chemical_symbols()
   atom_tags = trajectory[0].get_tags()
@@ -119,7 +120,7 @@ def bondAngleStats(trajectory,index_triplet,printScript=False,verbosity=1,timest
 
       ydata.append(ang)
 
-    val,err,fit_func = mplot.fit(xdata,ydata,rank=0,verbosity=verbosity-1,title=bond_title,yUnit=yUnit,xUnit=xUnit)
+    val,err,fit_func = mplot.fit(xdata,ydata,rank=0,verbosity=verbosity-1,fitMin=fitMin,fitMax=fitMax,title=bond_title,yUnit=yUnit,xUnit=xUnit)
 
   else:
     val = trajectory[0].get_angle(index1,index2,index3)
