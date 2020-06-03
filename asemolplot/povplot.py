@@ -206,7 +206,7 @@ def makePovAnimation(filename,subdirectory="pov",interval=1,gifstyle=styles.gif_
   images = []
 
   # loop over all files in the subdirectory:
-  for file in os.listdir(subdirectory):
+  for file in sorted(os.listdir(subdirectory)):
 
     # get the relative path to the file:
     filename = subdirectory+"/"+file

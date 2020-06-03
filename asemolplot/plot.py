@@ -154,8 +154,10 @@ def makeAnimation(filename,subdirectory="amp",interval=1,gifstyle=styles.gif_sta
 
   images = []
 
+  # print(os.listdir(subdirectory))
+
   # loop over all files in the subdirectory:
-  for file in os.listdir(subdirectory):
+  for file in sorted(os.listdir(subdirectory)):
 
     # get the relative path to the file:
     filename = subdirectory+"/"+file
@@ -177,6 +179,12 @@ def makeAnimation(filename,subdirectory="amp",interval=1,gifstyle=styles.gif_sta
                   str(crop_w)+"x"+
                   str(crop_h)+" "+
                   filename)
+        # print("convert "+filename+
+        #           " -crop "+str(crop_w)+"x"+str(crop_h)+
+        #           " -background white -extent "+
+        #           str(crop_w)+"x"+
+        #           str(crop_h)+" "+
+        #           filename)
       elif shifting and not cropping:
         os.system("convert "+filename+
                   " -crop +"+str(crop_x)+"+"+str(crop_y)+
@@ -197,7 +205,9 @@ def makeAnimation(filename,subdirectory="amp",interval=1,gifstyle=styles.gif_sta
       image = imageio.imread(filename)
       images.append(image)
 
-      if verbosity > 0:
+      # print(len(images),filename)
+
+      if verbosity > 0 and not dryRun and not useExisting:
         mout.progress(len(images),num_frames,prepend="Cropping & loading images",printScript=printScript)
 
   if (verbosity > 0) and not useExisting:
