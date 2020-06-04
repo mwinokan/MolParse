@@ -3,7 +3,7 @@ import mcol # https://github.com/mwinokan/MPyTools
 import mout # https://github.com/mwinokan/MPyTools
 import mplot # https://github.com/mwinokan/MPyTools
 
-def bondLengthStats(trajectory,index_pair,printScript=False,verbosity=1,timestep=None,yUnit="Angstroms",fitMin=None,fitMax=None,returnData=False):
+def bondLengthStats(trajectory,index_pair,printScript=False,verbosity=1,timestep=None,yUnit="Angstroms",fitMin=None,fitMax=None,returnData=False,dataFile=None):
 
   atom_symbols = trajectory[0].get_chemical_symbols()
   atom_tags = trajectory[0].get_tags()
@@ -57,8 +57,7 @@ def bondLengthStats(trajectory,index_pair,printScript=False,verbosity=1,timestep
     val = trajectory[0].get_distance(index1,index2)
     err = None
 
-  if verbosity > 0:
-    mout.varOut(bond_title,val,error=err,unit=yUnit,valCol=mcol.result)
+  mout.varOut(bond_title,val,error=err,unit=yUnit,valCol=mcol.result,dataFile=dataFile,verbosity=verbosity)
 
   if returnData:
     return val, err, bond_title, xdata, ydata
@@ -66,7 +65,7 @@ def bondLengthStats(trajectory,index_pair,printScript=False,verbosity=1,timestep
     return val, err, bond_title
 
 
-def bondAngleStats(trajectory,index_triplet,printScript=False,verbosity=1,timestep=None,fitMin=None,fitMax=None,yUnit="degrees",returnData=False):
+def bondAngleStats(trajectory,index_triplet,printScript=False,verbosity=1,timestep=None,fitMin=None,fitMax=None,yUnit="degrees",returnData=False,dataFile=None):
 
   atom_symbols = trajectory[0].get_chemical_symbols()
   atom_tags = trajectory[0].get_tags()
@@ -126,7 +125,7 @@ def bondAngleStats(trajectory,index_triplet,printScript=False,verbosity=1,timest
     val = trajectory[0].get_angle(index1,index2,index3)
     err = None
 
-  mout.varOut(bond_title,val,error=err,unit=yUnit,valCol=mcol.result)
+  mout.varOut(bond_title,val,error=err,unit=yUnit,valCol=mcol.result,dataFile=dataFile,verbosity=verbosity)
 
   if returnData:
     return val, err, bond_title, xdata, ydata

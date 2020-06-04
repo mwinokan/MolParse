@@ -30,6 +30,7 @@ from .graphing import showFigs
 from .graphing import graphEnergy
 from .graphing import graphDisplacement
 from .graphing import graphBondLength
+from .graphing import graphBondAngle
 from .graphing import graphBondVibSpec
 
 # Console IO
