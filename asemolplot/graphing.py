@@ -105,18 +105,11 @@ def graphDisplacement(trajectory,show=True,filename=None,relative=True,verbosity
   if (verbosity > 0):
     mout.out("Done.") # user output
 
-def graphBondLength(trajectory,indices,printScript=False,show=True,filename=None,fitMin=None,fitMax=None,verbosity=2,timestep=None,title=None,fitOrder=None,yUnit="Angstroms",dataFile=None):
+def graphBondLength(trajectory,indices,printScript=False,show=True,filename=None,fitMin=None,fitMax=None,verbosity=2,timestep=None,title=None,fitOrder=None,yUnit="Angstroms",dataFile=None,ymin=0,ymax=None,xmin=None,xmax=None):
   """
     Graph the bond lengths (displacement) between atoms.
 
   """
-
-  if (verbosity > 0):
-    mout.out("graphing "+mcol.varName+
-             title+
-             mcol.clear+" ... ",
-             printScript=printScript,
-             end='') # user output
 
   many = any(isinstance(el,list) for el in indices)
 
@@ -155,7 +148,7 @@ def graphBondLength(trajectory,indices,printScript=False,show=True,filename=None
         dataFile.write('\n')
       val,err,fit_func = mplot.fit(xdata,ydata,rank=fitOrder,verbosity=verbosity-1,title=title,fitMin=fitMin,fitMax=fitMax,yUnit=yUnit,xUnit=xUnit,dataFile=dataFile)
       text = mplot.getCoeffStr(val,err,1,yUnit=yUnit,xUnit=xUnit)
-      mplot.graph2D(xdata,ydata,fitFunc=fit_func,ytitles=labels,show=show,xlab=xlab,ylab="Distance [Angstrom]",filename=filename,title=title,verbosity=verbosity,subtitle=text)
+      mplot.graph2D(xdata,ydata,fitFunc=fit_func,ytitles=labels,show=show,xlab=xlab,ylab="Distance [Angstrom]",filename=filename,title=title,verbosity=verbosity,subtitle=text,ymin=ymin,ymax=ymax,xmin=xmin,xmax=xmax)
 
   else:
 
@@ -177,12 +170,7 @@ def graphBondLength(trajectory,indices,printScript=False,show=True,filename=None
         dataFile.write('\n')
       val,err,fit_func = mplot.fit(xdata,ydata,rank=fitOrder,verbosity=verbosity-1,fitMin=fitMin,fitMax=fitMax,title=title,yUnit=yUnit,xUnit=xUnit,dataFile=dataFile)
       text = mplot.getCoeffStr(val,err,1,yUnit=yUnit,xUnit=xUnit)
-      mplot.graph2D(xdata,ydata,fitFunc=fit_func,show=show,xlab=xlab,ylab="Distance [Angstrom]",filename=filename,title=label,verbosity=verbosity,subtitle=text)
-
-  if (verbosity > 1):
-    mout.out("") # user output
-  if (verbosity == 1):
-    mout.out("Done.") # user output
+      mplot.graph2D(xdata,ydata,fitFunc=fit_func,show=show,xlab=xlab,ylab="Distance [Angstrom]",filename=filename,title=label,verbosity=verbosity,subtitle=text,ymin=ymin,ymax=ymax,xmin=xmin,xmax=xmax)
 
   if fitOrder is not None:
     return val, err, fit_func
@@ -226,18 +214,11 @@ def graphBondVibSpec(trajectory,indices,printScript=False,show=True,filename=Non
 def showFigs(verbosity=1):
   mplot.show(verbosity=verbosity)
 
-def graphBondAngle(trajectory,indices,printScript=False,show=True,filename=None,fitMin=None,fitMax=None,verbosity=2,timestep=None,title=None,fitOrder=None,yUnit="Degrees",dataFile=None):
+def graphBondAngle(trajectory,indices,printScript=False,show=True,filename=None,fitMin=None,fitMax=None,verbosity=2,timestep=None,title=None,fitOrder=None,yUnit="Degrees",dataFile=None,ymin=0,ymax=180,xmin=None,xmax=None):
   """
     Graph the bond angle (acute) between atoms.
 
   """
-
-  if (verbosity > 0):
-    mout.out("graphing "+mcol.varName+
-             title+
-             mcol.clear+" ... ",
-             printScript=printScript,
-             end='') # user output
 
   many = any(isinstance(el,list) for el in indices)
 
@@ -276,7 +257,7 @@ def graphBondAngle(trajectory,indices,printScript=False,show=True,filename=None,
         dataFile.write('\n')
       val,err,fit_func = mplot.fit(xdata,ydata,rank=fitOrder,verbosity=verbosity-1,title=title,fitMin=fitMin,fitMax=fitMax,yUnit=yUnit,xUnit=xUnit,dataFile=dataFile)
       text = mplot.getCoeffStr(val,err,1,yUnit=yUnit,xUnit=xUnit)
-      mplot.graph2D(xdata,ydata,fitFunc=fit_func,ytitles=labels,show=show,xlab=xlab,ylab="Angle [Degrees]",filename=filename,title=title,verbosity=verbosity,subtitle=text)
+      mplot.graph2D(xdata,ydata,fitFunc=fit_func,ytitles=labels,show=show,xlab=xlab,ylab="Angle [Degrees]",filename=filename,title=title,verbosity=verbosity,subtitle=text,ymin=ymin,ymax=ymax,xmin=xmin,xmax=xmax)
 
   else:
 
@@ -293,17 +274,12 @@ def graphBondAngle(trajectory,indices,printScript=False,show=True,filename=None,
         mout.warningOut("Not enough data-points for fitting.")
         fitOrder = None
       if title is not None:
-        dataFile.write('#')
+        dataFile.write('# ')
         dataFile.write(title)
         dataFile.write('\n')
       val,err,fit_func = mplot.fit(xdata,ydata,rank=fitOrder,verbosity=verbosity-1,fitMin=fitMin,fitMax=fitMax,title=title,yUnit=yUnit,xUnit=xUnit,dataFile=dataFile)
       text = mplot.getCoeffStr(val,err,1,yUnit=yUnit,xUnit=xUnit)
-      mplot.graph2D(xdata,ydata,fitFunc=fit_func,show=show,xlab=xlab,ylab="Distance [Angstrom]",filename=filename,title=label,verbosity=verbosity,subtitle=text)
-
-  if (verbosity > 1):
-    mout.out("") # user output
-  if (verbosity == 1):
-    mout.out("Done.") # user output
+      mplot.graph2D(xdata,ydata,fitFunc=fit_func,show=show,xlab=xlab,ylab="Distance [Angstrom]",filename=filename,title=label,verbosity=verbosity,subtitle=text,ymin=ymin,ymax=ymax,xmin=xmin,xmax=xmax)
 
   if fitOrder is not None:
     return val, err, fit_func
