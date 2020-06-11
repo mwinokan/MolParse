@@ -103,10 +103,34 @@ if not args.povray:
 
 # print(custom_style["rotation"])
 
-if infile.endswith(".pdb"):
+if not infile.endswith(".pdb"):
+  mout.warningOut("Unrecognised file type, attempting conversion!")
+  thing = amp.read(infile)  
+  amp.write("__temp__.pdb",thing)
+  infile = "__temp__.pdb"
+
+infile_read = open(infile,'r').read()
+
+model_count = infile_read.count("MODEL")
+
+mout.varOut("Models in PDB",model_count)
+
+if model_count > 1:
+  mout.headerOut("Animating...")
+
   if args.povray:
     amp.makePovAnimation(infile,subdirectory=out_prefix,verbosity=verbosity,interval=args.interval,dryRun=args.dry_run,**custom_style)
   else:
     amp.makeAnimation(infile,subdirectory=out_prefix,verbosity=verbosity,interval=args.interval,dryRun=args.dry_run,**custom_style)
+
 else:
-  mout.errorOut("Unrecognised file type!",fatal=True)  
+  mout.headerOut("Rendering...")
+
+  atoms = amp.read(infile)
+
+  if args.povray:
+    amp.makePovImage(out_prefix,atoms,verbosity=verbosity,**custom_style)
+  else:
+    amp.makeImage(out_prefix,atoms,verbosity=verbosity,**custom_style)
+
+exit()
