@@ -41,6 +41,9 @@ def makePovImage(filename,image,verbosity=1,rmPovFiles=True,bonds=False,bondradi
   if (not style['drawCell']):
     image.set_cell([0,0,0])
   del style['drawCell']
+  
+  if "canvas_height" in style:
+    del style['canvas_height']
 
   if (bonds):
     from ase.io.pov import get_bondpairs, set_high_bondorder_pairs
