@@ -6,9 +6,13 @@ import mout # https://github.com/mwinokan/MPyTools
 from . import styles
 
 def makeImage(filename,image,verbosity=1,printScript=False,**style):
+
+  if not filename.endswith(".png"):
+    filename = filename+".png"
+
   if (verbosity > 0):
     mout.out("creating "+mcol.file+
-             filename+".png"+
+             filename+
              mcol.clear+" ... ",
              printScript=printScript,
              end='') # user output
@@ -39,7 +43,7 @@ def makeImage(filename,image,verbosity=1,printScript=False,**style):
   # if 'transparent' in style:
   #   del style['transparent']
 
-  io.write(filename+'.png',image,
+  io.write(filename,image,
     **style)
   
   if (verbosity > 0):
