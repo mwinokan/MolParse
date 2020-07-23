@@ -75,6 +75,7 @@ def makePovImages(filename,subdirectory="pov",interval=1,verbosity=1,rmPovFiles=
   import math
   
   os.system("mkdir -p "+subdirectory)
+  # os.system("rm -v "+subdirectory+"/* ")
   os.system("rm "+subdirectory+"/* 2> /dev/null")
 
   if index != ":":
@@ -171,6 +172,12 @@ def makePovAnimation(filename,subdirectory="pov",interval=1,gifstyle=styles.gif_
   if "crop_x" in plotstyle: del plotstyle["crop_x"]
   if "crop_y" in plotstyle: del plotstyle["crop_y"]
 
+  mout.varOut("cropping",cropping)
+  if cropping:
+    mout.varOut("crop_w",crop_w)
+    mout.varOut("crop_h",crop_h)
+  mout.varOut("shifting",shifting)
+
   # Generate the PNG's
   if not useExisting:
     if (verbosity > 0):
@@ -217,6 +224,8 @@ def makePovAnimation(filename,subdirectory="pov",interval=1,gifstyle=styles.gif_
     # check if the file is a PNG:
     if file.endswith(".png"):
 
+      tempname=subdirectory+"/"+"temp.png"
+
       # run different IM commands depending on cropping and shifting:
       if not cropping and not shifting:
         # os.system("convert "+filename+
@@ -225,21 +234,28 @@ def makePovAnimation(filename,subdirectory="pov",interval=1,gifstyle=styles.gif_
         #           str(canv_h)+" "+
         #           filename)
         os.system("convert "+filename+
-                  " -flatten "+filename)
+                  " -flatten "+tempname)
       elif cropping and not shifting:
         os.system("convert "+filename+
                   " -crop "+str(crop_w)+"x"+str(crop_h)+
                   " -background white -extent "+
                   str(crop_w)+"x"+
                   str(crop_h)+" "+
-                  filename)
+                  tempname)
+        print("convert "+filename+
+                  " -crop "+str(crop_w)+"x"+str(crop_h)+
+                  " -background white -extent "+
+                  str(crop_w)+"x"+
+                  str(crop_h)+" "+
+                  tempname)
+        os.system("ls NEB")
       elif shifting and not cropping:
         os.system("convert "+filename+
                   " -crop +"+str(crop_x)+"+"+str(crop_y)+
                   " -background white -extent "+
                   str(canv_w)+"x"+
                   str(canv_h)+" "+
-                  filename)
+                  tempname)
       else:
         os.system("convert "+filename+
                   " -crop "+str(crop_w)+"x"+str(crop_h)+
@@ -247,7 +263,9 @@ def makePovAnimation(filename,subdirectory="pov",interval=1,gifstyle=styles.gif_
                   " -background white -extent "+
                   str(crop_w)+"x"+
                   str(crop_h)+" "+
-                  filename)
+                  tempname)
+
+      os.system("mv "+tempname+" "+filename)
 
       # Read in the image and append to the image array
       image = imageio.imread(filename)
