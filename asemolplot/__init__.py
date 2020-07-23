@@ -1,9 +1,16 @@
 
 # import functions
 
-# ase.io wrappers
+# Custom IO
 from .io import read
 from .io import write
+from .io import parsePDB
+
+# Custom Classes
+from .chain_res_atoms import System
+from .chain_res_atoms import Chain
+from .chain_res_atoms import Residue
+from .chain_res_atoms import Atom
 
 # ase.visualize wrappers
 from .gui import view
@@ -44,4 +51,5 @@ from .convert import xyz2traj # needs documentation
 # import subpackages
 
 from . import styles
+from . import units
 # from . import analysis
