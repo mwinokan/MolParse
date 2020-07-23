@@ -39,6 +39,8 @@ argparser.add_argument("-i","--interval", type=int,default=1,help="Animation fra
 argparser.add_argument("-rx","--rotate-x",type=float,help="Rotation x")
 argparser.add_argument("-ry","--rotate-y",type=float,help="Rotation x")
 argparser.add_argument("-rz","--rotate-z",type=float,help="Rotation x")
+argparser.add_argument("-s","--scale",type=float,help="Scale for non PoV-ray")
+argparser.add_argument("-fr","--frame-rate",type=int,help="Animation frame rate")
 
 argparser.add_argument("-cw","--width",type=int,help="Canvas Width")
 argparser.add_argument("-ch","--height",type=int,help="Canvas Height")
@@ -99,13 +101,21 @@ if args.crop_shift is not None:
   custom_style["crop_y"] = args.crop_shift[1]
 
 if not args.povray:
-  custom_style["scale"] = custom_style["canvas_width"]/500 * 20
+  if args.scale is not None:
+    # custom_style["scale"] = custom_style["canvas_width"]/500 * 20
+    custom_style["scale"] = args.scale*custom_style["canvas_width"]/4
+    print(custom_style["scale"])
+
+custom_gifstyle = amp.styles.gif_standard.copy()
+
+if args.frame_rate is not None:
+  custom_gifstyle["fps"] = args.frame_rate
 
 # print(custom_style["rotation"])
 
 if not infile.endswith(".pdb"):
   mout.warningOut("Unrecognised file type, attempting conversion!")
-  thing = amp.read(infile)  
+  thing = amp.read(infile,index=":")  
   amp.write("__temp__.pdb",thing)
   infile = "__temp__.pdb"
 
@@ -119,9 +129,9 @@ if model_count > 1:
   mout.headerOut("Animating...")
 
   if args.povray:
-    amp.makePovAnimation(infile,subdirectory=out_prefix,verbosity=verbosity,interval=args.interval,dryRun=args.dry_run,**custom_style)
+    amp.makePovAnimation(infile,subdirectory=out_prefix,verbosity=verbosity,interval=args.interval,dryRun=args.dry_run,gifstyle=custom_gifstyle,**custom_style)
   else:
-    amp.makeAnimation(infile,subdirectory=out_prefix,verbosity=verbosity,interval=args.interval,dryRun=args.dry_run,**custom_style)
+    amp.makeAnimation(infile,subdirectory=out_prefix,verbosity=verbosity,interval=args.interval,dryRun=args.dry_run,gifstyle=custom_gifstyle,**custom_style)
 
 else:
   mout.headerOut("Rendering...")
