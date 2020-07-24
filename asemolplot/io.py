@@ -178,7 +178,7 @@ def parsePDBAtomLine(line,index):
   
   return atom
 
-def writeCJSON(filename,system,use_atom_types=False):
+def writeCJSON(filename,system,use_atom_types=False,gulp_names=False):
 
   # Check that the input is the correct class
   assert isinstance(system,System)
@@ -186,10 +186,18 @@ def writeCJSON(filename,system,use_atom_types=False):
   # Load module
   import json
 
-  if use_atom_types:
-    names = system.atom_names(wRes=True,noPrime=True)
+  if gulp_names:
+    use_atom_types = True
+    names = []
+    temp_names = system.FF_atomtypes
+    for name in temp_names:
+      name = name[0]+"_"+name[1:]
+      names.append(name)
   else:
-    names = system.FF_atomtypes
+    if not use_atom_types:
+      names = system.atom_names(wRes=True,noPrime=True)
+    else:
+      names = system.FF_atomtypes
 
   # Create the dictionary
   data = {}
