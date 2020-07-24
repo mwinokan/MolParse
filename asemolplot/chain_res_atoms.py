@@ -69,9 +69,9 @@ class System:
       atomtype_list += chain.FF_atomtypes
     return atomtype_list
 
-  def write_CJSON(self,filename,use_atom_types=False):
+  def write_CJSON(self,filename,use_atom_types=False,gulp_names=False):
     from .io import writeCJSON
-    writeCJSON(filename,self,use_atom_types=use_atom_types)
+    writeCJSON(filename,self,use_atom_types=use_atom_types,gulp_names=gulp_names)
 
 class Chain:
 
