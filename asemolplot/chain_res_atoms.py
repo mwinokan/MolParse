@@ -21,6 +21,10 @@ class System:
       num_atoms += chain.num_atoms
     return num_atoms
 
+  @property
+  def num_chains(self):
+    return len(self.chains)
+    
   def atom_names(self,wRes=False,noPrime=False):
     names_list = []
     for chain in self.chains:
@@ -61,6 +65,10 @@ class System:
     for chain in self.chains:
       residues += chain.residues
     return residues
+
+  @property
+  def res_names(self):
+    return [res.name for res in self.residues]
 
   @property
   def FF_atomtypes(self):
@@ -130,6 +138,19 @@ class Chain:
     for residue in self.residues:
       atomtype_list += residue.FF_atomtypes
     return atomtype_list
+
+  def index_from_name(self,namestring):
+
+    search_residue, search_atom = namestring.split("_")
+
+    for index,atom in enumerate(self.atoms):
+      if atom.residue == search_residue and atom.name == search_atom:
+        return index
+
+    mout.errorOut("Atom "+
+              mcol.arg+search_atom+
+              mcol.error+" could not be found in residue"+
+              mcol.arg+search_residue+" of chain "+mcol.arg+self.name,fatal=True)
 
 class Residue:
   def __init__(self,name,number=None,chain=None):
@@ -216,7 +237,11 @@ class Atom:
                residue,
                chain=None,
                res_number=None,
-               charge=0.0,FF_atomtype=None):
+               charge=0.0,
+               FF_atomtype=None,
+               mass=None,
+               LJ_sigma=None,
+               LJ_epsilon=None):
 
     self._name = name
     self._atomic_number = None
@@ -229,6 +254,9 @@ class Atom:
     self.res_number = res_number
     self.charge = charge
     self.FF_atomtype = FF_atomtype
+    self.mass = mass
+    self.LJ_sigma = LJ_sigma
+    self.LJ_epsilon = LJ_epsilon
 
   def print(self):
 
