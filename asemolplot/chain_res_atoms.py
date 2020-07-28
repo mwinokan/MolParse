@@ -4,6 +4,10 @@ import mout # https://github.com/mwinokan/MPyTools
 
 from ase.data import atomic_numbers as ase_atomic_numbers
 
+from .analysis import getDisplacement,getAngle
+
+import copy
+
 class System:
 
   def __init__(self,name):
@@ -81,6 +85,20 @@ class System:
     from .io import writeCJSON
     writeCJSON(filename,self,use_atom_types=use_atom_types,gulp_names=gulp_names)
 
+  def set_coordinates(self,reference):
+
+    if type(reference) is str:
+      from ase.io import read
+      atoms = read(reference)
+    else:
+      atoms = reference
+
+    for index,atom in enumerate(self.atoms):
+      atom.position = atoms[index].position
+
+  def copy(self):
+    return copy.deepcopy(self)
+  
 class Chain:
 
   def __init__(self,name):
@@ -97,6 +115,10 @@ class Chain:
     for residue in self.residues:
       num_atoms += residue.num_atoms
     return num_atoms
+
+  @property
+  def res_names(self):
+    return [res.name for res in self.residues]
 
   def atom_names(self,wRes=False,noPrime=False):
     names_list = []
@@ -151,6 +173,9 @@ class Chain:
               mcol.arg+search_atom+
               mcol.error+" could not be found in residue"+
               mcol.arg+search_residue+" of chain "+mcol.arg+self.name,fatal=True)
+
+  def copy(self):
+    return copy.deepcopy(self)
 
 class Residue:
   def __init__(self,name,number=None,chain=None):
@@ -227,6 +252,45 @@ class Residue:
                   mcol.error+" in residue "+
                   mcol.arg+self.name,fatal=True)
 
+  def index_from_name(self,name):
+    for index,atom in enumerate(self._atoms):
+      if atom.name == name: return index
+    mout.errorOut("No atom "+
+                  mcol.arg+name+
+                  mcol.error+" in residue "+
+                  mcol.arg+self.name,fatal=True)
+
+  def copy(self):
+    return copy.deepcopy(self)
+
+  def get_distance(self,i,j):
+    if type(i) is str:
+      i = self.get_atom(name=i)
+    elif type(i) is int:
+      i = self._atoms[i]
+    if type(j) is str:
+      j = self.get_atom(name=j)
+    elif type(j) is int:
+      j = self._atoms[j]
+
+    return displacement(i.position,j.position)
+
+  def get_angle(self,i,j,k):
+    if type(i) is str:
+      i = self.get_atom(name=i)
+    elif type(i) is int:
+      i = self._atoms[i]
+    if type(j) is str:
+      j = self.get_atom(name=j)
+    elif type(j) is int:
+      j = self._atoms[j]
+    if type(k) is str:
+      k = self.get_atom(name=k)
+    elif type(k) is int:
+      k = self._atoms[k]
+
+    return angle(i.position,j.position,k.position)
+
 class Atom:
 
   def __init__(self,
@@ -290,4 +354,10 @@ class Atom:
   @property
   def position(self):
     return self._position
-  
+
+  @position.setter
+  def position(self,pos):
+    self._position = pos
+
+  def copy(self):
+    return copy.deepcopy(self)

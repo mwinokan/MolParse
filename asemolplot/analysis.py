@@ -141,3 +141,25 @@ def getCentreOfMass(atoms):
               sum([pos[2] for pos in positions])/len(positions)]
 
   print(this_com)
+
+def getDisplacement(position1,position2):
+  x = position1[0] - position2[0] 
+  y = position1[1] - position2[1] 
+  z = position1[2] - position2[2] 
+  d = pow(pow(x,2) + pow(y,2) + pow(z,2),0.5)
+  return d
+
+def getAngle(position1,position2,position3):
+  import numpy as np
+
+  a = np.array(position1)
+  b = np.array(position2)
+  c = np.array(position3)
+
+  ba = a - b
+  bc = c - b
+
+  cosine_angle = np.dot(ba, bc) / (np.linalg.norm(ba) * np.linalg.norm(bc))
+  angle = np.arccos(cosine_angle)
+
+  return np.degrees(angle)
