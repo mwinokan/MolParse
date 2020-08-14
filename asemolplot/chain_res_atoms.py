@@ -64,6 +64,14 @@ class System:
     return atoms
 
   @property
+  def QM_indices(self):
+    index_list = []
+    for index,atom in enumerate(self.atoms):
+      if atom.QM:
+        index_list.append(index)
+    return index_list
+
+  @property
   def residues(self):
     residues = []
     for chain in self.chains:
@@ -73,6 +81,10 @@ class System:
   @property
   def res_names(self):
     return [res.name for res in self.residues]
+
+  @property
+  def num_residues(self):
+    return len(self.residues)
 
   @property
   def FF_atomtypes(self):
@@ -172,7 +184,7 @@ class Chain:
     mout.errorOut("Atom "+
               mcol.arg+search_atom+
               mcol.error+" could not be found in residue"+
-              mcol.arg+search_residue+" of chain "+mcol.arg+self.name,fatal=True)
+              mcol.arg+search_residue+" of chain "+mcol.arg+self.name,fatal=True,code="Chain.1")
 
   def copy(self):
     return copy.deepcopy(self)
@@ -250,7 +262,7 @@ class Residue:
     mout.errorOut("No atom "+
                   mcol.arg+name+
                   mcol.error+" in residue "+
-                  mcol.arg+self.name,fatal=True)
+                  mcol.arg+self.name,fatal=True,code="Residue.1")
 
   def index_from_name(self,name):
     for index,atom in enumerate(self._atoms):
@@ -258,7 +270,7 @@ class Residue:
     mout.errorOut("No atom "+
                   mcol.arg+name+
                   mcol.error+" in residue "+
-                  mcol.arg+self.name,fatal=True)
+                  mcol.arg+self.name,fatal=True,code="Residue.2")
 
   def copy(self):
     return copy.deepcopy(self)
@@ -305,7 +317,8 @@ class Atom:
                FF_atomtype=None,
                mass=None,
                LJ_sigma=None,
-               LJ_epsilon=None):
+               LJ_epsilon=None,
+               QM=False):
 
     self._name = name
     self._atomic_number = None
@@ -321,6 +334,7 @@ class Atom:
     self.mass = mass
     self.LJ_sigma = LJ_sigma
     self.LJ_epsilon = LJ_epsilon
+    self.QM = QM
 
   def print(self):
 
