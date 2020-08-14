@@ -174,11 +174,25 @@ def parsePDBAtomLine(line,index):
   position.append(float(line[39:47].strip()))
   position.append(float(line[47:55].strip()))
 
-  atom = Atom(atom_name,index,pdb_index,position,residue,chain,res_number)
+  end = line[80:]
+
+  if 'QM' in end:
+    isQM = True
+  else:
+    isQM = False
+
+  atom = Atom(atom_name,index,pdb_index,position,residue,chain,res_number,QM=isQM)
   
   return atom
 
-def writeCJSON(filename,system,use_atom_types=False,gulp_names=False):
+def writeCJSON(filename,system,use_atom_types=False,gulp_names=False,noPrime=False,printScript=False,verbosity=1):
+
+  if (verbosity > 0):
+    mout.out("writing "+mcol.file+
+             filename+
+             mcol.clear+" ... ",
+             printScript=printScript,
+             end='') # user output
 
   # Check that the input is the correct class
   assert isinstance(system,System)
@@ -195,7 +209,7 @@ def writeCJSON(filename,system,use_atom_types=False,gulp_names=False):
       names.append(name)
   else:
     if not use_atom_types:
-      names = system.atom_names(wRes=True,noPrime=True)
+      names = system.atom_names(wRes=True,noPrime=noPrime)
     else:
       names = system.FF_atomtypes
 
@@ -217,3 +231,6 @@ def writeCJSON(filename,system,use_atom_types=False,gulp_names=False):
 
   # Write the CJSON file
   with open(filename, 'w') as f: json.dump(data, f,indent=4)
+
+  if (verbosity > 0):
+    mout.out("Done.") # user output
