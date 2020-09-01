@@ -258,8 +258,6 @@ def writeCJSON(filename,system,use_atom_types=False,gulp_names=False,noPrime=Fal
   with open(filename, 'w') as f: json.dump(data, f,indent=4)
 
   if (verbosity > 0):
-<<<<<<< HEAD
-=======
     mout.out("Done.") # user outpu
 
 def writePDB(filename,system,verbosity=1,printScript=False):
