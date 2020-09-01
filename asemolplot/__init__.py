@@ -7,10 +7,10 @@ from .io import write
 from .io import parsePDB
 
 # Custom Classes
-from .chain_res_atoms import System
-from .chain_res_atoms import Chain
-from .chain_res_atoms import Residue
-from .chain_res_atoms import Atom
+from .system import System
+from .chain import Chain
+from .residue import Residue
+from .atom import Atom
 
 # ase.visualize wrappers
 from .gui import view
