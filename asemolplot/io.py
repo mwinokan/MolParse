@@ -339,5 +339,5 @@ def writePDB(filename,system,verbosity=1,printScript=False):
   out_stream.close()
 
   if (verbosity > 0):
->>>>>>> ba9d23d16ec9f161b885d73e29dbd4bb1a505d14
-    mout.out("Done.") # user outpu
+    mout.out("Done.") # user output
+    
