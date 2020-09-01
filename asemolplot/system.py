@@ -4,7 +4,7 @@ import mout # https://github.com/mwinokan/MPyTools
 import copy
 
 from .chain import Chain
-from .bondlist import Connectivity
+# from .bondlist import Connectivity
 
 class System:
 
