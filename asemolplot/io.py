@@ -129,6 +129,10 @@ def parsePDB(pdb,systemName=None):
           break
         if line.startswith("TER"):
           continue
+        if line.startswith("CONECT"):
+          continue
+        if line.startswith("MASTER"):
+          continue
         else:
           ### PARSELINE
           atom = parsePDBAtomLine(line,res_counter)
@@ -163,27 +167,32 @@ def parsePDB(pdb,systemName=None):
 
 def parsePDBAtomLine(line,index):
 
-  atom_name = line[12:17].strip()
-  residue = line[17:21].strip()
-  pdb_index = int(line[5:12].strip())
-  chain = line[21:22]
-  res_number = line[22:26].strip()
+  try:
+    atom_name = line[12:17].strip()
+    residue = line[17:21].strip()
+    pdb_index = int(line[6:12].strip())
+    chain = line[21:22]
+    res_number = line[22:26].strip()
 
-  position = []
-  position.append(float(line[31:39].strip()))
-  position.append(float(line[39:47].strip()))
-  position.append(float(line[47:55].strip()))
+    position = []
+    position.append(float(line[31:39].strip()))
+    position.append(float(line[39:47].strip()))
+    position.append(float(line[47:55].strip()))
 
-  end = line[80:]
+    end = line[80:]
 
-  if 'QM' in end:
-    isQM = True
-  else:
-    isQM = False
+    if 'QM' in end:
+      isQM = True
+    else:
+      isQM = False
 
-  atom = Atom(atom_name,index,pdb_index,position,residue,chain,res_number,QM=isQM)
+    atom = Atom(atom_name,index,pdb_index,position,residue,chain,res_number,QM=isQM)
+    
+    return atom
   
-  return atom
+  except:
+    mout.errorOut(line)
+    mout.errorOut("Problems parsing line "+str(index)+" shown above",fatal=True)
 
 def writeCJSON(filename,system,use_atom_types=False,gulp_names=False,noPrime=False,printScript=False,verbosity=1):
 
@@ -233,4 +242,4 @@ def writeCJSON(filename,system,use_atom_types=False,gulp_names=False,noPrime=Fal
   with open(filename, 'w') as f: json.dump(data, f,indent=4)
 
   if (verbosity > 0):
-    mout.out("Done.") # user output
+    mout.out("Done.") # user outpu
