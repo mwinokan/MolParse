@@ -34,7 +34,7 @@ class Atom:
     self._position = position
     self.residue = residue
     self.chain=chain
-    self.res_number = res_number
+    self.res_number = int(res_number)
     self.charge = charge
     self.FF_atomtype = FF_atomtype
     self.mass = mass
@@ -45,6 +45,8 @@ class Atom:
     self.temp_factor = temp_factor
     self.heterogen = heterogen
     self.charge_str = charge_str
+    self.ter_line = None
+    self.terminal = None
 
   def print(self):
 
@@ -66,6 +68,14 @@ class Atom:
       return namestring.replace("'", "P")
     else:
       return namestring
+
+  def set_name(self,name,verbosity=1):
+    if verbosity > 0:
+      mout.out("Renaming atom "+
+               mcol.arg+self.name+str([self.index])+mcol.clear+" of residue "+
+               mcol.varName+self.residue+str([self.res_number])+
+               mcol.clear+" to "+mcol.arg+name)
+    self._name = name
 
   @property
   def name(self):
