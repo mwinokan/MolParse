@@ -19,12 +19,17 @@ def write(filename,image,verbosity=1,printScript=False,**parameters):
              printScript=printScript,
              end='') # user output
 
-  if filename.endswith(".cjson"):
-    writeCJSON(filename,image)
-  elif filename.endswith(".pdb") and isinstance(image,System):
-    writePDB(filename,image)
-  else:
-    io.write(filename,image,**parameters)
+  try:
+    if filename.endswith(".cjson"):
+      writeCJSON(filename,image)
+    elif filename.endswith(".pdb") and isinstance(image,System):
+      writePDB(filename,image,verbosity=verbosity-1)
+    else:
+      io.write(filename,image,**parameters)
+  except TypeError:
+    mout.out("Fail.")
+    mout.errorOut("Could not write empty object to "+mcol.file+filename,code="amp.io.write[1]",end="")
+    return None
 
   if (verbosity > 0):
     mout.out("Done.") # user output
@@ -38,7 +43,12 @@ def read(filename,index=None,printScript=False,verbosity=1,tagging=True,tagByRes
              printScript=printScript,
              end='') # user output
 
-  atoms = io.read(filename,index,**parameters)
+  try:
+    atoms = io.read(filename,index,**parameters)
+  except FileNotFoundError:
+    mout.out("Fail.")
+    mout.errorOut("Could not read missing file "+mcol.file+filename,code="amp.io.read[1]",end="")
+    return None
 
   if tagging and filename.endswith(".pdb"):
     getAndSetTags(filename,atoms,byResidue=tagByResidue)
@@ -90,7 +100,13 @@ def tagFromLine(line,byResidue):
   except:
     return 0
 
-def parsePDB(pdb,systemName=None,fix_indices=True):
+def parsePDB(pdb,systemName=None,fix_indices=True,verbosity=1):
+
+  if (verbosity > 0):
+    mout.out("parsing "+mcol.file+
+             pdb+
+             mcol.clear+" ... ",
+             end='') # user output
 
   import os
 
@@ -102,6 +118,7 @@ def parsePDB(pdb,systemName=None,fix_indices=True):
   residue = None
   chain = None
   last_residue_name = None
+  last_residue_number = None
   last_chain_name = None
   res_counter = 0
 
@@ -123,6 +140,7 @@ def parsePDB(pdb,systemName=None,fix_indices=True):
           residue = Residue(atom.residue,res_counter,atom.chain)
           residue.addAtom(atom)
           last_residue_name = atom.residue
+          last_residue_number = atom.res_number
           last_chain_name = atom.chain
       else:
         if line.startswith("ENDMDL"):
@@ -130,6 +148,19 @@ def parsePDB(pdb,systemName=None,fix_indices=True):
         if line.startswith("END"):
           break
         if line.startswith("TER"):
+          if verbosity > 0:
+            mout.warningOut("Terminal added to "+mcol.arg+chain.name+":"+residue.name)
+          residue.atoms[-1].terminal = True
+          # atom = residue.atoms[-1]
+          # # residue.atoms[-1].ter_line=line
+
+          # atom.terminal = True
+          # atom.ter_line =  "TER   "
+          # atom.ter_line += str(atom.index)
+          # atom.ter_line += "\n"
+
+          # residue.atoms[-1].ter_line="TER   "+x_str = '{:.3f}'.format(atom.x).rjust(8)+"\n"
+          # # TER    4060      ILE A 509  
           continue
         if line.startswith("CONECT"):
           continue
@@ -142,6 +173,7 @@ def parsePDB(pdb,systemName=None,fix_indices=True):
           make_new_res = False
           if residue is None: make_new_res = True
           if last_residue_name != atom.residue: make_new_res = True
+          if last_residue_number != atom.res_number: make_new_res = True
 
           make_new_chain = False
           if residue is None: make_new_chain = True
@@ -159,6 +191,7 @@ def parsePDB(pdb,systemName=None,fix_indices=True):
 
           residue.addAtom(atom)
 
+          last_residue_number = atom.res_number
           last_residue_name = atom.residue
           last_chain_name = atom.chain
 
@@ -167,6 +200,9 @@ def parsePDB(pdb,systemName=None,fix_indices=True):
 
   if fix_indices:
     system.fix_indices()
+
+  if (verbosity > 0):
+    mout.out("Done.") # user output
 
   return system
 
@@ -327,6 +363,17 @@ def writePDB(filename,system,verbosity=1,printScript=False):
           strbuff += "QM"
 
         strbuff += end
+
+
+        if atom.terminal:
+          atom.ter_line =  "TER   "
+          atom.ter_line += str(atom_serial).rjust(5)
+          atom.ter_line += "      "
+          atom.ter_line += atom.residue.ljust(4)
+          atom.ter_line += atom.chain
+          atom.ter_line += str(residue_serial).rjust(4)
+          atom.ter_line += end
+          strbuff += atom.ter_line
 
         atom_serial += 1
 
