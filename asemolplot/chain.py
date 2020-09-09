@@ -12,6 +12,10 @@ class Chain:
     self.name = name
     self.residues = []
 
+  @property
+  def num_residues(self):
+    return len(self.residues)
+
   def addResidue(self,residue):
     self.residues.append(residue)
 
