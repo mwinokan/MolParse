@@ -8,14 +8,28 @@ from .atom import Atom
 class Residue:
   def __init__(self,name,number=None,chain=None):
 
-    self.name = name
+    self._name = name
     self.chain = chain
     self.number = number
     self._atoms = []
 
+  def rename(self,new,verbosity=1):
+    if verbosity > 0:
+      mout.out("Renaming residue "+
+               mcol.arg+self.name+str([self.number])+mcol.clear+" of chain "+
+               mcol.varName+self.chain+
+               mcol.clear+" to "+mcol.arg+new)
+    self._name = new
+    for atom in self.atoms:
+      atom.residue = new
+
   @property
   def num_atoms(self):
     return len(self._atoms)
+
+  @property
+  def name(self):
+    return self._name
 
   def atom_names(self,wRes=False,noPrime=False):
     names_list = []
@@ -75,10 +89,12 @@ class Residue:
   def get_atom(self,name=None):
     for atom in self._atoms:
       if atom.name == name: return atom
+    # print(self.atom_names())
     mout.errorOut("No atom "+
                   mcol.arg+name+
                   mcol.error+" in residue "+
-                  mcol.arg+self.name,fatal=True,code="Residue.1")
+                  mcol.arg+self.name+str([self.number]),fatal=False,code="Residue.1")
+    return None
 
   def index_from_name(self,name):
     for index,atom in enumerate(self._atoms):
@@ -86,7 +102,7 @@ class Residue:
     mout.errorOut("No atom "+
                   mcol.arg+name+
                   mcol.error+" in residue "+
-                  mcol.arg+self.name,fatal=True,code="Residue.2")
+                  mcol.arg+self.name+str([self.number]),fatal=True,code="Residue.2")
 
   def copy(self):
     return copy.deepcopy(self)
