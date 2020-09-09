@@ -57,4 +57,5 @@ from .convert import xyz2traj # needs documentation
 
 from . import styles
 from . import units
+from . import dl_poly
 # from . import analysis
