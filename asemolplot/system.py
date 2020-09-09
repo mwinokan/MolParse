@@ -25,8 +25,19 @@ class System:
     for index,atom in enumerate(self.atoms):
       atom.index = index
 
+    # for index,residue in enumerate(self.residues):
+      
+
   def addChain(self,chain):
     self.chains.append(chain)
+
+  def add_system(self,system):
+
+    for chain in system.chains:
+      self.addChain(chain)
+
+    self.fix_indices()
+
 
   @property
   def num_atoms(self):
@@ -36,9 +47,112 @@ class System:
     return num_atoms
 
   @property
+  def charge(self):
+    charge = 0
+    for atom in self.atoms:
+      charge += atom.charge
+    return charge
+
+  def summary(self,res_limit=10):
+    mout.headerOut("\nSystem "+mcol.arg+self.name+
+                   mcol.clear+mcol.bold+" contains "+
+                   mcol.result+str(self.num_chains)+
+                   mcol.clear+mcol.bold+" chains:")
+    for chain in self.chains:
+      mout.headerOut("Chain "+mcol.result+chain.name+
+                     mcol.clear+mcol.bold+" contains "+
+                     mcol.result+str(chain.num_residues)+
+                     mcol.clear+mcol.bold+" residues:")
+      names = ""
+      for name in chain.res_names[:res_limit]:
+        names += name+" "
+      if chain.num_residues > res_limit:
+        names += "..."
+      mout.out(names)
+    # mout.varOut("Total Charge",self.charge)
+
+  @property
   def num_chains(self):
     return len(self.chains)
+
+  @property
+  def chain_names(self):
+    names = []
+    for chain in self.chains:
+      names.append(chain.name)
+    return names
+
+  def rename_atoms(self,old,new,res_filter=None,verbosity=1):
+    count=0
+    for residue in self.residues:
+      if res_filter is not None and residue.name != res_filter:
+        continue
+      for atom in residue.atoms:
+        if atom.name == old:
+          count += 1
+          if verbosity > 1:
+            mout.warningOut("Renamed atom "+mcol.arg+atom.name+str([atom.index,residue.name])+
+                            mcol.warning+" to "+mcol.arg+new)
+          atom.set_name(new)
+    if verbosity > 0:
+      mout.warningOut("Renamed "+mcol.result+str(count)+mcol.warning+" atoms from "+mcol.arg+old+
+                      mcol.warning+" to "+mcol.arg+new)
+
+  def rename_residues(self,old,new,verbosity=1):
+    count=0
+    for residue in self.residues:
+      if residue.name == old:
+        # residue.name = new
+        residue.rename(new)
+        count += 1
+        if verbosity > 1:
+          mout.warningOut("Renamed residue "+mcol.arg+residue.name+str([residue.number])+
+                          mcol.warning+" to "+mcol.arg+new)
+    if verbosity > 0:
+      mout.warningOut("Renamed "+mcol.result+str(count)+mcol.warning+" residues from "+mcol.arg+old+
+                      mcol.warning+" to "+mcol.arg+new)
+
+  def get_chain(self,name):
+    for chain in self.chains:
+      if chain.name == name:
+        return chain
+    mout.errorOut("Chain with name "+mcol.arg+name+mcol.error+" not found.",fatal=True)
+
+  def remove_chain(self,name,verbosity=1):
+    for index,chain in enumerate(self.chains):
+      if chain.name == name:
+        if verbosity > 0:
+          mout.warningOut("Removing chain "+mcol.arg+name+str([index]))
+        del self.chains[index]
+        return chain
+    mout.errorOut("Chain with name "+mcol.arg+name+mcol.error+" not found.",fatal=True)
     
+  def remove_heterogens(self,verbosity=1):
+    del_list = []
+    atoms = self.atoms
+    for index,atom in enumerate(atoms):
+      if atom.heterogen:
+        del_list.append(index)
+    number_deleted = self.remove_atoms(del_list,verbosity=verbosity-1)
+    if verbosity > 0:
+      mout.warningOut("Removed "+mcol.result+str(number_deleted)+mcol.warning+" heterogens")
+
+  def remove_atoms(self,del_list,verbosity=1):
+    number_deleted=0
+    self.fix_indices()
+    for chain in self.chains:
+      for residue in chain.residues:
+        for index,atom in reversed(list(enumerate(residue.atoms))):
+          if atom.index in del_list:
+            del residue.atoms[index]
+            number_deleted += 1
+            if verbosity > 1:
+              mout.warningOut("Removed atom "+
+                              mcol.arg+atom.name+str([atom.index])+
+                              mcol.warning+" in residue "+
+                              mcol.arg+residue.name+str([residue.number]))
+    return number_deleted
+
   def atom_names(self,wRes=False,noPrime=False):
     names_list = []
     for chain in self.chains:
