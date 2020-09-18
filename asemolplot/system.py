@@ -6,6 +6,8 @@ import copy
 from .chain import Chain
 # from .bondlist import Connectivity
 
+import numpy as np
+
 class System:
 
   def __init__(self,name):
@@ -186,6 +188,54 @@ class System:
     for chain in self.chains:
       atoms += chain.atoms
     return atoms
+
+  def centre_of_mass(self,set=None,shift=None):
+    return CoM(set=set,shift=shift)
+
+  def CoM(self,set=None,shift=None):
+
+    position_list = self.positions
+
+    centre_of_mass = np.array([sum([pos[0] for pos in position_list])/len(position_list),
+                               sum([pos[1] for pos in position_list])/len(position_list),
+                               sum([pos[2] for pos in position_list])/len(position_list)])
+
+    mout.varOut("CoM of "+self.name,
+                centre_of_mass,
+                unit="Angstroms",precision=4)
+
+    if set is not None:
+
+      assert np.ndim(set) == 1
+
+      try:
+        new_com = np.array([set[0],set[1],set[2]])
+      except:
+        mout.errorOut("Incompatible array input",code="amp.system.CoM.1")
+
+      shift_com = new_com - centre_of_mass
+
+    else:
+
+      shift_com = np.array([0,0,0])
+
+    if shift is not None:
+
+      assert np.ndim(shift) == 1
+
+      try:
+        new_shift = np.array([shift[0],shift[1],shift[2]])
+      except:
+        mout.errorOut("Incompatible array input",code="amp.system.CoM.2")
+
+      shift_com = shift_com + new_shift
+      
+    if set is not None or shift is not None:
+
+      for atom in self.atoms:
+        atom.position = atom.position + shift_com
+
+    return centre_of_mass
 
   @property
   def QM_indices(self):
