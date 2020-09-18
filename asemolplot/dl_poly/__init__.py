@@ -1,45 +1,6 @@
 
-import os
+from .dl_poly_py import totalEnergy
+from .dl_poly_py import SPE
 
-import mout
-import mcol
+from .calculator import DL_POLY
 
-def SPE(control="CONTROL",config="CONFIG",
-        field="FIELD",workdir="DL_POLY",
-        num_procs=8,log="_amp.dl_poly.log",verbosity=2):
-  
-  if verbosity > 0:
-    mout.headerOut("Calling "+mcol.func+"DL_POLY"+mcol.clear+mcol.bold+"...")
-
-  if verbosity < 3:
-    mout.redirectPrint(log)
-
-  from dlpoly import DLPoly
-
-  dl_poly_root = os.environ["DL_POLY"]
-  dlp_exec = dl_poly_root+"/execute/DLPOLY.Z"
-
-  DL_POLY = DLPoly(control=control,config=config,field=field,workdir=workdir)
-
-  DL_POLY.run(executable=dlp_exec,numProcs=num_procs)
-
-  DL_POLY.load_statis(workdir+"/STATIS")
-
-  if verbosity < 3:
-    mout.enablePrint()
-
-  e_tot = totalEnergy(DL_POLY,verbosity=verbosity-1)
-  
-  return e_tot
-
-def totalEnergy(dlpoly,verbosity=1):
-  if dlpoly.statis is None:
-    mout.errorOut("STATIS file not loaded",code="amp.dl_poly.totalEnergy[1]")
-    return None
-
-  e_tot = dlpoly.statis.data[:,3][0]
-
-  if verbosity > 0:
-    mout.varOut("Total Energy",e_tot,unit="kcal/mol",valCol=mcol.result)
-
-  return e_tot
