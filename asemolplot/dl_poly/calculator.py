@@ -13,13 +13,15 @@ import os
 
 class DL_POLY(Calculator):
 
-  def __init__(self,field,control,workdir="DL_POLY",verbosity=1,debug=False):
+  def __init__(self,field,control,workdir="DL_POLY",output="OUTPUT",verbosity=1,debug=False):
 
     if debug: mout.debugOut("DL_POLY.__init__")
 
+    # Manage arguments
+    self.workdir = workdir
     self.field = field
     self.control = control
-    self.workdir = workdir
+    self.output = output
     self.verbosity = verbosity
     self.debug = debug
     self.energy_zero = None
@@ -27,9 +29,24 @@ class DL_POLY(Calculator):
     self.old_atoms = None
     self.run_count = 0
 
+    self.field_path = self.workdir + "/" + self.field
+    self.control_path = self.workdir + "/" + self.control
+    self.output_path = self.workdir + "/" + self.output
+    self.revcon_path = self.workdir + "/REVCON"
+    self.history_path = self.workdir + "/HISTORY"
+    self.statis_path = self.workdir + "/STATIS"
+    self.auto_config = "auto.CONFIG"
+    self.auto_config_path = self.workdir + "/" + self.auto_config
+
     self.results = {'energy':self.energy_zero,'forces':self.forces}
 
     self.implemented_properties=['energy','forces']
+
+    if self.verbosity > 1:
+      mout.varOut("IO: Workdir",self.workdir,valCol=mcol.file)
+      mout.varOut("IO: Field",self.field,valCol=mcol.file)
+      mout.varOut("IO: Control",self.control,valCol=mcol.file)
+      mout.varOut("IO: Output",self.output,valCol=mcol.file)
 
     self.clean_directory(full=True,verbosity=verbosity-2)
 
@@ -39,7 +56,12 @@ class DL_POLY(Calculator):
     # Check if an update is required:
 
     if self.old_atoms is None: # No calculation has been run yet
+
+      if self.verbosity > 1:
+        mout.out("Calculation needed (first run)")
+
       self.calculate(atoms)
+
     else:                      # Previous calculation data exists
 
       # Get the names of changed properties
@@ -48,36 +70,32 @@ class DL_POLY(Calculator):
       # If there are changes, run DL_POLY SPE
       if len(changed_properties) > 0:
         if self.verbosity > 1:
+          mout.out("Calculation needed (atoms have changed)")
           mout.varOut("Changed Properties",changed_properties)
         self.calculate(atoms)
-
-  def set_field(self,field):
-    if self.debug: mout.debugOut("DL_POLY.set_field")
-    self.field = field
-
-  def set_control(self,control):
-    if self.debug: mout.debugOut("DL_POLY.set_control")
-    self.control = control
+      else:
+        if self.verbosity > 1:
+          mout.out("No calculation needed (atoms are unchanged)")
 
   def clean_directory(self,full=False,verbosity=1):
     if self.debug: mout.debugOut("DL_POLY.clean_directory")
 
-    if full:
+    if full:                # Remove the work directory
       if verbosity > 0:
         os.system("rm -rfv "+self.workdir)
       else:
         os.system("rm -rf "+self.workdir)
     else:
-      if verbosity > 0:
-        os.system("rm -fv "+self.workdir+"/REVCON")
-        os.system("rm -fv "+self.workdir+"/OUTPUT")
-        os.system("rm -fv "+self.workdir+"/HISTORY")
-        os.system("rm -fv "+self.workdir+"/STATIS")
+      if verbosity > 0:     # Only remove output files
+        os.system("rm -f "+self.revcon_path)
+        os.system("rm -f "+self.output_path)
+        os.system("rm -f "+self.history_path)
+        os.system("rm -f "+self.statis_path)
       else:
-        os.system("rm -fv "+self.workdir+"/REVCON")
-        os.system("rm -fv "+self.workdir+"/OUTPUT")
-        os.system("rm -fv "+self.workdir+"/HISTORY")
-        os.system("rm -fv "+self.workdir+"/STATIS")
+        os.system("rm -fv "+self.revcon_path)
+        os.system("rm -fv "+self.output_path)
+        os.system("rm -fv "+self.history_path)
+        os.system("rm -fv "+self.statis_path)
 
   def calculate(self,atoms):
     if self.debug: mout.debugOut("DL_POLY.calculate")
@@ -89,26 +107,33 @@ class DL_POLY(Calculator):
       mout.errorOut("No CONTROL specified")
 
     if self.run_count > 0:
-      os.system("cp "+self.workdir+"/auto.CONFIG "+self.workdir+"/backup"+str(self.run_count)+".CONFIG")
+      os.system("cp "+self.auto_config_path+" "+self.workdir+"/backup"+str(self.run_count)+".CONFIG")
+    else:
+      os.system("mkdir -p "+self.workdir)
 
     # Write new system configuration in DL_POLY format
-    write("auto.CONFIG",atoms,format="dlp4",verbosity=self.verbosity-1)
+    write(self.auto_config,atoms,format="dlp4",verbosity=self.verbosity-1)
 
     # Get rid of old outputs
     self.clean_directory(full=False,verbosity=self.verbosity-2)
 
     # Call DL_POLY
     e_tot = SPE(control=self.control,
-                config="auto.CONFIG",
+                config=self.auto_config,
                 field=self.field,
                 workdir=self.workdir,
+                output=self.output,
                 verbosity=self.verbosity-1)
+
+    # Clean up files in root directory
+    os.system("rm "+self.auto_config)
+    os.system("rm OUTPUT")
 
     # Store the atoms on which the calculation was run
     self.old_atoms = atoms.copy()
 
     # Get the trajectory
-    history = read(self.workdir+"/HISTORY",format="dlp-history",verbosity=self.verbosity-1)
+    history = read(self.history_path,format="dlp-history",verbosity=self.verbosity-1)
     
     # Store the calculation results
     self.energy_zero = e_tot
@@ -142,3 +167,11 @@ class DL_POLY(Calculator):
     self.energy_zero = None
     self.forces = None
     self.old_atoms = None
+
+  # def set_field(self,field):
+  #   if self.debug: mout.debugOut("DL_POLY.set_field")
+  #   self.field = field
+
+  # def set_control(self,control):
+  #   if self.debug: mout.debugOut("DL_POLY.set_control")
+  #   self.control = control
