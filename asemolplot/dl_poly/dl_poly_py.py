@@ -6,10 +6,18 @@ import mcol
 
 def SPE(control="CONTROL",config="CONFIG",
         field="FIELD",workdir="DL_POLY",
-        num_procs=8,log="_amp.dl_poly.log",verbosity=2):
+        num_procs=8,log="_amp.dl_poly.log",
+        verbosity=2,output="OUTPUT"):
   
   if verbosity > 0:
     mout.headerOut("Calling "+mcol.func+"DL_POLY"+mcol.clear+mcol.bold+"...")
+
+  if verbosity > 1:
+    mout.varOut("IO: Workdir",workdir,valCol=mcol.file)
+    mout.varOut("IO: Field",field,valCol=mcol.file)
+    mout.varOut("IO: Config",config,valCol=mcol.file)
+    mout.varOut("IO: Control",control,valCol=mcol.file)
+    mout.varOut("IO: Output",output,valCol=mcol.file)
 
   if verbosity < 2:
     mout.redirectPrint(log)
@@ -19,7 +27,7 @@ def SPE(control="CONTROL",config="CONFIG",
   dl_poly_root = os.environ["DL_POLY"]
   dlp_exec = dl_poly_root+"/execute/DLPOLY.Z"
 
-  DL_POLY = DLPoly(control=control,config=config,field=field,workdir=workdir)
+  DL_POLY = DLPoly(control=control,config=config,field=field,workdir=workdir,output=output)
 
   DL_POLY.run(executable=dlp_exec,numProcs=num_procs)
 
@@ -29,11 +37,11 @@ def SPE(control="CONTROL",config="CONFIG",
     mout.enablePrint()
 
   # Parse DL_POLY's OUTPUT
-  num_warn = int(os.popen("grep 'warning - ' "+workdir+"/OUTPUT | wc -l").read())
-  num_errs = int(os.popen("grep 'error - ' "+workdir+"/OUTPUT | wc -l").read())
+  num_warn = int(os.popen("grep 'warning - ' "+workdir+"/"+output+" | wc -l").read())
+  num_errs = int(os.popen("grep 'error - ' "+workdir+"/"+output+" | wc -l").read())
 
   if num_warn > 0: mout.warningOut("DL_POLY issued "+str(num_warn)+" warnings.",code="amp.dl_poly.dl_poly_py.SPE[1]")
-  if num_errs > 0: mout.errorOut("DL_POLY issued "+str(num_warn)+" errors.",fatal=True,code="amp.dl_poly.dl_poly_py.SPE[2]")
+  if num_errs > 0: mout.errorOut("DL_POLY issued "+str(num_errs)+" errors.",fatal=True,code="amp.dl_poly.dl_poly_py.SPE[2]")
 
   e_tot = totalEnergy(DL_POLY,verbosity=verbosity-1)
   
