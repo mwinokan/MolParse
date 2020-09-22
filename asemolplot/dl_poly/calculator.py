@@ -13,21 +13,26 @@ import os
 
 class DL_POLY(Calculator):
 
-  def __init__(self,field,control,workdir="DL_POLY",output="OUTPUT",verbosity=1,debug=False):
+  def __init__(self,field,control,workdir="DL_POLY",name="DL_POLY",output="OUTPUT",verbosity=1,debug=False,num_procs=8,backup=False):
 
-    if debug: mout.debugOut("DL_POLY.__init__")
+    if debug: mout.debugOut(name+".__init__")
 
     # Manage arguments
+    self.name = name
     self.workdir = workdir
     self.field = field
     self.control = control
     self.output = output
-    self.verbosity = verbosity
     self.debug = debug
+    if debug: verbosity = 99
+    self.verbosity = verbosity
     self.energy_zero = None
+    self.energy_free = None
     self.forces = None
     self.old_atoms = None
     self.run_count = 0
+    self.num_procs = num_procs
+    self.backup = backup
 
     self.field_path = self.workdir + "/" + self.field
     self.control_path = self.workdir + "/" + self.control
@@ -51,7 +56,7 @@ class DL_POLY(Calculator):
     self.clean_directory(full=True,verbosity=verbosity-2)
 
   def update(self,atoms):
-    if self.debug: mout.debugOut("DL_POLY.update")
+    if self.debug: mout.debugOut(self.name+".update")
 
     # Check if an update is required:
 
@@ -78,7 +83,7 @@ class DL_POLY(Calculator):
           mout.out("No calculation needed (atoms are unchanged)")
 
   def clean_directory(self,full=False,verbosity=1):
-    if self.debug: mout.debugOut("DL_POLY.clean_directory")
+    if self.debug: mout.debugOut(self.name+".clean_directory")
 
     if full:                # Remove the work directory
       if verbosity > 0:
@@ -98,7 +103,7 @@ class DL_POLY(Calculator):
         os.system("rm -fv "+self.statis_path)
 
   def calculate(self,atoms):
-    if self.debug: mout.debugOut("DL_POLY.calculate")
+    if self.debug: mout.debugOut(self.name+".calculate")
 
     # Check pre-requisites
     if self.field is None:
@@ -107,7 +112,8 @@ class DL_POLY(Calculator):
       mout.errorOut("No CONTROL specified")
 
     if self.run_count > 0:
-      os.system("cp "+self.auto_config_path+" "+self.workdir+"/backup"+str(self.run_count)+".CONFIG")
+      if self.backup:
+        os.system("cp "+self.auto_config_path+" "+self.workdir+"/backup"+str(self.run_count)+".CONFIG")
     else:
       os.system("mkdir -p "+self.workdir)
 
@@ -123,6 +129,7 @@ class DL_POLY(Calculator):
                 field=self.field,
                 workdir=self.workdir,
                 output=self.output,
+                num_procs=self.num_procs,
                 verbosity=self.verbosity-1)
 
     # Clean up files in root directory
@@ -137,6 +144,7 @@ class DL_POLY(Calculator):
     
     # Store the calculation results
     self.energy_zero = e_tot
+    self.energy_free = e_tot
     self.forces = history.get_forces()
     self.results = {'energy':self.energy_zero,'forces':self.forces}
 
@@ -144,7 +152,7 @@ class DL_POLY(Calculator):
     self.run_count += 1
 
   def get_forces(self,atoms):
-    if self.debug: mout.debugOut("DL_POLY.get_forces")
+    if self.debug: mout.debugOut(self.name+".get_forces")
     self.update(atoms)
     return self.forces
 
@@ -167,11 +175,14 @@ class DL_POLY(Calculator):
     self.energy_zero = None
     self.forces = None
     self.old_atoms = None
+    self.energy_free = None
+    self.run_count = 0
+    self.results = {'energy':self.energy_zero,'forces':self.forces}
 
   # def set_field(self,field):
-  #   if self.debug: mout.debugOut("DL_POLY.set_field")
+  #   if self.debug: mout.debugOut(self.name+".set_field")
   #   self.field = field
 
   # def set_control(self,control):
-  #   if self.debug: mout.debugOut("DL_POLY.set_control")
+  #   if self.debug: mout.debugOut(self.name+".set_control")
   #   self.control = control
