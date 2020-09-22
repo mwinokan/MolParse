@@ -40,6 +40,7 @@ from .compare import compareSystems
 # Graphing
 from .graphing import showFigs
 from .graphing import graphEnergy
+from .graphing import graphForces
 from .graphing import graphDisplacement
 from .graphing import graphBondLength
 from .graphing import graphBondAngle

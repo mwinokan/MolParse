@@ -20,7 +20,7 @@ from .analysis import bondAngleStats
 
 """
 
-def graphEnergy(trajectory,perAtom=True,filename=None,show=True,verbosity=2,kJpermol=False,xlab=None,timestep=None):
+def graphEnergy(trajectory,perAtom=True,filename=None,show=True,verbosity=2,kJpermol=False,xlab=None,timestep=None,xmin=None,xmax=None,ymin=None,ymax=None):
 
   if (verbosity > 0):
     mout.out("graphing "+mcol.varName+
@@ -33,6 +33,14 @@ def graphEnergy(trajectory,perAtom=True,filename=None,show=True,verbosity=2,kJpe
   ekins=[]
   epots=[]
   etots=[]
+
+  if not kJpermol:
+    if perAtom:
+      ylab = "Energy [eV/atom]"
+    else:
+      ylab = "Energy [eV]"
+  else:
+    ylab = "Energy [kJ/mol]"
 
   for n, atoms in enumerate(trajectory):
     if timestep is None:
@@ -61,7 +69,48 @@ def graphEnergy(trajectory,perAtom=True,filename=None,show=True,verbosity=2,kJpe
     ekins.append(ekin)
     etots.append(epot+ekin)
 
-  mplot.graph2D(xdata,[epots,ekins,etots],ytitles=["Potential","Kinetic","Total"],show=show,xlab=xlab,ylab=ylab,filename=filename,verbosity=verbosity-1)
+  mplot.graph2D(xdata,[epots,ekins,etots],ytitles=["Potential","Kinetic","Total"],show=show,xlab=xlab,ylab=ylab,filename=filename,verbosity=verbosity-1,xmin=xmin,xmax=xmax,ymin=ymin,ymax=ymax)
+
+  if (verbosity > 0):
+    mout.out("Done.") # user output
+
+def graphForces(trajectory,filename=None,max=True,show=True,verbosity=2,xlab="Step",xmin=None,xmax=None,ymin=None,ymax=None,yLog=False):
+
+  if (verbosity > 0):
+    mout.out("graphing "+mcol.varName+
+             "Forces"+
+             mcol.clear+" ... ",
+             printScript=True,
+             end='') # user output
+
+  xdata=[]
+  fmax=[]
+  favg=[]
+
+  if max:
+    ylab="Force"
+  else:
+    ylab="Average Force"
+
+  for n,atoms in enumerate(trajectory):
+    xdata.append(n)
+
+    forces = atoms.get_forces()
+
+    this_fmax = np.max(forces)
+    this_favg = np.average(forces)
+
+    fmax.append(this_fmax)
+    favg.append(this_favg)
+
+  if max:
+    ydata = [fmax,favg]
+    ytitles = ["Maximum","Average"]
+  else:
+    ydata = favg
+    ytitles = "Average"
+
+  mplot.graph2D(xdata,ydata,ytitles=ytitles,show=show,xlab=xlab,ylab=ylab,filename=filename,verbosity=verbosity-1,xmin=xmin,xmax=xmax,ymin=ymin,ymax=ymax,ySci=True,yLog=yLog)
 
   if (verbosity > 0):
     mout.out("Done.") # user output
