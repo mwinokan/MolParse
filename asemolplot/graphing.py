@@ -154,7 +154,7 @@ def graphDisplacement(trajectory,show=True,filename=None,relative=True,verbosity
   if (verbosity > 0):
     mout.out("Done.") # user output
 
-def graphBondLength(trajectory,indices,printScript=False,show=True,filename=None,fitMin=None,fitMax=None,verbosity=2,timestep=None,title=None,fitOrder=None,yUnit="Angstroms",dataFile=None,ymin=0,ymax=None,xmin=None,xmax=None):
+def graphBondLength(trajectory,indices,printScript=False,show=True,filename=None,fitMin=None,fitMax=None,verbosity=2,timestep=None,title=None,fitOrder=None,yUnit="Angstroms",dataFile=None,ymin=0,ymax=None,xmin=None,xmax=None,writeData=False):
   """
     Graph the bond lengths (displacement) between atoms.
 
@@ -220,6 +220,39 @@ def graphBondLength(trajectory,indices,printScript=False,show=True,filename=None
       val,err,fit_func = mplot.fit(xdata,ydata,rank=fitOrder,verbosity=verbosity-1,fitMin=fitMin,fitMax=fitMax,title=title,yUnit=yUnit,xUnit=xUnit,dataFile=dataFile)
       text = mplot.getCoeffStr(val,err,1,yUnit=yUnit,xUnit=xUnit)
       mplot.graph2D(xdata,ydata,fitFunc=fit_func,show=show,xlab=xlab,ylab="Distance [Angstrom]",filename=filename,title=label,verbosity=verbosity,subtitle=text,ymin=ymin,ymax=ymax,xmin=xmin,xmax=xmax)
+
+  if writeData:
+
+    import os
+    base=os.path.basename(filename)
+    data_dump = open(os.path.splitext(base)[0]+".dat",'w')
+
+    if many:
+
+      data_dump.write("# x "+str(labels)+"\n")
+      data_dump.close()
+
+      data_dump = open(os.path.splitext(base)[0]+".dat",'a')
+
+      for index,x in enumerate(xdata):
+        data_dump.write(str(xdata[index])+" ")
+        for data in ydata:
+          data_dump.write(str(data[index])+" ")
+        data_dump.write("\n")
+
+    else:
+
+      data_dump.write("# x "+label+"\n")
+      data_dump.close()
+
+      data_dump = open(os.path.splitext(base)[0]+".dat",'a')
+
+      for index,x in enumerate(xdata):
+        data_dump.write(str(xdata[index])+" ")
+        data_dump.write(str(ydata[index])+" ")
+        data_dump.write("\n")
+
+    data_dump.close()
 
   if fitOrder is not None:
     return val, err, fit_func
