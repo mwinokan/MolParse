@@ -3,6 +3,8 @@ import mcol # https://github.com/mwinokan/MPyTools
 import mout # https://github.com/mwinokan/MPyTools
 import mplot # https://github.com/mwinokan/MPyTools
 
+import ase
+
 def bondLengthStats(trajectory,index_pair,printScript=False,verbosity=1,timestep=None,yUnit="Angstroms",fitMin=None,fitMax=None,returnData=False,dataFile=None):
 
   atom_symbols = trajectory[0].get_chemical_symbols()
@@ -44,7 +46,7 @@ def bondLengthStats(trajectory,index_pair,printScript=False,verbosity=1,timestep
       if timestep is None:
         xdata.append(n)
       else:
-        xdata.append(n*timestep/units.fs)
+        xdata.append(n*timestep/ase.units.fs)
 
       dist = atoms.get_distance(index1,index2)
 
@@ -113,7 +115,7 @@ def bondAngleStats(trajectory,index_triplet,printScript=False,verbosity=1,timest
       if timestep is None:
         xdata.append(n)
       else:
-        xdata.append(n*timestep/units.fs)
+        xdata.append(n*timestep/ase.units.fs)
 
       ang = atoms.get_angle(index1,index2,index3)
 
