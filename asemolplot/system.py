@@ -87,7 +87,7 @@ class System:
   def rename_atoms(self,old,new,res_filter=None,verbosity=1):
     count=0
     for residue in self.residues:
-      if res_filter is not None and residue.name != res_filter:
+      if res_filter is not None and res_filter not in residue.name:
         continue
       for atom in residue.atoms:
         if atom.name == old:
@@ -284,3 +284,8 @@ class System:
 
   def copy(self):
     return copy.deepcopy(self)
+
+  def __repr__(self):
+    return self.name
+  def __str__(self):
+    return self.name

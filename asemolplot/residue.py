@@ -134,3 +134,8 @@ class Residue:
       k = self._atoms[k]
 
     return angle(i.position,j.position,k.position)
+
+  def __repr__(self):
+    return self.name
+  def __str__(self):
+    return self.name

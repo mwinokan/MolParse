@@ -107,3 +107,8 @@ class Atom:
 
   def copy(self):
     return copy.deepcopy(self)
+
+  def __repr__(self):
+    return self.name
+  def __str__(self):
+    return self.name
