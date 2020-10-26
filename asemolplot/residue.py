@@ -5,6 +5,8 @@ import copy
 
 from .atom import Atom
 
+import numpy as np
+
 class Residue:
   def __init__(self,name,number=None,chain=None):
 
@@ -134,6 +136,24 @@ class Residue:
       k = self._atoms[k]
 
     return angle(i.position,j.position,k.position)
+
+  def centre_of_mass(self,verbosity=1):
+    return CoM()
+
+  def CoM(self,verbosity=1):
+
+    position_list = self.positions
+
+    centre_of_mass = np.array([sum([pos[0] for pos in position_list])/len(position_list),
+                               sum([pos[1] for pos in position_list])/len(position_list),
+                               sum([pos[2] for pos in position_list])/len(position_list)])
+
+    if verbosity > 0: 
+      mout.varOut("CoM of "+self.name,
+                  centre_of_mass,
+                  unit="Angstroms",precision=4)
+
+    return centre_of_mass
 
   def __repr__(self):
     return self.name
