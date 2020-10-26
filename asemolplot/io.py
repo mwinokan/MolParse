@@ -82,6 +82,9 @@ def getAndSetTags(pdb,atoms,byResidue=False):
           # get the tags:
           taglist.append(tagFromLine(line,byResidue=byResidue))
 
+  print(len(taglist))
+  print(len(atoms))
+
   # set the tags
   if isinstance(atoms,aseatoms.Atoms):
     for index,tag in enumerate(taglist):
@@ -121,6 +124,7 @@ def parsePDB(pdb,systemName=None,fix_indices=True,verbosity=1):
   last_residue_number = None
   last_chain_name = None
   res_counter = 0
+  atom_counter = 1
 
   if systemName is None:
     systemName = os.path.splitext(pdb)[0]
@@ -135,7 +139,7 @@ def parsePDB(pdb,systemName=None,fix_indices=True,verbosity=1):
         elif line.startswith("ATOM"):
           searching = False
           #### PARSELINE
-          atom = parsePDBAtomLine(line,res_counter)
+          atom = parsePDBAtomLine(line,res_counter,atom_counter)
           chain = Chain(atom.chain)
           residue = Residue(atom.residue,res_counter,atom.chain)
           residue.addAtom(atom)
@@ -168,7 +172,7 @@ def parsePDB(pdb,systemName=None,fix_indices=True,verbosity=1):
           continue
         else:
           ### PARSELINE
-          atom = parsePDBAtomLine(line,res_counter)
+          atom = parsePDBAtomLine(line,res_counter,atom_counter)
           
           make_new_res = False
           if residue is None: make_new_res = True
@@ -191,6 +195,8 @@ def parsePDB(pdb,systemName=None,fix_indices=True,verbosity=1):
 
           residue.addAtom(atom)
 
+          atom_counter += 1
+
           last_residue_number = atom.res_number
           last_residue_name = atom.residue
           last_chain_name = atom.chain
@@ -206,13 +212,15 @@ def parsePDB(pdb,systemName=None,fix_indices=True,verbosity=1):
 
   return system
 
-def parsePDBAtomLine(line,index):
+def parsePDBAtomLine(line,res_index,atom_index):
 
   try:
-    index = line[7:12].strip()
     atom_name = line[12:17].strip()
     residue = line[17:21].strip()
-    pdb_index = int(line[6:12].strip())
+    try:
+      pdb_index = int(line[6:12].strip())
+    except:
+      pdb_index = atom_index
     chain = line[21:22]
     res_number = line[22:26].strip()
 
@@ -238,7 +246,7 @@ def parsePDBAtomLine(line,index):
     else:
       isQM = False
 
-    atom = Atom(atom_name,index,pdb_index,position,residue,chain,res_number,QM=isQM,occupancy=occupancy,temp_factor=temp_factor,heterogen=hetatm,charge_str=chg_str)
+    atom = Atom(atom_name,pdb_index,pdb_index,position,residue,chain,res_number,QM=isQM,occupancy=occupancy,temp_factor=temp_factor,heterogen=hetatm,charge_str=chg_str)
 
     return atom
 
@@ -333,7 +341,11 @@ def writePDB(filename,system,verbosity=1,printScript=False):
         else:
           strbuff += "HETATM"
 
-        strbuff += str(atom_serial).rjust(5)
+        atom_serial_str = str(atom_serial).rjust(5)
+        if len(atom_serial_str) > 5: 
+          atom_serial_str = "XXXXX"
+
+        strbuff += atom_serial_str
         strbuff += " "
         strbuff += str(atom.name).rjust(4)
         strbuff += " "
@@ -367,7 +379,7 @@ def writePDB(filename,system,verbosity=1,printScript=False):
 
         if atom.terminal:
           atom.ter_line =  "TER   "
-          atom.ter_line += str(atom_serial).rjust(5)
+          atom.ter_line += atom_serial_str
           atom.ter_line += "      "
           atom.ter_line += atom.residue.ljust(4)
           atom.ter_line += atom.chain
