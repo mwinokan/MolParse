@@ -3,6 +3,8 @@ import mcol # https://github.com/mwinokan/MPyTools
 import mout # https://github.com/mwinokan/MPyTools
 import copy
 
+import numpy as np
+
 from ase.data import atomic_numbers as ase_atomic_numbers # Atom only
 
 class Atom:
@@ -88,6 +90,10 @@ class Atom:
   @property
   def position(self):
     return self._position
+
+  @property
+  def np_pos(self):
+    return np.array((self._position[0] ,self._position[1], self._position[2]))
 
   @property
   def x(self):
