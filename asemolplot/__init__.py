@@ -31,6 +31,7 @@ from .povplot import crop
 from .analysis import bondLengthStats
 from .analysis import bondAngleStats
 from .analysis import getCentreOfMass
+from .analysis import getRMSD
 from .analysis import getAngle
 from .analysis import getDisplacement
 

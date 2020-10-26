@@ -5,6 +5,8 @@ import mplot # https://github.com/mwinokan/MPyTools
 
 import ase
 
+import numpy as np
+
 def bondLengthStats(trajectory,index_pair,printScript=False,verbosity=1,timestep=None,yUnit="Angstroms",fitMin=None,fitMax=None,returnData=False,dataFile=None):
 
   atom_symbols = trajectory[0].get_chemical_symbols()
@@ -134,15 +136,45 @@ def bondAngleStats(trajectory,index_triplet,printScript=False,verbosity=1,timest
   else:
     return val, err, bond_title
 
-def getCentreOfMass(atoms):
+def getCentreOfMass(atoms,verbosity=1):
 
-  positions = atoms.get_positions()
+  positions = getPositions(atoms)
 
   this_com = [sum([pos[0] for pos in positions])/len(positions),
               sum([pos[1] for pos in positions])/len(positions),
               sum([pos[2] for pos in positions])/len(positions)]
 
-  print(this_com)
+  if verbosity > 0:
+    mout.varOut("CoM ("+str(atoms)+")",this_com,unit="Å")
+
+  return this_com
+
+def getRMSD(atoms,reference=None,verbosity=1):
+
+  if reference is None:
+    CoM = getCentreOfMass(atoms,verbosity=verbosity-1)
+  else:
+    ref_positions = getPositions(reference)
+
+  positions = getPositions(atoms)
+
+  num_atoms = len(positions)
+
+  big_sum = 0.0
+
+  for index,pos in enumerate(positions):
+    if reference is None:
+      d = getDisplacement(pos,CoM)
+    else:
+      d = getDisplacement(pos,ref_positions[index])
+
+    big_sum += pow(d,2)
+
+  rmsd = pow(big_sum/num_atoms,0.5)
+
+  mout.varOut("RMSD ("+str(atoms)+")",rmsd,unit="Å")
+
+  return rmsd
 
 def getDisplacement(position1,position2):
   x = position1[0] - position2[0] 
@@ -165,3 +197,18 @@ def getAngle(position1,position2,position3):
   angle = np.arccos(cosine_angle)
 
   return np.degrees(angle)
+
+def getPositions(atoms):
+
+  if isinstance(atoms,ase.Atoms):
+    # ASE ATOMS
+    positions = atoms.get_positions()
+  elif isinstance(atoms,list):
+    positions = []
+    for thing in atoms: 
+      positions += thing.positions
+  else:
+    # AMP System/Chain/Residue
+    positions = atoms.positions
+
+  return positions
