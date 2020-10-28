@@ -22,8 +22,7 @@ class Residue:
                mcol.varName+self.chain+
                mcol.clear+" to "+mcol.arg+new)
     self._name = new
-    for atom in self.atoms:
-      atom.residue = new
+    self.fix_names()
 
   @property
   def num_atoms(self):
@@ -32,6 +31,15 @@ class Residue:
   @property
   def name(self):
     return self._name
+
+  @name.setter
+  def name(self,name):
+    self._name = name
+    self.fix_names()
+
+  def fix_names(self):
+    for atom in self.atoms:
+      atom.residue = self._name
 
   def atom_names(self,wRes=False,noPrime=False):
     names_list = []
@@ -98,13 +106,30 @@ class Residue:
                   mcol.arg+self.name+str([self.number]),fatal=False,code="Residue.1")
     return None
 
-  def index_from_name(self,name):
+  def delete_atom(self,name,verbosity=1):
     for index,atom in enumerate(self._atoms):
-      if atom.name == name: return index
-    mout.errorOut("No atom "+
-                  mcol.arg+name+
-                  mcol.error+" in residue "+
-                  mcol.arg+self.name+str([self.number]),fatal=True,code="Residue.2")
+      if atom.name == name:
+        del self._atoms[index]
+        if verbosity > 0:
+          mout.warningOut("Deleted "+mcol.result+"1"+
+                          mcol.warning+" atom of name "+
+                          mcol.arg+name+
+                          mcol.warning+" in residue "+
+                          mcol.arg+self.name)
+        return
+    if verbosity > 1:
+      mout.warningOut("Deleted "+mcol.result+"0"+
+                      mcol.warning+" atom of name "+
+                      mcol.arg+name+
+                      mcol.warning+" in residue "+
+                      mcol.arg+self.name)
+
+  # def index_from_name(self,name):
+  #   return self.get_atom(name).index
+  #   # mout.errorOut("No atom "+
+  #   #               mcol.arg+name+
+  #   #               mcol.error+" in residue "+
+  #   #               mcol.arg+self.name+str([self.number]),fatal=True,code="Residue.2")
 
   def copy(self):
     return copy.deepcopy(self)
