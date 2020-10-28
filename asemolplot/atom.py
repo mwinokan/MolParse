@@ -78,10 +78,15 @@ class Atom:
                mcol.varName+self.residue+str([self.res_number])+
                mcol.clear+" to "+mcol.arg+name)
     self._name = name
+    self.species = name[0]
 
   @property
   def name(self):
     return self.get_name()
+
+  @name.setter
+  def name(self,name):
+    self.set_name(name=name)
 
   @property
   def atomic_number(self):
