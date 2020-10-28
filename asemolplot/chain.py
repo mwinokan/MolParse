@@ -9,14 +9,30 @@ class Chain:
 
   def __init__(self,name):
 
-    self.name = name
+    self._name = name
     self.residues = []
+    self.fix_names()
+
+  @property
+  def name(self):
+    return self._name
+
+  @name.setter
+  def name(self,name):
+    self._name = name
+    self.fix_names()
+
+  def fix_names(self):
+    for residue in self.residues:
+      residue.chain = self._name
+    for atom in self.atoms:
+      atom.chain = self._name
 
   @property
   def num_residues(self):
     return len(self.residues)
 
-  def addResidue(self,residue):
+  def add_residue(self,residue):
     self.residues.append(residue)
 
   @property
