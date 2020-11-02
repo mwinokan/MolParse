@@ -185,12 +185,12 @@ def parsePDB(pdb,systemName=None,fix_indices=True,verbosity=1):
 
           if make_new_res:
             if residue is not None: 
-              chain.addResidue(residue)
+              chain.add_residue(residue)
               res_counter = res_counter+1
             residue = Residue(atom.residue,res_counter,atom.chain)
             if make_new_chain:
               if chain is not None:
-                system.addChain(chain)
+                system.add_chain(chain)
               chain = Chain(atom.chain)
 
           residue.addAtom(atom)
@@ -201,8 +201,8 @@ def parsePDB(pdb,systemName=None,fix_indices=True,verbosity=1):
           last_residue_name = atom.residue
           last_chain_name = atom.chain
 
-  chain.addResidue(residue)
-  system.addChain(chain)
+  chain.add_residue(residue)
+  system.add_chain(chain)
 
   if fix_indices:
     system.fix_indices()

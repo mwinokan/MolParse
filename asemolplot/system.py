@@ -27,19 +27,18 @@ class System:
     for index,atom in enumerate(self.atoms):
       atom.index = index
 
-    # for index,residue in enumerate(self.residues):
-      
+    for index,residue in enumerate(self.residues):
+      residue.number = index
 
-  def addChain(self,chain):
+  def add_chain(self,chain):
     self.chains.append(chain)
 
   def add_system(self,system):
 
     for chain in system.chains:
-      self.addChain(chain)
+      self.add_chain(chain)
 
     self.fix_indices()
-
 
   @property
   def num_atoms(self):
@@ -105,7 +104,7 @@ class System:
     for residue in self.residues:
       if residue.name == old:
         # residue.name = new
-        residue.rename(new)
+        residue.rename(new,verbosity=verbosity-1)
         count += 1
         if verbosity > 1:
           mout.warningOut("Renamed residue "+mcol.arg+residue.name+str([residue.number])+

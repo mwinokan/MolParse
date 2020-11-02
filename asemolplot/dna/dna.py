@@ -80,6 +80,49 @@ def check_legality(residue1,residue2):
 
 	return False
 
+def fix_termini(chain):
+	make_5ter(chain.residues[0])
+	make_3ter(chain.residues[-1])
+
+def make_5ter(residue):
+	assert any([residue.name=="DA",
+				   residue.name=="DC",
+				   residue.name=="DG",
+				   residue.name=="DT"])
+
+	# Append 5 to residue name
+	residue.name += "5"
+
+	# Remove HTER/H5T
+	residue.delete_atom("HTER")
+	residue.delete_atom("H5T")
+	residue.delete_atom("OXT")
+	residue.delete_atom("O5T")
+	residue.delete_atom("O1P")
+	residue.delete_atom("O2P")
+	residue.delete_atom("OP1")
+	residue.delete_atom("OP2")
+
+	# Rename P->H5T
+	residue.get_atom("P").name = "H5T"
+
+def make_3ter(residue):
+	assert any([residue.name=="DA",
+			   residue.name=="DC",
+			   residue.name=="DG",
+			   residue.name=="DT"])
+
+	# Append 5 to residue name
+	residue.name += "3"
+
+	# Remove HTER/H5T
+	residue.delete_atom("O1P3")
+	residue.delete_atom("O2P3")
+	residue.delete_atom("O3T")
+
+	# Rename P->H5T
+	residue.get_atom("P3").name = "H3T"
+
 # def get_hbond_indices(residue):
 
 # 	if residue.name.startswith("DA"):
