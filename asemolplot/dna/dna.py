@@ -8,7 +8,7 @@ def get_hbond_pairs(residue1,residue2):
 	if not legal:
 		mout.errorOut("Incompatible DNA residues "+str(residue1)+" & "+str(residue2),fatal=True)
 
-	if residue1.name == "DA" or residue1.name == "ADE":
+	if residue1.name.startswith("DA") or residue1.name == "ADE":
 		DA_N1 = residue1.get_atom(name="N1")
 		DA_N6 = residue1.get_atom(name="N6")
 		DA_H61 = residue1.get_atom(name="H61")
@@ -18,7 +18,7 @@ def get_hbond_pairs(residue1,residue2):
 		DT_H3 = residue2.get_atom(name="H3")
 		return [[ DA_N1, DT_N3, DT_H3 ],
 				[ DT_O4, DA_N6, DA_H61, DA_H62 ]]
-	elif residue1.name == "DT" or residue1.name == "THY":
+	elif residue1.name.startswith("DT") or residue1.name == "THY":
 		DA_N1 = residue2.get_atom(name="N1")
 		DA_N6 = residue2.get_atom(name="N6")
 		DA_H61 = residue2.get_atom(name="H61")
@@ -28,7 +28,7 @@ def get_hbond_pairs(residue1,residue2):
 		DT_H3 = residue1.get_atom(name="H3")
 		return [[ DA_N1, DT_N3, DT_H3 ],
 				[ DT_O4, DA_N6, DA_H61, DA_H62 ]]
-	elif residue1.name == "DC" or residue1.name == "CYT":
+	elif residue1.name.startswith("DC") or residue1.name == "CYT":
 		DC_O2 = residue1.get_atom(name="O2")
 		DC_N3 = residue1.get_atom(name="N3")
 		DC_N4 = residue1.get_atom(name="N4")
@@ -44,7 +44,7 @@ def get_hbond_pairs(residue1,residue2):
 		return [[ DC_O2, DG_N2, DG_H21, DG_H22 ],
 				[ DC_N3, DG_N1, DG_H1 ],
 				[ DG_O6, DC_N4, DC_H41, DC_H42 ]]
-	elif residue1.name == "DG" or residue1.name == "GUA":
+	elif residue1.name.startswith("DG") or residue1.name == "GUA":
 		DC_O2 = residue2.get_atom(name="O2")
 		DC_N3 = residue2.get_atom(name="N3")
 		DC_N4 = residue2.get_atom(name="N4")
@@ -65,24 +65,24 @@ def get_hbond_pairs(residue1,residue2):
 
 def check_legality(residue1,residue2):
 
-	if residue1.name == "DA" or residue1.name == "ADE":
-		if residue2.name == "DT" or residue2.name == "THY":
+	if residue1.name.startswith("DA") or residue1.name == "ADE":
+		if residue2.name.startswith("DT") or residue2.name == "THY":
 			return True
-	elif residue1.name == "DT" or residue1.name == "THY":
-		if residue2.name == "DA" or residue2.name == "ADE":
+	elif residue1.name.startswith("DT") or residue1.name == "THY":
+		if residue2.name.startswith("DA") or residue2.name == "ADE":
 			return True
-	elif residue1.name == "DG" or residue1.name == "GUA":
-		if residue2.name == "DC" or residue2.name == "CYT":
+	elif residue1.name.startswith("DG") or residue1.name == "GUA":
+		if residue2.name.startswith("DC") or residue2.name == "CYT":
 			return True
-	elif residue1.name == "DC" or residue1.name == "CYT":
-		if residue2.name == "DG" or residue2.name == "GUA":
+	elif residue1.name.startswith("DC") or residue1.name == "CYT":
+		if residue2.name.startswith("DG") or residue2.name == "GUA":
 			return True
 
 	return False
 
 # def get_hbond_indices(residue):
 
-# 	if residue.name == "DA":
+# 	if residue.name.startswith("DA"):
 # 		N1 = residue.get_atom(name="N1")
 # 		N6 = residue.get_atom(name="N6")
 # 		N6 = residue.get_atom(name="N6")
