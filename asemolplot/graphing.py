@@ -259,7 +259,7 @@ def graphBondLength(trajectory,indices,printScript=False,show=True,filename=None
   else:
     return None, None, None
 
-def graphBondVibSpec(trajectory,indices,printScript=False,show=True,filename=None,verbosity=2,timestep=None,title=None):
+def graphBondVibSpec(trajectory,indices,printScript=False,show=True,filename=None,verbosity=2,timestep=None,title=None,ymin=None,ymax=None):
   """
     Graph the fourier transfort of bond lengths (displacement) between atoms.
 
@@ -274,23 +274,43 @@ def graphBondVibSpec(trajectory,indices,printScript=False,show=True,filename=Non
 
   many = any(isinstance(el,list) for el in indices)
 
-  xdata=[]
-  ydata=[]
-  labels=[]
+  if not many:
 
-  index1 = indices[0]
-  index2 = indices[1]
+    xdata=[]
+    ydata=[]
+    labels=[]
 
-  for n, atoms in enumerate(trajectory):
-    if timestep is None:
+    index1 = indices[0]
+    index2 = indices[1]
+
+    for n, atoms in enumerate(trajectory):
+      # if timestep is None:
       xdata.append(n)
 
-    dist = atoms.get_distance(index1,index2)
-    ydata.append(dist)
+      dist = atoms.get_distance(index1,index2)
+      ydata.append(dist)
 
-  ydata = np.fft.fft(ydata)
+    # print(len(xdata))
+    # print(len(ydata))
 
-  mplot.graph2D(xdata,ydata,show=show,filename=filename,verbosity=verbosity-1)
+    # import scipy
+    import scipy.fftpack
+
+    Ydata = scipy.fftpack.fft(ydata)[:len(ydata)//2]
+
+    if timestep is not None:
+      Xdata = scipy.fftpack.fftfreq(n,timestep)[:len(ydata)//2]
+    else:
+      Xdata = xdata[:len(ydata)//2]
+
+    # ydata = np.fft.fft(ydata)
+
+    if ymin is None:
+      ymin=min(ydata)
+    if ymax is None:
+      ymax=max(ydata)
+
+    mplot.graph2D(Xdata,Ydata,show=show,filename=filename,verbosity=verbosity-1,yLog=True,ymin=ymin,ymax=ymax)
 
 # just a wrapper for mplot.show()
 def showFigs(verbosity=1):
