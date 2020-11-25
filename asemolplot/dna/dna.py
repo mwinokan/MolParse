@@ -121,7 +121,9 @@ def make_3ter(residue):
 	residue.delete_atom("O3T")
 
 	# Rename P->H5T
-	residue.get_atom("P3").name = "H3T"
+	atom = residue.get_atom("P3")
+	if atom is not None:
+		atom.name = "H3T"
 
 # def get_hbond_indices(residue):
 
