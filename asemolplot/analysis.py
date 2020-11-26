@@ -7,29 +7,63 @@ import ase
 
 import numpy as np
 
-def bondLengthStats(trajectory,index_pair,printScript=False,verbosity=1,timestep=None,yUnit="Angstroms",fitMin=None,fitMax=None,returnData=False,dataFile=None):
-
+def getAtomLabel(trajectory,index,full=False):
   atom_symbols = trajectory[0].get_chemical_symbols()
   atom_tags = trajectory[0].get_tags()
 
-  index1 = index_pair[0]
-  index2 = index_pair[1]
-
-  atom_symbol1 = atom_symbols[index1]
-  atom_symbol2 = atom_symbols[index2]
-  if atom_tags[index1] != 0:
-    atom_tag1 = str(atom_tags[index1])
+  atom_symbol = atom_symbols[index]
+  if atom_tags[index] != 0:
+    atom_tag = str(atom_tags[index])
   else:
-    atom_tag1 = ""
-  if atom_tags[index2] != 0:
-    atom_tag2 = str(atom_tags[index2])
-  else:
-    atom_tag2 = ""
+    atom_tag = ""
 
-  atom_label1 = atom_symbol1+str(atom_tag1)+"["+str(index1)+"]"
-  atom_label2 = atom_symbol2+str(atom_tag2)+"["+str(index2)+"]"
-  labels = [atom_label1, atom_label2]
+  atom_label = atom_symbol+str(atom_tag)+"["+str(index)+"]"
+
+  if full:
+    return atom_label,atom_symbol,atom_tag
+  else:
+    return atom_label
+
+def getBondLabel(trajectory,index_pair,full=False):
+
+  index1=index_pair[0]
+  index2=index_pair[1]
+
+  atom_label1,atom_symbol1,atom_tag1 = getAtomLabel(trajectory,index1,full=True)
+  atom_label2,atom_symbol2,atom_tag2 = getAtomLabel(trajectory,index2,full=True)
+
   bond_title = atom_symbol1+str(atom_tag1)+"-"+atom_symbol2+str(atom_tag2)+" bond ["+str(index1)+"-"+str(index2)+"]"
+
+  if full:
+    return bond_title,atom_label1,atom_label2
+  else:
+    return bond_title
+
+def bondLengthStats(trajectory,index_pair,printScript=False,verbosity=1,timestep=None,yUnit="Angstroms",fitMin=None,fitMax=None,returnData=False,dataFile=None):
+
+  # atom_symbols = trajectory[0].get_chemical_symbols()
+  # atom_tags = trajectory[0].get_tags()
+
+  # index1 = index_pair[0]
+  # index2 = index_pair[1]
+
+  # atom_symbol1 = atom_symbols[index1]
+  # atom_symbol2 = atom_symbols[index2]
+  # if atom_tags[index1] != 0:
+  #   atom_tag1 = str(atom_tags[index1])
+  # else:
+  #   atom_tag1 = ""
+  # if atom_tags[index2] != 0:
+  #   atom_tag2 = str(atom_tags[index2])
+  # else:
+  #   atom_tag2 = ""
+
+  # atom_label1 = atom_symbol1+str(atom_tag1)+"["+str(index1)+"]"
+  # atom_label2 = atom_symbol2+str(atom_tag2)+"["+str(index2)+"]"
+  # # labels = [atom_label1, atom_label2]
+  # bond_title = atom_symbol1+str(atom_tag1)+"-"+atom_symbol2+str(atom_tag2)+" bond ["+str(index1)+"-"+str(index2)+"]"
+
+  bond_title = getBondLabel(trajectory,index_pair)
 
   xdata=[]
   ydata=[]

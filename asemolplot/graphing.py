@@ -9,6 +9,7 @@ from ase import units
 
 from .analysis import bondLengthStats
 from .analysis import bondAngleStats
+from .analysis import getBondLabel
 
 """
 
@@ -154,7 +155,7 @@ def graphDisplacement(trajectory,show=True,filename=None,relative=True,verbosity
   if (verbosity > 0):
     mout.out("Done.") # user output
 
-def graphBondLength(trajectory,indices,printScript=False,show=True,filename=None,fitMin=None,fitMax=None,verbosity=2,timestep=None,title=None,fitOrder=None,yUnit="Angstroms",dataFile=None,ymin=0,ymax=None,xmin=None,xmax=None,writeData=False):
+def graphBondLength(trajectory,indices,printScript=False,show=True,filename=None,fitMin=None,fitMax=None,verbosity=2,timestep=None,title=None,fitOrder=None,yUnit="Angstroms",dataFile=None,ymin=0,ymax=None,xmin=None,xmax=None,write_data=False):
   """
     Graph the bond lengths (displacement) between atoms.
 
@@ -221,7 +222,7 @@ def graphBondLength(trajectory,indices,printScript=False,show=True,filename=None
       text = mplot.getCoeffStr(val,err,1,yUnit=yUnit,xUnit=xUnit)
       mplot.graph2D(xdata,ydata,fitFunc=fit_func,show=show,xlab=xlab,ylab="Distance [Angstrom]",filename=filename,title=label,verbosity=verbosity,subtitle=text,ymin=ymin,ymax=ymax,xmin=xmin,xmax=xmax)
 
-  if writeData:
+  if write_data:
 
     import os
     base=os.path.basename(filename)
@@ -259,7 +260,7 @@ def graphBondLength(trajectory,indices,printScript=False,show=True,filename=None
   else:
     return None, None, None
 
-def graphBondVibSpec(trajectory,indices,printScript=False,show=True,filename=None,verbosity=2,timestep=None,title=None,ymin=None,ymax=None):
+def graphBondVibSpec(trajectory,indices,printScript=False,show=True,filename=None,verbosity=2,timestep=None,title=None,ymin=None,ymax=None,power_spec=False,power_segment=None,wave_number=False,xlab="Frequency [Hz]",write_data=False):
   """
     Graph the fourier transfort of bond lengths (displacement) between atoms.
 
@@ -274,11 +275,15 @@ def graphBondVibSpec(trajectory,indices,printScript=False,show=True,filename=Non
 
   many = any(isinstance(el,list) for el in indices)
 
+  if many:
+    mout.errorOut("Unsupported.",fatal=True)
+
   if not many:
 
     xdata=[]
     ydata=[]
-    labels=[]
+
+    bond_label = getBondLabel(trajectory,indices)
 
     index1 = indices[0]
     index2 = indices[1]
@@ -303,14 +308,73 @@ def graphBondVibSpec(trajectory,indices,printScript=False,show=True,filename=Non
     else:
       Xdata = xdata[:len(ydata)//2]
 
+    if power_spec:
+      if timestep is None:
+        mout.errorOut("Timestep required for power spectrum",fatal=True)
+      import scipy.signal
+      if power_segment is None:
+        power_segment = len(ydata)//10
+      f,Pxx_den = scipy.signal.welch(ydata,fs=1/timestep,nperseg=power_segment)
+
+      Xdata = f
+      Ydata = Pxx_den
+
+    if wave_number:
+      temp_x=[]
+      light_speed = 299792458
+      for x in Xdata:
+        temp_x.append(x/light_speed/100.0)
+      Xdata = temp_x
+      xlab="Wave Number [/cm]"
+
     # ydata = np.fft.fft(ydata)
 
-    if ymin is None:
-      ymin=min(ydata)
-    if ymax is None:
-      ymax=max(ydata)
+    # if ymin is None:
+    #   ymin=min(ydata)
+    # if ymax is None:
+    #   ymax=max(ydata)
 
-    mplot.graph2D(Xdata,Ydata,show=show,filename=filename,verbosity=verbosity-1,yLog=True,ymin=ymin,ymax=ymax)
+    mplot.graph2D(Xdata,Ydata,ytitles=bond_label,show=show,filename=filename,verbosity=verbosity-1,yLog=True,ymin=ymin,ymax=ymax,xlab=xlab)
+
+    if write_data:
+
+      import os
+      base=os.path.basename(filename)
+      data_dump = open(os.path.splitext(base)[0]+".dat",'w')
+
+      if many:
+
+        # NOT UPDATED
+
+        data_dump.write("# x "+str(labels)+"\n")
+        data_dump.close()
+
+        data_dump = open(os.path.splitext(base)[0]+".dat",'a')
+
+        for index,x in enumerate(xdata):
+          data_dump.write(str(xdata[index])+" ")
+          for data in ydata:
+            data_dump.write(str(data[index])+" ")
+          data_dump.write("\n")
+
+      else:
+
+        # bond_label = getBondLabel(trajectory,indices)
+
+        if wave_number:
+          data_dump.write("# wave_number [/cm], "+bond_label+"\n")
+        else:
+          data_dump.write("# frequency [Hz], "+bond_label+"\n")
+        data_dump.close()
+
+        data_dump = open(os.path.splitext(base)[0]+".dat",'a')
+
+        for index,x in enumerate(Xdata):
+          data_dump.write(str(Xdata[index])+" ")
+          data_dump.write(str(Ydata[index])+" ")
+          data_dump.write("\n")
+
+      data_dump.close()
 
 # just a wrapper for mplot.show()
 def showFigs(verbosity=1):

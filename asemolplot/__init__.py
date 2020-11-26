@@ -34,6 +34,8 @@ from .analysis import getCentreOfMass
 from .analysis import getRMSD
 from .analysis import getAngle
 from .analysis import getDisplacement
+from .analysis import getBondLabel
+from .analysis import getAtomLabel
 
 # Structure Comparison
 from .compare import compareSystems
