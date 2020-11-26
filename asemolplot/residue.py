@@ -96,7 +96,7 @@ class Residue:
   def atoms(self):
     return self._atoms
 
-  def get_atom(self,name=None):
+  def get_atom(self,name):
     for atom in self._atoms:
       if atom.name == name: return atom
     # print(self.atom_names())
