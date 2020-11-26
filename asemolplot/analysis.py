@@ -44,8 +44,8 @@ def bondLengthStats(trajectory,index_pair,printScript=False,verbosity=1,timestep
   # atom_symbols = trajectory[0].get_chemical_symbols()
   # atom_tags = trajectory[0].get_tags()
 
-  # index1 = index_pair[0]
-  # index2 = index_pair[1]
+  index1 = index_pair[0]
+  index2 = index_pair[1]
 
   # atom_symbol1 = atom_symbols[index1]
   # atom_symbol2 = atom_symbols[index2]

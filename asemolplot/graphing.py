@@ -225,15 +225,17 @@ def graphBondLength(trajectory,indices,printScript=False,show=True,filename=None
   if write_data:
 
     import os
-    base=os.path.basename(filename)
-    data_dump = open(os.path.splitext(base)[0]+".dat",'w')
+    # base=os.path.basename(filename)
+    # data_dump = open(os.path.splitext(base)[0]+".dat",'w')
+    data_dump = open(filename.replace(".png",".dat"),'w')
 
     if many:
 
       data_dump.write("# x "+str(labels)+"\n")
       data_dump.close()
 
-      data_dump = open(os.path.splitext(base)[0]+".dat",'a')
+      # data_dump = open(os.path.splitext(base)[0]+".dat",'a')
+      data_dump = open(filename.replace(".png",".dat"),'a')
 
       for index,x in enumerate(xdata):
         data_dump.write(str(xdata[index])+" ")
@@ -246,7 +248,8 @@ def graphBondLength(trajectory,indices,printScript=False,show=True,filename=None
       data_dump.write("# x "+label+"\n")
       data_dump.close()
 
-      data_dump = open(os.path.splitext(base)[0]+".dat",'a')
+      # data_dump = open(os.path.splitext(base)[0]+".dat",'a')
+      data_dump = open(filename.replace(".png",".dat"),'a')
 
       for index,x in enumerate(xdata):
         data_dump.write(str(xdata[index])+" ")
@@ -254,6 +257,8 @@ def graphBondLength(trajectory,indices,printScript=False,show=True,filename=None
         data_dump.write("\n")
 
     data_dump.close()
+
+    mout.out("Data dumped to "+filename.replace(".png",".dat"))
 
   if fitOrder is not None:
     return val, err, fit_func
