@@ -52,6 +52,9 @@ from .graphing import graphBondVibSpec
 # Console IO
 from .console_io import printEnergy # needs documentation
 
+# Amber specific
+from .amber import prep4amber
+
 # File conversion
 from .convert import pdb2traj # needs documentation
 from .convert import gro2traj # needs documentation
