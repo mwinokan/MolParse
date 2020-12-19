@@ -83,7 +83,7 @@ class System:
       names.append(chain.name)
     return names
 
-  def rename_atoms(self,old,new,res_filter=None,verbosity=1):
+  def rename_atoms(self,old,new,res_filter=None,verbosity=2):
     count=0
     for residue in self.residues:
       if res_filter is not None and res_filter not in residue.name:
@@ -91,27 +91,27 @@ class System:
       for atom in residue.atoms:
         if atom.name == old:
           count += 1
-          if verbosity > 1:
-            mout.warningOut("Renamed atom "+mcol.arg+atom.name+str([atom.index,residue.name])+
-                            mcol.warning+" to "+mcol.arg+new)
-          atom.set_name(new)
+          atom.set_name(new,verbosity=verbosity-1)
     if verbosity > 0:
-      mout.warningOut("Renamed "+mcol.result+str(count)+mcol.warning+" atoms from "+mcol.arg+old+
-                      mcol.warning+" to "+mcol.arg+new)
+      if res_filter is None:
+        mout.warningOut("Renamed "+mcol.result+str(count)+mcol.warning+" atoms from "+mcol.arg+old+
+                        mcol.warning+" to "+mcol.arg+new)
+      else:
+        mout.warningOut("Renamed "+mcol.result+str(count)+mcol.warning+" atoms from "+mcol.arg+old+
+                        mcol.warning+" to "+mcol.arg+new+mcol.warning+" with res_filter "+mcol.arg+res_filter)
+    return count
 
-  def rename_residues(self,old,new,verbosity=1):
+  def rename_residues(self,old,new,verbosity=2):
     count=0
     for residue in self.residues:
       if residue.name == old:
         # residue.name = new
         residue.rename(new,verbosity=verbosity-1)
         count += 1
-        if verbosity > 1:
-          mout.warningOut("Renamed residue "+mcol.arg+residue.name+str([residue.number])+
-                          mcol.warning+" to "+mcol.arg+new)
     if verbosity > 0:
       mout.warningOut("Renamed "+mcol.result+str(count)+mcol.warning+" residues from "+mcol.arg+old+
                       mcol.warning+" to "+mcol.arg+new)
+    return count
 
   def get_chain(self,name):
     for chain in self.chains:
@@ -134,11 +134,11 @@ class System:
     for index,atom in enumerate(atoms):
       if atom.heterogen:
         del_list.append(index)
-    number_deleted = self.remove_atoms(del_list,verbosity=verbosity-1)
+    number_deleted = self.remove_atoms_by_index(del_list,verbosity=verbosity-1)
     if verbosity > 0:
       mout.warningOut("Removed "+mcol.result+str(number_deleted)+mcol.warning+" heterogens")
 
-  def remove_atoms(self,del_list,verbosity=1):
+  def remove_atoms_by_index(self,del_list,verbosity=1):
     number_deleted=0
     self.fix_indices()
     for chain in self.chains:
@@ -152,6 +152,29 @@ class System:
                               mcol.arg+atom.name+str([atom.index])+
                               mcol.warning+" in residue "+
                               mcol.arg+residue.name+str([residue.number]))
+    return number_deleted
+
+  def remove_atoms(self,name,res_filter=None,verbosity=2):
+    number_deleted=0
+    self.fix_indices()
+    for chain in self.chains:
+      for residue in chain.residues:
+        if res_filter is not None and res_filter not in residue.name:
+          continue
+        for index,atom in reversed(list(enumerate(residue.atoms))):
+          if atom.name == name:
+            del residue.atoms[index]
+            number_deleted += 1
+            if verbosity > 1:
+              mout.warningOut("Removed atom "+
+                              mcol.arg+atom.name+str([atom.index])+
+                              mcol.warning+" in residue "+
+                              mcol.arg+residue.name+str([residue.number]))
+    if verbosity > 0:
+      if res_filter is None:
+        mout.warningOut("Removed "+mcol.result+str(number_deleted)+mcol.warning+" atoms named "+mcol.arg+name)
+      else:
+        mout.warningOut("Removed "+mcol.result+str(number_deleted)+mcol.warning+" atoms named "+mcol.arg+name+mcol.warning+" with res_filter "+mcol.arg+res_filter)
     return number_deleted
 
   def atom_names(self,wRes=False,noPrime=False):
