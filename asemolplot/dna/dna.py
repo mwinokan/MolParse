@@ -112,22 +112,16 @@ def make_3ter(residue):
 			   residue.name=="DG",
 			   residue.name=="DT"])
 
-	# Append 5 to residue name
+	# Append 3 to residue name
 	residue.name += "3"
 
-	# Remove HTER/H5T
+	# Remove HTER/H3T
 	residue.delete_atom("O1P3")
 	residue.delete_atom("O2P3")
 	residue.delete_atom("O3T")
+	residue.delete_atom("H3T")
 
-	# Rename P->H5T
+	# Rename P3->H3T
 	atom = residue.get_atom("P3")
 	if atom is not None:
 		atom.name = "H3T"
-
-# def get_hbond_indices(residue):
-
-# 	if residue.name.startswith("DA"):
-# 		N1 = residue.get_atom(name="N1")
-# 		N6 = residue.get_atom(name="N6")
-# 		N6 = residue.get_atom(name="N6")
