@@ -130,76 +130,79 @@ def parsePDB(pdb,systemName=None,fix_indices=True,verbosity=1):
     systemName = os.path.splitext(pdb)[0]
   system = System(name = systemName)
 
-  with open(pdb,"r") as input_pdb:
-    searching = True
-    for line in input_pdb:
-      if searching:
-        if line.startswith("MODEL"):
-          searching = False
-        elif line.startswith("ATOM"):
-          searching = False
-          #### PARSELINE
-          atom = parsePDBAtomLine(line,res_counter,atom_counter)
-          chain = Chain(atom.chain)
-          residue = Residue(atom.residue,res_counter,atom.chain)
-          residue.addAtom(atom)
-          last_residue_name = atom.residue
-          last_residue_number = atom.res_number
-          last_chain_name = atom.chain
-      else:
-        if line.startswith("ENDMDL"):
-          break
-        if line.startswith("END"):
-          break
-        if line.startswith("TER"):
-          if verbosity > 0:
-            mout.warningOut("Terminal added to "+mcol.arg+chain.name+":"+residue.name)
-          residue.atoms[-1].terminal = True
-          # atom = residue.atoms[-1]
-          # # residue.atoms[-1].ter_line=line
-
-          # atom.terminal = True
-          # atom.ter_line =  "TER   "
-          # atom.ter_line += str(atom.index)
-          # atom.ter_line += "\n"
-
-          # residue.atoms[-1].ter_line="TER   "+x_str = '{:.3f}'.format(atom.x).rjust(8)+"\n"
-          # # TER    4060      ILE A 509  
-          continue
-        if line.startswith("CONECT"):
-          continue
-        if line.startswith("MASTER"):
-          continue
-        else:
-          ### PARSELINE
-          atom = parsePDBAtomLine(line,res_counter,atom_counter)
-          
-          make_new_res = False
-          if residue is None: make_new_res = True
-          if last_residue_name != atom.residue: make_new_res = True
-          if last_residue_number != atom.res_number: make_new_res = True
-
-          make_new_chain = False
-          if residue is None: make_new_chain = True
-          if last_chain_name != atom.chain: make_new_chain = True
-
-          if make_new_res:
-            if residue is not None: 
-              chain.add_residue(residue)
-              res_counter = res_counter+1
+  try: 
+    with open(pdb,"r") as input_pdb:
+      searching = True
+      for line in input_pdb:
+        if searching:
+          if line.startswith("MODEL"):
+            searching = False
+          elif line.startswith("ATOM"):
+            searching = False
+            #### PARSELINE
+            atom = parsePDBAtomLine(line,res_counter,atom_counter)
+            chain = Chain(atom.chain)
             residue = Residue(atom.residue,res_counter,atom.chain)
-            if make_new_chain:
-              if chain is not None:
-                system.add_chain(chain)
-              chain = Chain(atom.chain)
+            residue.addAtom(atom)
+            last_residue_name = atom.residue
+            last_residue_number = atom.res_number
+            last_chain_name = atom.chain
+        else:
+          if line.startswith("ENDMDL"):
+            break
+          if line.startswith("END"):
+            break
+          if line.startswith("TER"):
+            if verbosity > 1:
+              mout.warningOut("Terminal added to "+mcol.arg+chain.name+":"+residue.name)
+            residue.atoms[-1].terminal = True
+            # atom = residue.atoms[-1]
+            # # residue.atoms[-1].ter_line=line
 
-          residue.addAtom(atom)
+            # atom.terminal = True
+            # atom.ter_line =  "TER   "
+            # atom.ter_line += str(atom.index)
+            # atom.ter_line += "\n"
 
-          atom_counter += 1
+            # residue.atoms[-1].ter_line="TER   "+x_str = '{:.3f}'.format(atom.x).rjust(8)+"\n"
+            # # TER    4060      ILE A 509  
+            continue
+          if line.startswith("CONECT"):
+            continue
+          if line.startswith("MASTER"):
+            continue
+          else:
+            ### PARSELINE
+            atom = parsePDBAtomLine(line,res_counter,atom_counter)
+            
+            make_new_res = False
+            if residue is None: make_new_res = True
+            if last_residue_name != atom.residue: make_new_res = True
+            if last_residue_number != atom.res_number: make_new_res = True
 
-          last_residue_number = atom.res_number
-          last_residue_name = atom.residue
-          last_chain_name = atom.chain
+            make_new_chain = False
+            if residue is None: make_new_chain = True
+            if last_chain_name != atom.chain: make_new_chain = True
+
+            if make_new_res:
+              if residue is not None: 
+                chain.add_residue(residue)
+                res_counter = res_counter+1
+              residue = Residue(atom.residue,res_counter,atom.chain)
+              if make_new_chain:
+                if chain is not None:
+                  system.add_chain(chain)
+                chain = Chain(atom.chain)
+
+            residue.addAtom(atom)
+
+            atom_counter += 1
+
+            last_residue_number = atom.res_number
+            last_residue_name = atom.residue
+            last_chain_name = atom.chain
+  except FileNotFoundError:
+    mout.errorOut("File "+mcol.file+pdb+mcol.error+" not found",fatal=True)
 
   chain.add_residue(residue)
   system.add_chain(chain)
@@ -345,6 +348,12 @@ def writePDB(filename,system,verbosity=1,printScript=False):
         if len(atom_serial_str) > 5: 
           atom_serial_str = "XXXXX"
 
+        residue_serial_str = str(residue_serial).rjust(5)
+        if len(atom_serial_str) > 4: 
+          # residue_serial_str = "XXXX"
+          # residue_serial_str = "    "
+          residue_serial_str = residue_serial_str[-4:]
+
         strbuff += atom_serial_str
         strbuff += " "
         strbuff += str(atom.name).rjust(4)
@@ -352,7 +361,7 @@ def writePDB(filename,system,verbosity=1,printScript=False):
         strbuff += str(atom.residue).ljust(4)
         assert len(chain.name) == 1
         strbuff += str(chain.name)
-        strbuff += str(residue_serial).rjust(4)
+        strbuff += residue_serial_str
         strbuff += "    "
 
         x_str = '{:.3f}'.format(atom.x).rjust(8)
