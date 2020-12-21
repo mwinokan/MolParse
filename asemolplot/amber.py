@@ -125,178 +125,178 @@ def prep4amber(system):
 		i = system.rename_atoms("H3T","H30",res_filter="ATP",verbosity=0)
 		mout.out("Fixed atom names in "+mcol.result+str(i)+mcol.clear+" instances of "+mcol.arg+"ATP")
 
-def dnacleanup(system):
+# def dnacleanup(system):
 
-DG H2
-DG N6
-DG H61
-DG H62
-DC N9
-DC N2
-DC H21
-DC H22
-DC H1
-DC O6
-DC N7
-DC C8
-DC H8
-DG H6
-DG O2
-DG H3
-DG O4
-DG C5M
-DG H71
-DG H72
-DG H73
-DC N9
-DC N2
-DC H21
-DC H22
-DC H1
-DC O6
-DC N7
-DC C8
-DC H8
-DG H6
-DG H5
-DG O2
-DG N4
-DG H41
-DG H42
-DC N9
-DC N7
-DC C8
-DC H8
-DC H2
-DC N6
-DC H61
-DC H62
-DC H3
-DC O4
-DC C5M
-DC H71
-DC H72
-DC H73
-DG  H6
-DG  O2
-DG  H3
-DG  O4
-DG  C5M
-DG  H71
-DG  H72
-DG  H73
-DC  H3
-DC  O4
-DC  C5M
-DC  H71
-DC  H72
-DC  H73
-DC  H3
-DC  O4
-DC  C5M
-DC  H71
-DC  H72
-DC  H73
-DC  H3
-DC  O4
-DC  C5M
-DC  H71
-DC  H72
-DC  H73
-DC  H3
-DC  O4
-DC  C5M
-DC  H71
-DC  H72
-DC  H73
-DC  H3
-DC  O4
-DC  C5M
-DC  H71
-DC  H72
-DC  H73
-DC  H3
-DC  O4
-DC  C5M
-DC  H71
-DC  H72
-DC  H73
-DC  H3
-DC  O4
-DC  C5M
-DC  H71
-DC  H72
-DC  H73
-DC  H3
-DC  O4
-DC  C5M
-DC  H71
-DC  H72
-DC  H73
-DC  H3
-DC  O4
-DC  C5M
-DC  H71
-DC  H72
-DC  H73
-DC3 H3
-DC3 O4
-DC3 C5M
-DC3 H71
-DC3 H72
-DC3 H73
-DC  N9
-DC  N7
-DC  C8
-DC  H8
-DC  H2
-DC  N6
-DC  H61
-DC  H62
-DG  H2
-DG  N6
-DG  H61
-DG  H62
-DG  H6
-DG  O2
-DG  H3
-DG  O4
-DG  C5M
-DG  H71
-DG  H72
-DG  H73
-DC  N9
-DC  N2
-DC  H21
-DC  H22
-DC  H1
-DC  O6
-DC  N7
-DC  C8
-DC  H8
-DG  H6
-DG  H5
-DG  O2
-DG  N4
-DG  H41
-DG  H42
-DC  N9
-DC  N7
-DC  C8
-DC  H8
-DC  H2
-DC  N6
-DC  H61
-DC  H62
-DG  H6
-DG  H5
-DG  O2
-DG  N4
-DG  H41
-DG  H42
-DC  H3
-DC  O4
-DC  C5M
-DC  H71
-DC  H72
-DC  H73
+# DG H2
+# DG N6
+# DG H61
+# DG H62
+# DC N9
+# DC N2
+# DC H21
+# DC H22
+# DC H1
+# DC O6
+# DC N7
+# DC C8
+# DC H8
+# DG H6
+# DG O2
+# DG H3
+# DG O4
+# DG C5M
+# DG H71
+# DG H72
+# DG H73
+# DC N9
+# DC N2
+# DC H21
+# DC H22
+# DC H1
+# DC O6
+# DC N7
+# DC C8
+# DC H8
+# DG H6
+# DG H5
+# DG O2
+# DG N4
+# DG H41
+# DG H42
+# DC N9
+# DC N7
+# DC C8
+# DC H8
+# DC H2
+# DC N6
+# DC H61
+# DC H62
+# DC H3
+# DC O4
+# DC C5M
+# DC H71
+# DC H72
+# DC H73
+# DG  H6
+# DG  O2
+# DG  H3
+# DG  O4
+# DG  C5M
+# DG  H71
+# DG  H72
+# DG  H73
+# DC  H3
+# DC  O4
+# DC  C5M
+# DC  H71
+# DC  H72
+# DC  H73
+# DC  H3
+# DC  O4
+# DC  C5M
+# DC  H71
+# DC  H72
+# DC  H73
+# DC  H3
+# DC  O4
+# DC  C5M
+# DC  H71
+# DC  H72
+# DC  H73
+# DC  H3
+# DC  O4
+# DC  C5M
+# DC  H71
+# DC  H72
+# DC  H73
+# DC  H3
+# DC  O4
+# DC  C5M
+# DC  H71
+# DC  H72
+# DC  H73
+# DC  H3
+# DC  O4
+# DC  C5M
+# DC  H71
+# DC  H72
+# DC  H73
+# DC  H3
+# DC  O4
+# DC  C5M
+# DC  H71
+# DC  H72
+# DC  H73
+# DC  H3
+# DC  O4
+# DC  C5M
+# DC  H71
+# DC  H72
+# DC  H73
+# DC  H3
+# DC  O4
+# DC  C5M
+# DC  H71
+# DC  H72
+# DC  H73
+# DC3 H3
+# DC3 O4
+# DC3 C5M
+# DC3 H71
+# DC3 H72
+# DC3 H73
+# DC  N9
+# DC  N7
+# DC  C8
+# DC  H8
+# DC  H2
+# DC  N6
+# DC  H61
+# DC  H62
+# DG  H2
+# DG  N6
+# DG  H61
+# DG  H62
+# DG  H6
+# DG  O2
+# DG  H3
+# DG  O4
+# DG  C5M
+# DG  H71
+# DG  H72
+# DG  H73
+# DC  N9
+# DC  N2
+# DC  H21
+# DC  H22
+# DC  H1
+# DC  O6
+# DC  N7
+# DC  C8
+# DC  H8
+# DG  H6
+# DG  H5
+# DG  O2
+# DG  N4
+# DG  H41
+# DG  H42
+# DC  N9
+# DC  N7
+# DC  C8
+# DC  H8
+# DC  H2
+# DC  N6
+# DC  H61
+# DC  H62
+# DG  H6
+# DG  H5
+# DG  O2
+# DG  N4
+# DG  H41
+# DG  H42
+# DC  H3
+# DC  O4
+# DC  C5M
+# DC  H71
+# DC  H72
+# DC  H73
