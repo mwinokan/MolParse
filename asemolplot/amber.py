@@ -30,6 +30,8 @@ def umbrella_helper_2dist(atoms,weights,coord_range,num_windows,force_constant,w
 	if subdir is not None:
 		os.system("mkdir -p "+subdir)
 
+	restraints = []
+
 	for i,centre in enumerate(centres):
 
 		end = "\n"
@@ -65,26 +67,51 @@ def umbrella_helper_2dist(atoms,weights,coord_range,num_windows,force_constant,w
 		
 		rst_buffer += "/"+end+end
 
+		restraints.append({'centre':centre,
+						   'r1':r1,
+						   'r2':r2,
+						   'r3':r3,
+						   'r4':r4,
+						   'rk2':rk2,
+						   'rk3':rk3})
+
 		if subdir is not None:
 		    out_rst = open(subdir+"/window_"+str(i+1)+".RST","w")
 		    out_rst.write(rst_buffer)
 		    out_rst.close()
 		    mout.out("File written to "+mcol.file+subdir+"/window_"+str(i+1)+".RST")
 
+		for i in range(samples):
+	
 	import mplot
 
 	xdata = []
-	ydata = []
+	big_ydata = []
 
 	for i in range(samples):
 
 		# print(i,coord_range[0]+i*(coord_range[1]-coord_range[0])/(samples-1))
 		x = coord_range[0]+i*(coord_range[1]-coord_range[0])/(samples-1)
-
-		y = restraint_potential(x,r1,r2,r3,r4,rk2,rk3)
-
 		xdata.append(x)
-		ydata.append(y)
+
+	for restraint in restraints:
+
+		ydata = []
+
+		r1 = restraint['r1']
+		r2 = restraint['r2']
+		r3 = restraint['r3']
+		r4 = restraint['r4']
+		rk2 = restraint['rk2']
+		rk3 = restraint['rk3']
+		
+		for x in xdata:
+
+			y = restraint_potential(x,r1,r2,r3,r4,rk2,rk3)
+
+			ydata.append(y)
+
+		big_ydata.append(ydata)
 
 	mplot.graph2D(xdata,ydata)
 
