@@ -103,7 +103,7 @@ def tagFromLine(line,byResidue):
   except:
     return 0
 
-def parsePDB(pdb,systemName=None,fix_indices=True,verbosity=1):
+def parsePDB(pdb,systemName=None,fix_indices=True,fix_atomnames=True,verbosity=1):
 
   if (verbosity > 0):
     mout.out("parsing "+mcol.file+
@@ -209,6 +209,9 @@ def parsePDB(pdb,systemName=None,fix_indices=True,verbosity=1):
 
   if fix_indices:
     system.fix_indices()
+
+  if fix_atomnames:
+    system.fix_atomnames()
 
   if (verbosity > 0):
     mout.out("Done.") # user output

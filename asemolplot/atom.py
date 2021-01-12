@@ -54,7 +54,7 @@ class Atom:
 
     mout.varOut("Atom Name",self._name)
     mout.varOut("Atom Species",self.species)
-    mout.varOut("Atom (Residue) Index",self.index)
+    mout.varOut("Atom (ASE) Index",self.index)
     mout.varOut("Atom (PDB) Index",self.pdb_index)
     mout.varOut("Atom Position",self._position)
     mout.varOut("Atom Residue",self.residue)

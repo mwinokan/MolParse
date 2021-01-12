@@ -30,6 +30,18 @@ class System:
     for index,residue in enumerate(self.residues):
       residue.number = index
 
+  def fix_atomnames(self,verbosity=1):
+    count=0
+    for index,atom in enumerate(self.atoms):
+      if atom.name[0].isnumeric():
+        old = atom.name
+        new = old[1:]+old[0]
+        atom.set_name(new,verbosity=verbosity-1)
+        if verbosity > 1:
+          mout.out(old+" -> "+new)
+        count+=1
+    mout.warningOut("Fixed "+str(count)+" atom names which appeared to have cycled.")
+
   def add_chain(self,chain):
     self.chains.append(chain)
 

@@ -1,6 +1,120 @@
 
 import mcol
 import mout
+import os
+
+def umbrella_helper_2dist(atoms,weights,coord_range,num_windows,force_constant,window_width,subdir=None,samples=1000):
+
+	assert len(atoms) == 4
+	assert len(weights) == 2
+
+	mout.headerOut("Atoms")
+
+	for i,atom in enumerate(atoms):
+
+		mout.varOut("Atom #"+str(i+1),[atom.name,atom.residue],list_length=False)
+
+	mout.headerOut("Windows")
+	mout.varOut("#Windows",num_windows,valCol=mcol.arg)
+
+	centres=[]
+	
+	for i in range(num_windows):
+
+		centres.append(coord_range[0]+i*(coord_range[1]-coord_range[0])/(num_windows-1))
+
+		mout.varOut("Window #"+str(i+1)+" Centre",centres[-1],precision=4)
+
+	mout.headerOut("Amber Restraint File:")
+
+	if subdir is not None:
+		os.system("mkdir -p "+subdir)
+
+	for i,centre in enumerate(centres):
+
+		end = "\n"
+
+		rst_buffer = "# window_"+str(i+1)+".RST"+end
+		rst_buffer += "&rst"+end
+
+		rst_buffer += "iat="
+		rst_buffer += str(atoms[0].pdb_index)+","
+		rst_buffer += str(atoms[1].pdb_index)+","
+		rst_buffer += str(atoms[2].pdb_index)+","
+		rst_buffer += str(atoms[3].pdb_index)+","+end
+
+		rst_buffer += "rstwt="
+		rst_buffer += str(weights[0])+","
+		rst_buffer += str(weights[1])+","+end
+
+		r2 = centre
+		r3 = centre
+
+		r1 = centre - window_width
+		r4 = centre + window_width
+
+		rk2 = force_constant
+		rk3 = force_constant
+
+		rst_buffer += "r1="+str(r1)+","+end
+		rst_buffer += "r2="+str(r2)+","+end
+		rst_buffer += "r3="+str(r3)+","+end
+		rst_buffer += "r4="+str(r4)+","+end
+		rst_buffer += "rk2="+str(rk2)+","+end
+		rst_buffer += "rk3="+str(rk3)+","+end
+		
+		rst_buffer += "/"+end+end
+
+		if subdir is not None:
+		    out_rst = open(subdir+"/window_"+str(i+1)+".RST","w")
+		    out_rst.write(rst_buffer)
+		    out_rst.close()
+		    mout.out("File written to "+mcol.file+subdir+"/window_"+str(i+1)+".RST")
+
+	import mplot
+
+	xdata = []
+	ydata = []
+
+	for i in range(samples):
+
+		# print(i,coord_range[0]+i*(coord_range[1]-coord_range[0])/(samples-1))
+		x = coord_range[0]+i*(coord_range[1]-coord_range[0])/(samples-1)
+
+		y = restraint_potential(x,r1,r2,r3,r4,rk2,rk3)
+
+		xdata.append(x)
+		ydata.append(y)
+
+	mplot.graph2D(xdata,ydata)
+
+def restraint_potential(x,r1,r2,r3,r4,rk2,rk3):
+
+	if x < r1:
+		return lin1(x,r1,r2,rk2)
+
+	if (x >= r1 and x <= r2):
+		return par2(x,r2,rk2)
+
+	if (x >= r3 and x <= r4):
+		return par3(x,r3,rk3)
+
+	if x > r4:
+		return lin4(x,r3,r4,rk3)
+
+	return 0.0
+
+def lin1(x,r1,r2,rk2):
+	return 2*rk2*(r1-r2)*(x-r1)+par2(r1,r2,rk2)
+
+def lin4(x,r3,r4,rk3):
+	return 2*rk3*(r4-r3)*(x-r4)+par3(r4,r3,rk3)
+
+def par2(x,r2,rk2):
+	return pow(rk2*(x-r2),2)
+
+def par3(x,r3,rk3):
+	return pow(rk3*(x-r3),2)
 
 def prep4amber(system):
 
@@ -79,6 +193,8 @@ def prep4amber(system):
 	if "ILE" in str(system.residues):
 		system.rename_atoms("HG12","HG13",res_filter="ILE",verbosity=0)
 		system.rename_atoms("HG11","HG12",res_filter="ILE",verbosity=0)
+		# system.rename_atoms("2HG1","HG13",res_filter="ILE",verbosity=1)
+		# system.rename_atoms("1HG1","HG12",res_filter="ILE",verbosity=1)
 		system.rename_atoms("CD","CD1",res_filter="ILE",verbosity=0)
 		system.rename_atoms("HD1","HD11",res_filter="ILE",verbosity=0)
 		system.rename_atoms("HD2","HD12",res_filter="ILE",verbosity=0)
@@ -125,178 +241,3 @@ def prep4amber(system):
 		i = system.rename_atoms("H3T","H30",res_filter="ATP",verbosity=0)
 		mout.out("Fixed atom names in "+mcol.result+str(i)+mcol.clear+" instances of "+mcol.arg+"ATP")
 
-# def dnacleanup(system):
-
-# DG H2
-# DG N6
-# DG H61
-# DG H62
-# DC N9
-# DC N2
-# DC H21
-# DC H22
-# DC H1
-# DC O6
-# DC N7
-# DC C8
-# DC H8
-# DG H6
-# DG O2
-# DG H3
-# DG O4
-# DG C5M
-# DG H71
-# DG H72
-# DG H73
-# DC N9
-# DC N2
-# DC H21
-# DC H22
-# DC H1
-# DC O6
-# DC N7
-# DC C8
-# DC H8
-# DG H6
-# DG H5
-# DG O2
-# DG N4
-# DG H41
-# DG H42
-# DC N9
-# DC N7
-# DC C8
-# DC H8
-# DC H2
-# DC N6
-# DC H61
-# DC H62
-# DC H3
-# DC O4
-# DC C5M
-# DC H71
-# DC H72
-# DC H73
-# DG  H6
-# DG  O2
-# DG  H3
-# DG  O4
-# DG  C5M
-# DG  H71
-# DG  H72
-# DG  H73
-# DC  H3
-# DC  O4
-# DC  C5M
-# DC  H71
-# DC  H72
-# DC  H73
-# DC  H3
-# DC  O4
-# DC  C5M
-# DC  H71
-# DC  H72
-# DC  H73
-# DC  H3
-# DC  O4
-# DC  C5M
-# DC  H71
-# DC  H72
-# DC  H73
-# DC  H3
-# DC  O4
-# DC  C5M
-# DC  H71
-# DC  H72
-# DC  H73
-# DC  H3
-# DC  O4
-# DC  C5M
-# DC  H71
-# DC  H72
-# DC  H73
-# DC  H3
-# DC  O4
-# DC  C5M
-# DC  H71
-# DC  H72
-# DC  H73
-# DC  H3
-# DC  O4
-# DC  C5M
-# DC  H71
-# DC  H72
-# DC  H73
-# DC  H3
-# DC  O4
-# DC  C5M
-# DC  H71
-# DC  H72
-# DC  H73
-# DC  H3
-# DC  O4
-# DC  C5M
-# DC  H71
-# DC  H72
-# DC  H73
-# DC3 H3
-# DC3 O4
-# DC3 C5M
-# DC3 H71
-# DC3 H72
-# DC3 H73
-# DC  N9
-# DC  N7
-# DC  C8
-# DC  H8
-# DC  H2
-# DC  N6
-# DC  H61
-# DC  H62
-# DG  H2
-# DG  N6
-# DG  H61
-# DG  H62
-# DG  H6
-# DG  O2
-# DG  H3
-# DG  O4
-# DG  C5M
-# DG  H71
-# DG  H72
-# DG  H73
-# DC  N9
-# DC  N2
-# DC  H21
-# DC  H22
-# DC  H1
-# DC  O6
-# DC  N7
-# DC  C8
-# DC  H8
-# DG  H6
-# DG  H5
-# DG  O2
-# DG  N4
-# DG  H41
-# DG  H42
-# DC  N9
-# DC  N7
-# DC  C8
-# DC  H8
-# DC  H2
-# DC  N6
-# DC  H61
-# DC  H62
-# DG  H6
-# DG  H5
-# DG  O2
-# DG  N4
-# DG  H41
-# DG  H42
-# DC  H3
-# DC  O4
-# DC  C5M
-# DC  H71
-# DC  H72
-# DC  H73

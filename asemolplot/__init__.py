@@ -54,6 +54,7 @@ from .console_io import printEnergy # needs documentation
 
 # Amber specific
 from .amber import prep4amber
+from .amber import umbrella_helper_2dist
 
 # File conversion
 from .convert import pdb2traj # needs documentation
