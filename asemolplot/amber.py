@@ -80,8 +80,6 @@ def umbrella_helper_2dist(atoms,weights,coord_range,num_windows,force_constant,w
 		    out_rst.write(rst_buffer)
 		    out_rst.close()
 		    mout.out("File written to "+mcol.file+subdir+"/window_"+str(i+1)+".RST")
-
-		for i in range(samples):
 	
 	import mplot
 
