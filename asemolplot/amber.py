@@ -3,7 +3,7 @@ import mcol
 import mout
 import os
 
-def umbrella_helper_2dist(atoms,weights,coord_range,num_windows,force_constant,window_width,subdir=None,samples=1000):
+def umbrella_helper_2dist(atoms,weights,coord_range,num_windows,force_constant,harmonic_width,subdir=None,samples=1000,graph=False):
 
 	assert len(atoms) == 4
 	assert len(weights) == 2
@@ -52,8 +52,8 @@ def umbrella_helper_2dist(atoms,weights,coord_range,num_windows,force_constant,w
 		r2 = centre
 		r3 = centre
 
-		r1 = centre - window_width
-		r4 = centre + window_width
+		r1 = centre - harmonic_width
+		r4 = centre + harmonic_width
 
 		rk2 = force_constant
 		rk3 = force_constant
@@ -89,7 +89,7 @@ def umbrella_helper_2dist(atoms,weights,coord_range,num_windows,force_constant,w
 	for i in range(samples):
 
 		# print(i,coord_range[0]+i*(coord_range[1]-coord_range[0])/(samples-1))
-		x = coord_range[0]+i*(coord_range[1]-coord_range[0])/(samples-1)
+		x = coord_range[0]+(i*1.4/(samples-1)-0.2)*(coord_range[1]-coord_range[0])
 		xdata.append(x)
 
 	for restraint in restraints:
@@ -111,7 +111,28 @@ def umbrella_helper_2dist(atoms,weights,coord_range,num_windows,force_constant,w
 
 		big_ydata.append(ydata)
 
-	mplot.graph2D(xdata,ydata)
+	if graph:
+		mplot.graph2D(xdata,big_ydata,ymax=120,ymin=-5)
+
+	if subdir is not None:
+
+		pot_buffer = "# restraint potentials"+end
+
+		pot_buffer += str(x) + " "
+
+		for restraint in restraints:
+			r1 = restraint['r1']
+			r2 = restraint['r2']
+			r3 = restraint['r3']
+			r4 = restraint['r4']
+			rk2 = restraint['rk2']
+			rk3 = restraint['rk3']
+			y = restraint_potential(x,r1,r2,r3,r4,rk2,rk3)
+			pot_buffer += str(y) + " "
+
+		out_dat = open(subdir+"/allwindows.dat","w")
+		out_dat.write(pot_buffer)
+		out_dat.close()
 
 def restraint_potential(x,r1,r2,r3,r4,rk2,rk3):
 
