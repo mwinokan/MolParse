@@ -76,10 +76,10 @@ def umbrella_helper_2dist(atoms,weights,coord_range,num_windows,force_constant,h
 						   'rk3':rk3})
 
 		if subdir is not None:
-		    out_rst = open(subdir+"/window_"+str(i+1)+".RST","w")
+		    out_rst = open(subdir+"/window_"+str(i+1).zfill(2)+".RST","w")
 		    out_rst.write(rst_buffer)
 		    out_rst.close()
-		    mout.out("File written to "+mcol.file+subdir+"/window_"+str(i+1)+".RST")
+		    mout.out("File written to "+mcol.file+subdir+"/window_"+str(i+1).zfill(2)+".RST")
 	
 	import mplot
 
