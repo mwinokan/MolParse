@@ -2,6 +2,56 @@
 import mcol
 import mout
 import os
+import mplot
+
+from . import signal
+
+
+def umbrella_plotter(filenames,bins=20,subdir=None,show_level=2):
+
+	# xdata = []
+	big_ydata = []
+	labels=[]
+
+	if subdir is not None:
+		os.system("mkdir -p "+subdir)
+
+	for file in filenames:
+
+		print(file)
+
+		xdata,ydata = signal.parseDat(file,num_columns=2,pre_strip=True)
+
+		label=os.path.basename(file).replace(".rco",'')
+		labels.append(label)
+
+		plotfile=None
+		if subdir is not None:
+			plotfile=subdir+"/"+label+".png"
+
+		if show_level > 1:
+			show=True
+		else:
+			show=False
+
+		# mplot.graph2D(xdata,ydata)
+		mplot.hist1D(ydata,show=show,xlab="Reaction Coordinate",ylab="Frequency",bins=bins,title=label,filename=plotfile)
+
+		big_ydata.append(ydata)
+
+	# mout.varOut("x",xdata)
+	# mout.varOut("y",big_ydata)
+
+	if show_level > 0:
+		show=True
+	else:
+		show=False
+
+	plotfile=None
+	if subdir is not None:
+		plotfile=subdir+"/allwindows.png"
+
+	mplot.graph2D(xdata,big_ydata,show=show,filename=plotfile,ytitles=labels,xlab="MD Step",ylab="Reaction Coordinate")
 
 def umbrella_helper_2dist(atoms,weights,coord_range,num_windows,force_constant,harmonic_width,subdir=None,samples=1000,graph=False):
 
