@@ -161,8 +161,14 @@ def umbrella_helper_2dist(atoms,weights,coord_range,num_windows,force_constant,h
 
 		big_ydata.append(ydata)
 
-	if graph:
-		mplot.graph2D(xdata,big_ydata,ymax=120,ymin=-5)
+	# if graph:
+	if subdir is not None:
+		graphfile=subdir+"/allwindows.png"
+	else:
+		graphfile=None
+
+	if subdir is not None and graph is not None:
+		mplot.graph2D(xdata,big_ydata,show=graph,ymax=120,ymin=-5,filename=graphfile)
 
 	if subdir is not None:
 
