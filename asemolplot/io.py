@@ -4,6 +4,8 @@ from ase import atoms as aseatoms
 import mcol # https://github.com/mwinokan/MPyTools
 import mout # https://github.com/mwinokan/MPyTools
 
+import string
+
 # Custom Classes
 from .system import System
 from .chain import Chain
@@ -124,7 +126,9 @@ def parsePDB(pdb,systemName=None,fix_indices=True,fix_atomnames=True,verbosity=1
   last_residue_number = None
   last_chain_name = None
   res_counter = 0
+  chain_counter = 0
   atom_counter = 1
+  was_terminal = False
 
   if systemName is None:
     systemName = os.path.splitext(pdb)[0]
@@ -140,7 +144,7 @@ def parsePDB(pdb,systemName=None,fix_indices=True,fix_atomnames=True,verbosity=1
           elif line.startswith("ATOM"):
             searching = False
             #### PARSELINE
-            atom = parsePDBAtomLine(line,res_counter,atom_counter)
+            atom = parsePDBAtomLine(line,res_counter,atom_counter,chain_counter)
             chain = Chain(atom.chain)
             residue = Residue(atom.residue,res_counter,atom.chain)
             residue.addAtom(atom)
@@ -156,6 +160,7 @@ def parsePDB(pdb,systemName=None,fix_indices=True,fix_atomnames=True,verbosity=1
             if verbosity > 1:
               mout.warningOut("Terminal added to "+mcol.arg+chain.name+":"+residue.name)
             residue.atoms[-1].terminal = True
+            was_terminal = True
             # atom = residue.atoms[-1]
             # # residue.atoms[-1].ter_line=line
 
@@ -173,7 +178,7 @@ def parsePDB(pdb,systemName=None,fix_indices=True,fix_atomnames=True,verbosity=1
             continue
           else:
             ### PARSELINE
-            atom = parsePDBAtomLine(line,res_counter,atom_counter)
+            atom = parsePDBAtomLine(line,res_counter,atom_counter,chain_counter)
             
             make_new_res = False
             if residue is None: make_new_res = True
@@ -183,6 +188,7 @@ def parsePDB(pdb,systemName=None,fix_indices=True,fix_atomnames=True,verbosity=1
             make_new_chain = False
             if residue is None: make_new_chain = True
             if last_chain_name != atom.chain: make_new_chain = True
+            if was_terminal: make_new_chain = True
 
             if make_new_res:
               if residue is not None: 
@@ -192,6 +198,7 @@ def parsePDB(pdb,systemName=None,fix_indices=True,fix_atomnames=True,verbosity=1
               if make_new_chain:
                 if chain is not None:
                   system.add_chain(chain)
+                  chain_counter = chain_counter+1
                 chain = Chain(atom.chain)
 
             residue.addAtom(atom)
@@ -201,6 +208,8 @@ def parsePDB(pdb,systemName=None,fix_indices=True,fix_atomnames=True,verbosity=1
             last_residue_number = atom.res_number
             last_residue_name = atom.residue
             last_chain_name = atom.chain
+            was_terminal = False
+
   except FileNotFoundError:
     mout.errorOut("File "+mcol.file+pdb+mcol.error+" not found",fatal=True)
 
@@ -218,7 +227,7 @@ def parsePDB(pdb,systemName=None,fix_indices=True,fix_atomnames=True,verbosity=1
 
   return system
 
-def parsePDBAtomLine(line,res_index,atom_index):
+def parsePDBAtomLine(line,res_index,atom_index,chain_counter):
 
   try:
     atom_name = line[12:17].strip()
@@ -228,6 +237,8 @@ def parsePDBAtomLine(line,res_index,atom_index):
     except:
       pdb_index = atom_index
     chain = line[21:22]
+    if chain == ' ':
+      chain = string.ascii_uppercase[chain_counter%26]
     res_number = line[22:26].strip()
 
     position = []
