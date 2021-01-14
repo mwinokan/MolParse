@@ -62,7 +62,7 @@ def umbrella_helper_2dist(atoms,weights,coord_range,num_windows,force_constant,h
 
 	for i,atom in enumerate(atoms):
 
-		mout.varOut("Atom #"+str(i+1),[atom.name,atom.residue],list_length=False)
+		mout.varOut("Atom #"+str(i+1),[atom.name,atom.residue,atom.pdb_index],integer=True,list_length=False)
 
 	mout.headerOut("Windows")
 	mout.varOut("#Windows",num_windows,valCol=mcol.arg)
