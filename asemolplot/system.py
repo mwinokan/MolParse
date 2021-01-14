@@ -40,7 +40,8 @@ class System:
         if verbosity > 1:
           mout.out(old+" -> "+new)
         count+=1
-    mout.warningOut("Fixed "+str(count)+" atom names which appeared to have cycled.")
+    if verbosity > 0 and count != 0:
+      mout.warningOut("Fixed "+str(count)+" atom names which appeared to have cycled.")
 
   def add_chain(self,chain):
     self.chains.append(chain)
