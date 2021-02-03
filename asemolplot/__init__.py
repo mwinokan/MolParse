@@ -6,6 +6,9 @@ from .io import read
 from .io import write
 from .io import parsePDB
 
+# Manipulation
+from .manipulate import interpolate
+
 # Custom Classes
 from .system import System
 from .chain import Chain
