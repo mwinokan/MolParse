@@ -5,7 +5,7 @@ import ase
 
 from .system import System
 
-def interpolate(input1,input2,filename,frames=10,verbosity=2):
+def interpolate(input1,input2,filename=None,frames=10,verbosity=2,smooth=False):
 
 	if verbosity > 0:
 		mout.headerOut("Interpolating...")
@@ -38,18 +38,24 @@ def interpolate(input1,input2,filename,frames=10,verbosity=2):
 		for index,atom in enumerate(system.atoms):
 
 
-			atom.position = simple_interpolate(input1.atoms[index].np_pos,
-											   input2.atoms[index].np_pos,
-											   frames,i)
+
+			if smooth:
+				atom.position = smooth_interpolate(input1.atoms[index].np_pos,
+												   input2.atoms[index].np_pos,
+												   frames,i)
+			else:
+				atom.position = simple_interpolate(input1.atoms[index].np_pos,
+												   input2.atoms[index].np_pos,
+												   frames,i)
 			
-			if index == 20:
-				print(simple_interpolate(input1.atoms[index].np_pos,
-											   input2.atoms[index].np_pos,
-											   frames,i))
+			# if index == 20:
+			# 	print(simple_interpolate(input1.atoms[index].np_pos,
+			# 								   input2.atoms[index].np_pos,
+			# 								   frames,i))
 
 		system_array.append(system.copy())
 
-	print(system_array)
+	# print(system_array)
 
 	return system_array
 
@@ -57,6 +63,11 @@ def interpolate(input1,input2,filename,frames=10,verbosity=2):
 
 def simple_interpolate(start,end,frames,i):
 	return start+i*(end-start)/(frames-1)
+
+def smooth_interpolate(start,end,frames,i):
+	import math
+	angle = simple_interpolate(0.0,math.pi,frames,i)
+	return start + 0.5*(1-math.cos(angle))*(end-start)
 
 # def vector_interpolate(start,end,frames,i):
 # 	return start+i*(end-start)/(frames-1)
