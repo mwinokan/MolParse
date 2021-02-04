@@ -56,6 +56,8 @@ from .console_io import printEnergy # needs documentation
 from .amber import prep4amber
 from .amber import umbrella_helper_2dist
 from .amber import umb_rst_2prot
+from .amber import umb_rst_2prot_1rc
+from .amber import umb_rst_2prot_asy
 from .amber import umbrella_plotter
 
 # File conversion

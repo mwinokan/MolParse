@@ -447,6 +447,412 @@ def umb_rst_2prot(atoms,weights,coord_range,num_windows,force_constant,harmonic_
 		out_dat.write(pot_buffer)
 		out_dat.close()
 
+def umb_rst_2prot_1rc(atoms,weights,coord_range,num_windows,force_constant,harmonic_width,subdir=None,samples=1000,graph=False,adiab_windows=False):
+
+	assert len(atoms) == 6
+	assert len(weights) == 2
+
+	# 2x (donor-hydrogen...acceptor)
+
+	mout.headerOut("Atoms")
+
+	for i,atom in enumerate(atoms):
+
+		mout.varOut("Atom #"+str(i+1),[atom.name,atom.residue,atom.pdb_index],integer=True,list_length=False)
+
+	mout.headerOut("Windows")
+	mout.varOut("#Windows",num_windows,valCol=mcol.arg)
+
+	centres=[]
+	
+	for i in range(num_windows):
+
+		centres.append(coord_range[0]+i*(coord_range[1]-coord_range[0])/(num_windows-1))
+
+		mout.varOut("Window #"+str(i+1)+" Centre",centres[-1],precision=4)
+
+	mout.headerOut("Amber Restraint File:")
+
+	if subdir is not None:
+		os.system("mkdir -p "+subdir)
+
+	restraints = []
+
+	### RC:
+	### 		dist(donor-hydrogen)	  [1.0->2.0]
+	### 	  - dist(hydrogen...acceptor) [2.0->1.0]
+	### 	  =			   				  [-1.0->1.0]
+
+	for i,centre in enumerate(centres):
+
+		end = "\n"
+
+		rst_buffer = "# window_"+str(i+1)+".RST"+end
+
+		# First reaction coord
+
+		rst_buffer += "&rst"+end
+
+		rst_buffer += "iat="
+		rst_buffer += str(atoms[0].pdb_index)+","
+		rst_buffer += str(atoms[1].pdb_index)+","
+		rst_buffer += str(atoms[1].pdb_index)+","
+		rst_buffer += str(atoms[2].pdb_index)+","
+		rst_buffer += str(atoms[3].pdb_index)+","
+		rst_buffer += str(atoms[4].pdb_index)+","
+		rst_buffer += str(atoms[4].pdb_index)+","
+		rst_buffer += str(atoms[5].pdb_index)+","+end
+
+		rst_buffer += "rstwt="
+		rst_buffer += str(weights[0])+","
+		rst_buffer += str(-weights[0])+","
+		rst_buffer += str(weights[1])+","
+		rst_buffer += str(-weights[1])+","+end
+
+		r2 = centre
+		r3 = centre
+
+		r1 = centre - harmonic_width
+		r4 = centre + harmonic_width
+
+		rk2 = force_constant
+		rk3 = force_constant
+
+		rst_buffer += "r1="+str(r1)+","+end
+		rst_buffer += "r2="+str(r2)+","+end
+		rst_buffer += "r3="+str(r3)+","+end
+		rst_buffer += "r4="+str(r4)+","+end
+		rst_buffer += "rk2="+str(rk2)+","+end
+		rst_buffer += "rk3="+str(rk3)+","+end
+		
+		rst_buffer += "/"+end
+
+		# Output only dummy-restraints
+
+		rk2 = 0.0
+		rk3 = 0.0
+
+		rst_buffer += "&rst"+end
+		rst_buffer += "iat="
+		rst_buffer += str(atoms[0].pdb_index)+","
+		rst_buffer += str(atoms[1].pdb_index)+","
+		rst_buffer += str(atoms[1].pdb_index)+","
+		rst_buffer += str(atoms[2].pdb_index)+","+end
+		rst_buffer += "rstwt="
+		rst_buffer += str(weights[0])+","
+		rst_buffer += str(-weights[0])+","+end
+		rst_buffer += "r1="+str(r1)+","+end
+		rst_buffer += "r2="+str(r2)+","+end
+		rst_buffer += "r3="+str(r3)+","+end
+		rst_buffer += "r4="+str(r4)+","+end
+		rst_buffer += "rk2="+str(rk2)+","+end
+		rst_buffer += "rk3="+str(rk3)+","+end
+		rst_buffer += "/"+end
+
+		# Second reaction coord
+
+		rst_buffer += "&rst"+end
+		rst_buffer += "iat="
+		rst_buffer += str(atoms[3].pdb_index)+","
+		rst_buffer += str(atoms[4].pdb_index)+","
+		rst_buffer += str(atoms[4].pdb_index)+","
+		rst_buffer += str(atoms[5].pdb_index)+","+end
+		rst_buffer += "rstwt="
+		rst_buffer += str(weights[1])+","
+		rst_buffer += str(-weights[1])+","+end
+		rst_buffer += "r1="+str(r1)+","+end
+		rst_buffer += "r2="+str(r2)+","+end
+		rst_buffer += "r3="+str(r3)+","+end
+		rst_buffer += "r4="+str(r4)+","+end
+		rst_buffer += "rk2="+str(rk2)+","+end
+		rst_buffer += "rk3="+str(rk3)+","+end
+		rst_buffer += "/"+end+end
+
+		if subdir is not None:
+		    out_rst = open(subdir+"/window_"+str(i+1).zfill(2)+".RST","w")
+		    out_rst.write(rst_buffer)
+		    out_rst.close()
+		    mout.out("File written to "+mcol.file+subdir+"/window_"+str(i+1).zfill(2)+".RST")
+
+	if adiab_windows:
+		mout.warningOut("Adiabatic windows not implemented")
+
+def umb_rst_2prot_asy(atoms,weights,coord_range,num_windows,force_constant,harmonic_width,subdir=None,samples=1000,graph=False,adiab_windows=True,reverse=False):
+
+	num_windows = num_windows//2+1
+
+	assert len(atoms) == 6
+	assert len(weights) == 2
+
+	# 2x (donor-hydrogen...acceptor)
+
+	mout.headerOut("Atoms")
+
+	for i,atom in enumerate(atoms):
+
+		mout.varOut("Atom #"+str(i+1),[atom.name,atom.residue,atom.pdb_index],integer=True,list_length=False)
+
+	mout.headerOut("Windows")
+	mout.varOut("#Windows",num_windows,valCol=mcol.arg)
+
+	centres=[]
+	
+	for i in range(num_windows):
+
+		centres.append(coord_range[0]+i*(coord_range[1]-coord_range[0])/(num_windows-1))
+
+		mout.varOut("Window #"+str(i+1)+" Centre",centres[-1],precision=4)
+
+	centres_2d=[]
+	
+	if not reverse:
+		for centre in centres:
+			centres_2d.append([centre,centres[0]])
+		for centre in centres:
+			if centre == centres[0]: continue
+			centres_2d.append([centres[-1],centre])
+	else:
+		for centre in centres:
+			centres_2d.append([centres[0],centre])
+		for centre in centres:
+			if centre == centres[0]: continue
+			centres_2d.append([centre,centres[-1]])
+
+	mout.headerOut("Amber Restraint File:")
+
+	# mout.varOut("centres",centres_2d,precision=2,sf=False)
+
+	if subdir is not None:
+		os.system("mkdir -p "+subdir)
+
+	restraints = []
+
+	### RC:
+	### 		dist(donor-hydrogen)	  [1.0->2.0]
+	### 	  - dist(hydrogen...acceptor) [2.0->1.0]
+	### 	  =			   				  [-1.0->1.0]
+
+	for i,centre_pair in enumerate(centres_2d):
+
+		end = "\n"
+
+		rst_buffer = "# window_"+str(i+1)+".RST"+end
+
+		# First reaction coord
+
+		rst_buffer += "&rst"+end
+
+		rst_buffer += "iat="
+		rst_buffer += str(atoms[0].pdb_index)+","
+		rst_buffer += str(atoms[1].pdb_index)+","
+		rst_buffer += str(atoms[1].pdb_index)+","
+		rst_buffer += str(atoms[2].pdb_index)+","+end
+
+		rst_buffer += "rstwt="
+		rst_buffer += str(weights[0])+","
+		rst_buffer += str(-weights[0])+","+end
+
+		r2 = centre_pair[0]
+		r3 = centre_pair[0]
+
+		r1 = centre_pair[0] - harmonic_width
+		r4 = centre_pair[0] + harmonic_width
+
+		rk2 = force_constant
+		rk3 = force_constant
+
+		rst_buffer += "r1="+str(r1)+","+end
+		rst_buffer += "r2="+str(r2)+","+end
+		rst_buffer += "r3="+str(r3)+","+end
+		rst_buffer += "r4="+str(r4)+","+end
+		rst_buffer += "rk2="+str(rk2)+","+end
+		rst_buffer += "rk3="+str(rk3)+","+end
+		
+		rst_buffer += "/"+end
+
+		# Second reaction coord
+
+		rst_buffer += "&rst"+end
+
+		rst_buffer += "iat="
+		rst_buffer += str(atoms[3].pdb_index)+","
+		rst_buffer += str(atoms[4].pdb_index)+","
+		rst_buffer += str(atoms[4].pdb_index)+","
+		rst_buffer += str(atoms[5].pdb_index)+","+end
+
+		rst_buffer += "rstwt="
+		rst_buffer += str(weights[1])+","
+		rst_buffer += str(-weights[1])+","+end
+
+		r2 = centre_pair[1]
+		r3 = centre_pair[1]
+
+		r1 = centre_pair[1] - harmonic_width
+		r4 = centre_pair[1] + harmonic_width
+
+		rk2 = force_constant
+		rk3 = force_constant
+
+		rst_buffer += "r1="+str(r1)+","+end
+		rst_buffer += "r2="+str(r2)+","+end
+		rst_buffer += "r3="+str(r3)+","+end
+		rst_buffer += "r4="+str(r4)+","+end
+		rst_buffer += "rk2="+str(rk2)+","+end
+		rst_buffer += "rk3="+str(rk3)+","+end
+		
+		rst_buffer += "/"+end+end
+
+		restraints.append({'centre_pair':centre_pair,
+						   'r1':r1,
+						   'r2':r2,
+						   'r3':r3,
+						   'r4':r4,
+						   'rk2':rk2,
+						   'rk3':rk3})
+
+		if subdir is not None:
+		    out_rst = open(subdir+"/window_"+str(i+1).zfill(2)+".RST","w")
+		    out_rst.write(rst_buffer)
+		    out_rst.close()
+		    mout.out("File written to "+mcol.file+subdir+"/window_"+str(i+1).zfill(2)+".RST")
+
+	if adiab_windows:
+		
+		for i,centre_pair in enumerate(centres_2d):
+
+			end = "\n"
+
+			rst_buffer = "# adiab_"+str(i+1)+".RST"+end
+
+			# First reaction coord
+
+			rst_buffer += "&rst"+end
+
+			rst_buffer += "iat="
+			rst_buffer += str(atoms[0].pdb_index)+","
+			rst_buffer += str(atoms[1].pdb_index)+","
+			rst_buffer += str(atoms[1].pdb_index)+","
+			rst_buffer += str(atoms[2].pdb_index)+","+end
+
+			rst_buffer += "rstwt="
+			rst_buffer += str(weights[0])+","
+			rst_buffer += str(-weights[0])+","+end
+
+			r2 = centre_pair[0]
+			r3 = centre_pair[0]
+
+			r1 = centre_pair[0] - harmonic_width*10
+			r4 = centre_pair[0] + harmonic_width*10
+
+			rk2 = force_constant*50
+			rk3 = force_constant*50
+
+			rst_buffer += "r1="+str(r1)+","+end
+			rst_buffer += "r2="+str(r2)+","+end
+			rst_buffer += "r3="+str(r3)+","+end
+			rst_buffer += "r4="+str(r4)+","+end
+			rst_buffer += "rk2="+str(rk2)+","+end
+			rst_buffer += "rk3="+str(rk3)+","+end
+			
+			rst_buffer += "/"+end
+
+			# Second reaction coord
+
+			rst_buffer += "&rst"+end
+
+			rst_buffer += "iat="
+			rst_buffer += str(atoms[3].pdb_index)+","
+			rst_buffer += str(atoms[4].pdb_index)+","
+			rst_buffer += str(atoms[4].pdb_index)+","
+			rst_buffer += str(atoms[5].pdb_index)+","+end
+
+			rst_buffer += "rstwt="
+			rst_buffer += str(weights[1])+","
+			rst_buffer += str(-weights[1])+","+end
+
+			r2 = centre_pair[1]
+			r3 = centre_pair[1]
+
+			r1 = centre_pair[1] - harmonic_width*10
+			r4 = centre_pair[1] + harmonic_width*10
+
+			rk2 = force_constant*50
+			rk3 = force_constant*50
+
+			rst_buffer += "r1="+str(r1)+","+end
+			rst_buffer += "r2="+str(r2)+","+end
+			rst_buffer += "r3="+str(r3)+","+end
+			rst_buffer += "r4="+str(r4)+","+end
+			rst_buffer += "rk2="+str(rk2)+","+end
+			rst_buffer += "rk3="+str(rk3)+","+end
+			
+			rst_buffer += "/"+end+end
+
+			if subdir is not None:
+			    out_rst = open(subdir+"/adiab_"+str(i+1).zfill(2)+".RST","w")
+			    out_rst.write(rst_buffer)
+			    out_rst.close()
+			    mout.out("File written to "+mcol.file+subdir+"/adiab_"+str(i+1).zfill(2)+".RST")
+	
+	# import mplot
+
+	# xdata = []
+	# big_ydata = []
+
+	# for i in range(samples):
+
+	# 	# print(i,coord_range[0]+i*(coord_range[1]-coord_range[0])/(samples-1))
+	# 	x = coord_range[0]+(i*1.4/(samples-1)-0.2)*(coord_range[1]-coord_range[0])
+	# 	xdata.append(x)
+
+	# for restraint in restraints:
+
+	# 	ydata = []
+
+	# 	r1 = restraint['r1']
+	# 	r2 = restraint['r2']
+	# 	r3 = restraint['r3']
+	# 	r4 = restraint['r4']
+	# 	rk2 = restraint['rk2']
+	# 	rk3 = restraint['rk3']
+		
+	# 	for x in xdata:
+
+	# 		y = restraint_potential(x,r1,r2,r3,r4,rk2,rk3)
+
+	# 		ydata.append(y)
+
+	# 	big_ydata.append(ydata)
+
+	# # if graph:
+	# if subdir is not None:
+	# 	graphfile=subdir+"/allwindows.png"
+	# else:
+	# 	graphfile=None
+
+	# if subdir is not None and graph is not None:
+	# 	mplot.graph2D(xdata,big_ydata,show=graph,ymax=120,ymin=-5,filename=graphfile)
+
+	# if subdir is not None:
+
+	# 	pot_buffer = "# restraint potentials"+end
+
+	# 	pot_buffer += str(x) + " "
+
+	# 	for restraint in restraints:
+	# 		r1 = restraint['r1']
+	# 		r2 = restraint['r2']
+	# 		r3 = restraint['r3']
+	# 		r4 = restraint['r4']
+	# 		rk2 = restraint['rk2']
+	# 		rk3 = restraint['rk3']
+	# 		y = restraint_potential(x,r1,r2,r3,r4,rk2,rk3)
+	# 		pot_buffer += str(y) + " "
+
+	# 	out_dat = open(subdir+"/allwindows.dat","w")
+	# 	out_dat.write(pot_buffer)
+	# 	out_dat.close()
+
 def restraint_potential(x,r1,r2,r3,r4,rk2,rk3):
 
 	if x < r1:
