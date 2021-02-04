@@ -447,7 +447,7 @@ def umb_rst_2prot(atoms,weights,coord_range,num_windows,force_constant,harmonic_
 		out_dat.write(pot_buffer)
 		out_dat.close()
 
-def umb_rst_2prot_1rc(atoms,weights,coord_range,num_windows,force_constant,harmonic_width,subdir=None,samples=1000,graph=False,adiab_windows=False):
+def umb_rst_2prot_1rc(atoms,weights,coord_range,num_windows,force_constant,harmonic_width,subdir=None,samples=1000,graph=False,adiab_windows=False,fix_length=False):
 
 	assert len(atoms) == 6
 	assert len(weights) == 2
@@ -566,7 +566,49 @@ def umb_rst_2prot_1rc(atoms,weights,coord_range,num_windows,force_constant,harmo
 		rst_buffer += "r4="+str(r4)+","+end
 		rst_buffer += "rk2="+str(rk2)+","+end
 		rst_buffer += "rk3="+str(rk3)+","+end
-		rst_buffer += "/"+end+end
+		rst_buffer += "/"+end
+
+		# Restrain donor-acceptor H-bond lengths
+
+		if fix_length:
+
+			r1 = 0.0
+			r2 = 2.0
+			r3 = 4.0
+			r4 = 6.0
+
+			rk2 = force_constant * 2
+			rk3 = force_constant * 2
+
+			rst_buffer += "&rst"+end
+			rst_buffer += "iat="
+			rst_buffer += str(atoms[0].pdb_index)+","
+			rst_buffer += str(atoms[2].pdb_index)+","+end
+			rst_buffer += "rstwt="
+			rst_buffer += str(weights[1])+","+end
+			rst_buffer += "r1="+str(r1)+","+end
+			rst_buffer += "r2="+str(r2)+","+end
+			rst_buffer += "r3="+str(r3)+","+end
+			rst_buffer += "r4="+str(r4)+","+end
+			rst_buffer += "rk2="+str(rk2)+","+end
+			rst_buffer += "rk3="+str(rk3)+","+end
+			rst_buffer += "/"+end
+
+			rst_buffer += "&rst"+end
+			rst_buffer += "iat="
+			rst_buffer += str(atoms[3].pdb_index)+","
+			rst_buffer += str(atoms[5].pdb_index)+","+end
+			rst_buffer += "rstwt="
+			rst_buffer += str(weights[1])+","+end
+			rst_buffer += "r1="+str(r1)+","+end
+			rst_buffer += "r2="+str(r2)+","+end
+			rst_buffer += "r3="+str(r3)+","+end
+			rst_buffer += "r4="+str(r4)+","+end
+			rst_buffer += "rk2="+str(rk2)+","+end
+			rst_buffer += "rk3="+str(rk3)+","+end
+			rst_buffer += "/"+end
+
+		rst_buffer += end
 
 		if subdir is not None:
 		    out_rst = open(subdir+"/window_"+str(i+1).zfill(2)+".RST","w")
