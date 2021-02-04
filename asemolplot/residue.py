@@ -71,6 +71,10 @@ class Residue:
   def addAtom(self,atom):
     self._atoms.append(atom)
 
+  def translate(self,vector):
+    for atom in self._atoms:
+      atom.position = atom.np_pos + vector
+
   def print(self):
 
     mout.varOut("Residue Name",self.name)
