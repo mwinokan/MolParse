@@ -190,7 +190,9 @@ def umbrella_helper_2dist(atoms,weights,coord_range,num_windows,force_constant,h
 		out_dat.write(pot_buffer)
 		out_dat.close()
 
-def umb_rst_2prot(atoms,weights,coord_range,num_windows,force_constant,harmonic_width,subdir=None,samples=1000,graph=False,adiab_windows=True):
+def umb_rst_2prot(atoms,weights,coord_range,num_windows,force_constant,
+				  harmonic_width,subdir=None,samples=1000,graph=False,
+				  adiab_windows=True,fix_angle=None,fix_third=None):
 
 	assert len(atoms) == 6
 	assert len(weights) == 2
@@ -225,6 +227,13 @@ def umb_rst_2prot(atoms,weights,coord_range,num_windows,force_constant,harmonic_
 	### 		dist(donor-hydrogen)	  [1.0->2.0]
 	### 	  - dist(hydrogen...acceptor) [2.0->1.0]
 	### 	  =			   				  [-1.0->1.0]
+
+	mout.array2file("centres.dat",centres)
+
+	if fix_angle is not None:
+		mout.warningOut("Angle restraints are active!")
+	if fix_third is not None:
+		mout.warningOut("Third bond restraints are active!")
 
 	for i,centre in enumerate(centres):
 
@@ -294,7 +303,7 @@ def umb_rst_2prot(atoms,weights,coord_range,num_windows,force_constant,harmonic_
 		rst_buffer += "rk2="+str(rk2)+","+end
 		rst_buffer += "rk3="+str(rk3)+","+end
 		
-		rst_buffer += "/"+end+end
+		rst_buffer += "/"+end
 
 		restraints.append({'centre':centre,
 						   'r1':r1,
@@ -303,6 +312,103 @@ def umb_rst_2prot(atoms,weights,coord_range,num_windows,force_constant,harmonic_
 						   'r4':r4,
 						   'rk2':rk2,
 						   'rk3':rk3})
+
+		###### ANGLE FIX ######
+
+		# fix_angle should be a list with [atom,atom,atom,angle]
+
+		if fix_angle is not None:
+
+			# try to catch some errors
+			assert isinstance(fix_angle,list)
+			assert len(fix_angle) == 4
+
+			# construct the restraint
+
+			rst_buffer += "&rst"+end
+
+			rst_buffer += "iat="
+			rst_buffer += str(fix_angle[0].pdb_index)+","
+			rst_buffer += str(fix_angle[1].pdb_index)+","
+			rst_buffer += str(fix_angle[2].pdb_index)+","+end
+
+			r2 = fix_angle[-1]
+			r3 = 180
+
+			r1 = r2 - 20
+			r4 = r2 + 20
+
+			rk2 = force_constant
+			rk3 = force_constant
+
+			rst_buffer += "r1="+str(r1)+","+end
+			rst_buffer += "r2="+str(r2)+","+end
+			rst_buffer += "r3="+str(r3)+","+end
+			rst_buffer += "r4="+str(r4)+","+end
+			rst_buffer += "rk2="+str(rk2)+","+end
+			rst_buffer += "rk3="+str(rk3)+","+end
+			
+			rst_buffer += "/"+end
+
+		###### THIRD BOND FIX ######
+
+		# fix_third should be a list with [atom,atom,atom]
+		# [donor,H,acceptor]
+
+		if fix_third is not None:
+
+			# try to catch some errors
+			assert isinstance(fix_third,list)
+			assert len(fix_third) == 3
+
+			# construct the restraints
+
+			rst_buffer += "&rst"+end
+
+			rst_buffer += "iat="
+			rst_buffer += str(fix_third[0].pdb_index)+","
+			rst_buffer += str(fix_third[1].pdb_index)+","+end
+
+			r2 = 0.9
+			r3 = 1.5
+
+			r1 = 0.0
+			r4 = 2.4
+
+			rk2 = force_constant
+			rk3 = force_constant
+
+			rst_buffer += "r1="+str(r1)+","+end
+			rst_buffer += "r2="+str(r2)+","+end
+			rst_buffer += "r3="+str(r3)+","+end
+			rst_buffer += "r4="+str(r4)+","+end
+			rst_buffer += "rk2="+str(rk2)+","+end
+			rst_buffer += "rk3="+str(rk3)+","+end
+			
+			rst_buffer += "/"+end
+
+			rst_buffer += "&rst"+end
+
+			rst_buffer += "iat="
+			rst_buffer += str(fix_third[1].pdb_index)+","
+			rst_buffer += str(fix_third[2].pdb_index)+","+end
+
+			r2 = 1.4
+			r3 = 2.4
+
+			r1 = 0.5
+			r4 = 3.3
+
+			rst_buffer += "r1="+str(r1)+","+end
+			rst_buffer += "r2="+str(r2)+","+end
+			rst_buffer += "r3="+str(r3)+","+end
+			rst_buffer += "r4="+str(r4)+","+end
+			rst_buffer += "rk2="+str(rk2)+","+end
+			rst_buffer += "rk3="+str(rk3)+","+end
+			
+			rst_buffer += "/"+end
+
+		rst_buffer += end
 
 		if subdir is not None:
 		    out_rst = open(subdir+"/window_"+str(i+1).zfill(2)+".RST","w")
@@ -446,6 +552,235 @@ def umb_rst_2prot(atoms,weights,coord_range,num_windows,force_constant,harmonic_
 		out_dat = open(subdir+"/allwindows.dat","w")
 		out_dat.write(pot_buffer)
 		out_dat.close()
+
+def umb_rst_2prot_new(atoms,weights,coord_range,num_windows,force_constant,
+				  harmonic_width,subdir=None,samples=1000,graph=False,
+				  adiab_windows=True,fix_angle=None,fix_third=None):
+
+	assert len(atoms) == 6
+	assert len(weights) == 2
+
+	# 2x (donor-hydrogen...acceptor)
+
+	mout.headerOut("Atoms")
+
+	for i,atom in enumerate(atoms):
+
+		mout.varOut("Atom #"+str(i+1),[atom.name,atom.residue,atom.pdb_index],integer=True,list_length=False)
+
+	mout.headerOut("Windows")
+	mout.varOut("#Windows",num_windows,valCol=mcol.arg)
+
+	centres=[]
+	
+	for i in range(num_windows):
+
+		centre_1 = coord_range[0]+i*(coord_range[1]-coord_range[0])/(num_windows-1)
+		centre_2 = coord_range[2]+i*(coord_range[3]-coord_range[2])/(num_windows-1)
+
+		centres.append([centre_1,centre_2])
+
+		mout.varOut("Window #"+str(i+1)+" Centres",centres[-1],precision=4)
+
+	mout.headerOut("Amber Restraint File:")
+
+	if subdir is not None:
+		os.system("mkdir -p "+subdir)
+
+	restraints = []
+
+	### RC:
+	### 		dist(donor-hydrogen)	  [1.0->2.0]
+	### 	  - dist(hydrogen...acceptor) [2.0->1.0]
+	### 	  =			   				  [-1.0->1.0]
+
+	mout.array2file("centres.dat",centres)
+
+	if fix_angle is not None:
+		mout.warningOut("Angle restraints are active!")
+	if fix_third is not None:
+		mout.warningOut("Third bond restraints are active!")
+
+	for i,centre in enumerate(centres):
+
+		end = "\n"
+
+		rst_buffer = "# window_"+str(i+1)+".RST"+end
+
+		# First reaction coord
+
+		rst_buffer += "&rst"+end
+
+		rst_buffer += "iat="
+		rst_buffer += str(atoms[0].pdb_index)+","
+		rst_buffer += str(atoms[1].pdb_index)+","
+		rst_buffer += str(atoms[1].pdb_index)+","
+		rst_buffer += str(atoms[2].pdb_index)+","+end
+
+		rst_buffer += "rstwt="
+		rst_buffer += str(weights[0])+","
+		rst_buffer += str(-weights[0])+","+end
+
+		r2 = centre[0]
+		r3 = centre[0]
+
+		r1 = centre[0] - harmonic_width
+		r4 = centre[0] + harmonic_width
+
+		rk2 = force_constant
+		rk3 = force_constant
+
+		rst_buffer += "r1="+str(r1)+","+end
+		rst_buffer += "r2="+str(r2)+","+end
+		rst_buffer += "r3="+str(r3)+","+end
+		rst_buffer += "r4="+str(r4)+","+end
+		rst_buffer += "rk2="+str(rk2)+","+end
+		rst_buffer += "rk3="+str(rk3)+","+end
+		
+		rst_buffer += "/"+end
+
+		# Second reaction coord
+
+		rst_buffer += "&rst"+end
+
+		rst_buffer += "iat="
+		rst_buffer += str(atoms[3].pdb_index)+","
+		rst_buffer += str(atoms[4].pdb_index)+","
+		rst_buffer += str(atoms[4].pdb_index)+","
+		rst_buffer += str(atoms[5].pdb_index)+","+end
+
+		rst_buffer += "rstwt="
+		rst_buffer += str(weights[1])+","
+		rst_buffer += str(-weights[1])+","+end
+
+		r2 = centre[1]
+		r3 = centre[1]
+
+		r1 = centre[1] - harmonic_width
+		r4 = centre[1] + harmonic_width
+
+		rk2 = force_constant
+		rk3 = force_constant
+
+		rst_buffer += "r1="+str(r1)+","+end
+		rst_buffer += "r2="+str(r2)+","+end
+		rst_buffer += "r3="+str(r3)+","+end
+		rst_buffer += "r4="+str(r4)+","+end
+		rst_buffer += "rk2="+str(rk2)+","+end
+		rst_buffer += "rk3="+str(rk3)+","+end
+		
+		rst_buffer += "/"+end
+
+		# restraints.append({'centre':centre,
+		# 				   'r1':r1,
+		# 				   'r2':r2,
+		# 				   'r3':r3,
+		# 				   'r4':r4,
+		# 				   'rk2':rk2,
+		# 				   'rk3':rk3})
+
+		###### ANGLE FIX ######
+
+		# fix_angle should be a list with [atom,atom,atom,angle]
+
+		if fix_angle is not None:
+
+			# try to catch some errors
+			assert isinstance(fix_angle,list)
+			assert len(fix_angle) == 4
+
+			# construct the restraint
+
+			rst_buffer += "&rst"+end
+
+			rst_buffer += "iat="
+			rst_buffer += str(fix_angle[0].pdb_index)+","
+			rst_buffer += str(fix_angle[1].pdb_index)+","
+			rst_buffer += str(fix_angle[2].pdb_index)+","+end
+
+			r2 = fix_angle[-1]
+			r3 = 180
+
+			r1 = r2 - 20
+			r4 = r2 + 20
+
+			rk2 = force_constant
+			rk3 = force_constant
+
+			rst_buffer += "r1="+str(r1)+","+end
+			rst_buffer += "r2="+str(r2)+","+end
+			rst_buffer += "r3="+str(r3)+","+end
+			rst_buffer += "r4="+str(r4)+","+end
+			rst_buffer += "rk2="+str(rk2)+","+end
+			rst_buffer += "rk3="+str(rk3)+","+end
+			
+			rst_buffer += "/"+end
+
+		###### THIRD BOND FIX ######
+
+		# fix_third should be a list with [atom,atom,atom]
+		# [donor,H,acceptor]
+
+		if fix_third is not None:
+
+			# try to catch some errors
+			assert isinstance(fix_third,list)
+			assert len(fix_third) == 3
+
+			# construct the restraints
+
+			rst_buffer += "&rst"+end
+
+			rst_buffer += "iat="
+			rst_buffer += str(fix_third[0].pdb_index)+","
+			rst_buffer += str(fix_third[1].pdb_index)+","+end
+
+			r2 = 0.9
+			r3 = 1.5
+
+			r1 = 0.0
+			r4 = 2.4
+
+			rk2 = force_constant
+			rk3 = force_constant
+
+			rst_buffer += "r1="+str(r1)+","+end
+			rst_buffer += "r2="+str(r2)+","+end
+			rst_buffer += "r3="+str(r3)+","+end
+			rst_buffer += "r4="+str(r4)+","+end
+			rst_buffer += "rk2="+str(rk2)+","+end
+			rst_buffer += "rk3="+str(rk3)+","+end
+			
+			rst_buffer += "/"+end
+
+			rst_buffer += "&rst"+end
+
+			rst_buffer += "iat="
+			rst_buffer += str(fix_third[1].pdb_index)+","
+			rst_buffer += str(fix_third[2].pdb_index)+","+end
+
+			r2 = 1.4
+			r3 = 2.4
+
+			r1 = 0.5
+			r4 = 3.3
+
+			rst_buffer += "r1="+str(r1)+","+end
+			rst_buffer += "r2="+str(r2)+","+end
+			rst_buffer += "r3="+str(r3)+","+end
+			rst_buffer += "r4="+str(r4)+","+end
+			rst_buffer += "rk2="+str(rk2)+","+end
+			rst_buffer += "rk3="+str(rk3)+","+end
+			
+			rst_buffer += "/"+end
+
+		rst_buffer += end
+
+		if subdir is not None:
+		    out_rst = open(subdir+"/window_"+str(i+1).zfill(2)+".RST","w")
+		    out_rst.write(rst_buffer)
+		    out_rst.close()
+		    mout.out("File written to "+mcol.file+subdir+"/window_"+str(i+1).zfill(2)+".RST")
 
 def umb_rst_2prot_1rc(atoms,weights,coord_range,num_windows,force_constant,harmonic_width,subdir=None,samples=1000,graph=False,adiab_windows=False,fix_length=False):
 
@@ -1026,6 +1361,13 @@ def prep4amber(system):
 		i = system.rename_atoms("H53","H73",res_filter="DT",verbosity=0)
 		mout.out("Fixed atom names in "+mcol.result+str(i)+mcol.clear+" instances of "+mcol.arg+"DT")
 
+	# HCAP
+	i=0
+	for resname in [ "DC3", "DA3", "DT3", "DG3"]:
+		i += system.rename_atoms("HCAP","HO3'",res_filter=resname,verbosity=0)
+	mout.out(mcol.arg+"HCAP->HO3'"+mcol.clear+" rename performed in "+
+			 mcol.result+str(i)+mcol.clear+" instances of 3TER")
+
 	# Fix ATP atom names
 	if "ATP" in str(system.residues):
 		system.rename_atoms("O5'","O5*",res_filter="ATP",verbosity=0)
@@ -1047,4 +1389,135 @@ def prep4amber(system):
 		system.rename_atoms("H2''","H20",res_filter="ATP",verbosity=0)
 		i = system.rename_atoms("H3T","H30",res_filter="ATP",verbosity=0)
 		mout.out("Fixed atom names in "+mcol.result+str(i)+mcol.clear+" instances of "+mcol.arg+"ATP")
+
+def amber2charmm(system):
+
+	# Fix histidine residue names
+	if "HSD" in str(system.residues):
+		i = system.rename_residues("HSD","HID",verbosity=0)
+		mout.out("Fixed names of "+mcol.result+str(i)+mcol.clear+" instances of "+mcol.arg+"HSD")
+
+	###### Fix names common to many animo acids
+
+	# H -> HN
+	aa_hnfix_residues = [ "ALA", "ARG", "ASN", "ASP", "CYS", "GLN", "GLU", 
+	  					  "GLY", "HID", "ILE", "LEU", "LYS", "MET", "PHE", 
+	  					  "SER", "THR", "TRP", "TYR", "VAL"]
+
+	i=0
+	for resname in aa_hnfix_residues:
+		i += system.rename_atoms("H","HN",res_filter=resname,verbosity=0)
+	mout.out(mcol.arg+"H->HN"+mcol.clear+" rename performed in "+
+			 mcol.result+str(i)+mcol.clear+" instances of amino acids")
+
+
+	# HBN->HBN-1
+	aa_hbfix_residues = [ "ARG", "ASN", "ASP", "CYS", "GLN", "GLU","HID", "LEU",
+						  "LYS", "MET", "PHE", "PRO", "SER", "TRP", "TYR"]
+
+	i=0
+	for resname in aa_hbfix_residues:
+		i += system.rename_atoms("HB2","HB1",res_filter=resname,verbosity=0)
+		system.rename_atoms("HB3","HB2",res_filter=resname,verbosity=0)
+	mout.out(mcol.arg+"HBn->HBn-1"+mcol.clear+" rename performed in "+
+			 mcol.result+str(i)+mcol.clear+" instances of amino acids")
+
+	# HGN->HGN-1
+	i=0
+	for resname in [ "ALA", "ARG", "GLN", "GLU", "LYS", "MET", "PRO" ]:
+		i += system.rename_atoms("HG2","HG1",res_filter=resname,verbosity=0)
+		system.rename_atoms("HG3","HG2",res_filter=resname,verbosity=0)
+	mout.out(mcol.arg+"HGn->HGn-1"+mcol.clear+" rename performed in "+
+			 mcol.result+str(i)+mcol.clear+" instances of amino acids")
+	
+	# HDN->HDN-1
+	i=0
+	for resname in [ "ARG", "LYS", "PRO"]:
+		i += system.rename_atoms("HD2","HD1",res_filter=resname,verbosity=0)
+		system.rename_atoms("HD3","HD2",res_filter=resname,verbosity=0)
+	mout.out(mcol.arg+"HDn->HDn-1"+mcol.clear+" rename performed in "+
+			 mcol.result+str(i)+mcol.clear+" instances of amino acids")
+
+	###### Fix atom names in specific amino acids
+
+	# Fix LEU atom names
+	if "LEU" in str(system.residues):
+		system.rename_atoms("H1","HT1",res_filter="LEU",verbosity=0)
+		system.rename_atoms("H2","HT2",res_filter="LEU",verbosity=0)
+		i = system.rename_atoms("H3","HT3",res_filter="LEU",verbosity=0)
+		mout.out("Fixed atom names in "+mcol.result+str(i)+mcol.clear+" instances of "+mcol.arg+"LEU")
+
+	# Fix SER atom names
+	if "SER" in str(system.residues):
+		i = system.rename_atoms("HG","HG1",res_filter="SER",verbosity=0)
+		mout.out("Fixed atom names in "+mcol.result+str(i)+mcol.clear+" instances of "+mcol.arg+"SER")
+
+	# Fix LYS atom names
+	if "LYS" in str(system.residues):
+		i = system.rename_atoms("HE2","HE1",res_filter="LYS",verbosity=0)
+		system.rename_atoms("HE3","HE2",res_filter="LYS",verbosity=0)
+		mout.out("Fixed atom names in "+mcol.result+str(i)+mcol.clear+" instances of "+mcol.arg+"LYS")
+
+	# Fix GLY atom names
+	if "GLY" in str(system.residues):
+		i = system.rename_atoms("HA2","HA1",res_filter="GLY",verbosity=0)
+		system.rename_atoms("HA3","HA2",res_filter="GLY",verbosity=0)
+		mout.out("Fixed atom names in "+mcol.result+str(i)+mcol.clear+" instances of "+mcol.arg+"GLY")
+
+	# Fix ILE atom names
+	if "ILE" in str(system.residues):
+		system.rename_atoms("HG12","HG11",res_filter="ILE",verbosity=0)
+		system.rename_atoms("HG13","HG12",res_filter="ILE",verbosity=0)
+		# system.rename_atoms("2HG1","HG13",res_filter="ILE",verbosity=1)
+		# system.rename_atoms("1HG1","HG12",res_filter="ILE",verbosity=1)
+		system.rename_atoms("CD1","CD",res_filter="ILE",verbosity=0)
+		system.rename_atoms("HD11","HD1",res_filter="ILE",verbosity=0)
+		system.rename_atoms("HD12","HD2",res_filter="ILE",verbosity=0)
+		i = system.rename_atoms("HD13","HD3",res_filter="ILE",verbosity=0)
+		mout.out("Fixed atom names in "+mcol.result+str(i)+mcol.clear+" instances of "+mcol.arg+"ILE")
+
+	# Fix CYS atom names
+	if "CYS" in str(system.residues):
+		i = system.rename_atoms("HG","HG1",res_filter="CYS",verbosity=0)
+		mout.out("Fixed atom names in "+mcol.result+str(i)+mcol.clear+" instances of "+mcol.arg+"CYS")
+
+	# Fix ARG atom names
+	if "ARG" in str(system.residues):
+		system.rename_atoms("OT1","O",res_filter="ARG",verbosity=0)
+		i = system.rename_atoms("OXT","OT2",res_filter="ARG",verbosity=0)
+		mout.out("Fixed atom names in "+mcol.result+str(i)+mcol.clear+" instances of "+mcol.arg+"ARG")
+
+	# Fix thymine atom names
+	if "DT" in str(system.residues):
+		system.rename_atoms("H71","H51",res_filter="DT",verbosity=0)
+		system.rename_atoms("H72","H52",res_filter="DT",verbosity=0)
+		i = system.rename_atoms("H73","H53",res_filter="DT",verbosity=0)
+		mout.out("Fixed atom names in "+mcol.result+str(i)+mcol.clear+" instances of "+mcol.arg+"DT")
+
+	# # Fix HIS atom names
+	# if "HIS" in str(system.residues):
+	# 	i = system.rename_atoms("HD2","HD1",res_filter="HIS",verbosity=0)
+	# 	mout.out("Fixed atom names in "+mcol.result+str(i)+mcol.clear+" instances of "+mcol.arg+"HIS")
+
+	# # Fix ATP atom names
+	# if "ATP" in str(system.residues):
+	# 	system.rename_atoms("O5'","O5*",res_filter="ATP",verbosity=0)
+	# 	system.rename_atoms("C5'","C5*",res_filter="ATP",verbosity=0)
+	# 	system.rename_atoms("C4'","C4*",res_filter="ATP",verbosity=0)
+	# 	system.rename_atoms("O4'","O4*",res_filter="ATP",verbosity=0)
+	# 	system.rename_atoms("C1'","C1*",res_filter="ATP",verbosity=0)
+	# 	system.rename_atoms("C3'","C3*",res_filter="ATP",verbosity=0)
+	# 	system.rename_atoms("O3'","O3*",res_filter="ATP",verbosity=0)
+	# 	system.rename_atoms("C2'","C2*",res_filter="ATP",verbosity=0)
+	# 	system.rename_atoms("O2'","O2*",res_filter="ATP",verbosity=0)
+	# 	system.rename_atoms("H4'","H40",res_filter="ATP",verbosity=0)
+	# 	system.rename_atoms("H1'","H10",res_filter="ATP",verbosity=0)
+	# 	system.rename_atoms("H5'","H50",res_filter="ATP",verbosity=0)
+	# 	system.rename_atoms("H5''","H51",res_filter="ATP",verbosity=0)
+	# 	system.rename_atoms("H8","H80",res_filter="ATP",verbosity=0)
+	# 	system.rename_atoms("H61","H60",res_filter="ATP",verbosity=0)
+	# 	system.rename_atoms("H62","H61",res_filter="ATP",verbosity=0)
+	# 	system.rename_atoms("H2''","H20",res_filter="ATP",verbosity=0)
+	# 	i = system.rename_atoms("H3T","H30",res_filter="ATP",verbosity=0)
+	# 	mout.out("Fixed atom names in "+mcol.result+str(i)+mcol.clear+" instances of "+mcol.arg+"ATP")
 
