@@ -22,7 +22,7 @@ def pdb2traj(input,output,verbosity=1,printScript=False,tagging=True):
     if (verbosity > 1):
       mout.out("")
 
-    in_traj = read(input,index=":",verbosity=verbosity-1)
+    in_traj = read(input,index=":",verbosity=verbosity-1,tagging=tagging)
 
     write(output,in_traj,verbosity=verbosity-1)
 
