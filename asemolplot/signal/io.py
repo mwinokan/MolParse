@@ -20,6 +20,7 @@ def csv_strip(filename,output=None,overwrite=False):
 	file = open(output,'w')
 
 	for line in lines:
+		line = re.sub(r'\t', ' ', line)
 		line = re.sub(' +',' ',line)
 		line = line.strip()
 		file.write(line+'\n')
