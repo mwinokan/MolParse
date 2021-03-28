@@ -43,6 +43,10 @@ class Chain:
     return num_atoms
 
   @property
+  def type(self):
+    return self.residues[0].type
+
+  @property
   def res_names(self):
     return [res.name for res in self.residues]
 

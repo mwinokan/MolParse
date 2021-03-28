@@ -5,6 +5,7 @@
 from .io import read
 from .io import write
 from .io import parsePDB
+from .io import parseGRO
 
 # Manipulation
 from .manipulate import interpolate
