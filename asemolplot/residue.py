@@ -68,6 +68,25 @@ class Residue:
       atomtype_list.append(atom.FF_atomtype)
     return atomtype_list
 
+  @property
+  def type(self):
+    if self.name.startswith(('DA','DT','DC','DG')):
+      this_type = "DNA"
+    elif self.name.startswith(('SOL','WAT','TIP','T3P')):
+      this_type = "SOL"
+    elif self.name.startswith(('ION','MG','CL','NA')):
+      this_type = "ION"
+    elif self.name.startswith(("ALA","ARG","ASN","ASP","ATP",
+                               "CYS","GLN","GLU","GLY","HSD",
+                               "HSE","HIS","ILE","LEU","LYS",
+                               "MET","PHE","PRO","SER","THR",
+                               "TRP","TYR","VAL")):
+      this_type = "PRO"
+    else:
+      mout.warningOut("Unknown residue type for "+mcol.arg+self.name)
+      this_type = None
+    return this_type
+
   def addAtom(self,atom):
     self._atoms.append(atom)
 
