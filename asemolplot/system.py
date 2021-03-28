@@ -13,6 +13,7 @@ class System:
   def __init__(self,name):
 
     self.name = name
+    self.description = None
     self.chains = []
 
     self.bondlist=None
@@ -68,6 +69,8 @@ class System:
     return charge
 
   def summary(self,res_limit=10):
+    if self.description is not None:
+      mout.headerOut("\n"+self.description)
     mout.headerOut("\nSystem "+mcol.arg+self.name+
                    mcol.clear+mcol.bold+" contains "+
                    mcol.result+str(self.num_chains)+
