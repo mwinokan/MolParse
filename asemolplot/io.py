@@ -289,7 +289,160 @@ def parsePDBAtomLine(line,res_index,atom_index,chain_counter):
 
   except:
     mout.errorOut(line)
-    mout.errorOut("Unsupported PDB line "+str(index)+" shown above",fatal=True)
+    mout.errorOut("Unsupported PDB line shown above",fatal=True)
+
+# def parseGRO(gro,systemName=None,fix_indices=True,fix_atomnames=True,verbosity=1,auto_ter=None):
+def parseGRO(gro,systemName=None,fix_indices=True,fix_atomnames=True,verbosity=1,auto_ter=["DA3","DT3","DG3","DC3"]):
+
+  if (verbosity > 0):
+    mout.out("parsing "+mcol.file+
+             gro+
+             mcol.clear+" ... ",
+             end='') # user output
+
+  import os
+
+  # file  = open(gro, 'r').read()
+  # if file.count("MODEL") == 0:
+  #   mout.errorOut("gro has no MODELs",fatal=True)
+  # file.close()
+
+  residue = None
+  chain = None
+  last_residue_name = None
+  last_residue_number = None
+  last_chain_name = None
+  res_counter = 0
+  chain_counter = 0
+  atom_counter = 1
+  was_terminal = False
+
+  if systemName is None:
+    systemName = os.path.splitext(gro)[0]
+  system = System(name = systemName)
+
+  try: 
+    with open(gro,"r") as input_gro:
+      first = True
+      line_counter = 0
+      # make_new_res = True
+      for line in input_gro:
+        line_counter += 1
+
+        # parse the header
+        if line_counter == 1:
+          sys_description = line.strip()
+        elif line_counter == 2:
+          sys_atom_count = int(line.strip())
+
+        # parse the rest
+        else:
+
+          # check if last line
+          if len(line.strip()) < 40:
+            break
+
+          # parse an atom line:
+          atom = parseGROAtomLine(line,res_counter,atom_counter,chain_counter)
+
+          # first atom
+          if line_counter == 3:
+            chain = Chain(atom.chain)
+            residue = Residue(atom.residue,res_counter,atom.chain)
+            # residue.addAtom(atom)
+            last_residue_name = atom.residue
+            last_residue_number = atom.res_number
+            last_chain_name = atom.chain
+
+          # check if a new residue is needed
+          make_new_res = False
+          if residue is None: make_new_res = True
+          if last_residue_name != atom.residue: make_new_res = True
+          if last_residue_number != atom.res_number: make_new_res = True
+
+          # make the new residue
+          if make_new_res:
+            if residue is not None: 
+              chain.add_residue(residue)
+              res_counter += 1
+            residue = Residue(atom.residue,res_counter,atom.chain)
+
+          # add the atom to the residue
+          residue.addAtom(atom)
+          residue_type = residue.type
+          
+          # check if a new chain is needed
+          make_new_chain = False
+          if residue is None: 
+            # print("NONE-TER")
+            make_new_chain = True
+          if auto_ter is not None and make_new_res and last_residue_name in auto_ter:
+            make_new_chain = True
+            # print("AUTO-TER",residue.name)
+          if make_new_res and residue_type != last_residue_type:
+            make_new_chain = True
+            # print("TYPE-TER",residue.name)
+          
+          # make the new chain
+          if make_new_res:
+            if make_new_chain:
+              if chain is not None:
+                system.add_chain(chain)
+                chain_counter += 1
+              chain = Chain(atom.chain)
+
+          # update variables
+          atom_counter += 1
+          last_residue_type = residue_type
+          last_residue_number = atom.res_number
+          last_residue_name = atom.residue
+
+          system.description = sys_description
+
+  except FileNotFoundError:
+    mout.errorOut("File "+mcol.file+gro+mcol.error+" not found",fatal=True)
+
+  chain.add_residue(residue)
+  system.add_chain(chain)
+
+  if fix_indices:
+    system.fix_indices()
+
+  if fix_atomnames:
+    system.fix_atomnames()
+
+  if (verbosity > 0):
+    mout.out("Done.") # user output
+
+  return system
+
+def parseGROAtomLine(line,res_index,atom_index,chain_counter):
+
+  # try:
+    res_number = line[0:5].strip()
+    residue = line[5:10].strip()
+    atom_name = line[11:15].strip()
+    gro_index = line[15:21].strip()
+    # print(res_number,residue,atom_name,atom_index)
+
+    # assert gro_index == atom_index
+
+    chain = string.ascii_uppercase[chain_counter%26]
+
+    position = []
+    position.append(float(line[20:29].strip()))
+    position.append(float(line[29:37].strip()))
+    position.append(float(line[37:45].strip()))
+
+    hetatm=False
+
+    atom = Atom(atom_name,atom_index,atom_index,position,residue,chain,res_number)
+
+    return atom
+
+  # except:
+  #   mout.errorOut(line)
+  #   mout.errorOut("Unsupported GRO line shown above",fatal=True)
 
 def writeCJSON(filename,system,use_atom_types=False,gulp_names=False,noPrime=False,printScript=False,verbosity=1):
 
@@ -411,11 +564,20 @@ def writePDB(filename,system,verbosity=1,printScript=False,append=False,model=1)
 
         strbuff += x_str+y_str+z_str
 
-        strbuff += '{:.2f}'.format(atom.occupancy).rjust(6)
-        strbuff += '{:.2f}'.format(atom.temp_factor).rjust(6)
+        if atom.occupancy is not None:
+          strbuff += '{:.2f}'.format(atom.occupancy).rjust(6)
+        else:
+          strbuff += '      '
+        if atom.temp_factor is not None:
+          strbuff += '{:.2f}'.format(atom.temp_factor).rjust(6)
+        else:
+          strbuff += '      '
+
         strbuff += "          "
         strbuff += atom.species.rjust(2)
-        strbuff += atom.charge_str
+        
+        if atom.charge_str is not None:
+          strbuff += atom.charge_str
 
         if atom.QM:
           strbuff += "QM"
