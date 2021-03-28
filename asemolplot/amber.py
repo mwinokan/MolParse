@@ -1521,3 +1521,20 @@ def amber2charmm(system):
 	# 	i = system.rename_atoms("H3T","H30",res_filter="ATP",verbosity=0)
 	# 	mout.out("Fixed atom names in "+mcol.result+str(i)+mcol.clear+" instances of "+mcol.arg+"ATP")
 
+def parseRST(filename,key,convert_to_float=True):
+	import re
+
+	file = open(filename, "r")
+
+	output = []
+
+	for line in file:
+		result = re.search(key+'=(.*),', line)
+		if result is not None:
+			value = result.group(1)
+			if convert_to_float: value = float(value)
+			output.append(value)
+
+			# print(result.group(1))
+
+	return output

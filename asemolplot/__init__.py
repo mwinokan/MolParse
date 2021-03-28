@@ -58,6 +58,7 @@ from .console_io import printEnergy # needs documentation
 # Amber specific
 from .amber import prep4amber
 from .amber import amber2charmm
+from .amber import parseRST
 from .amber import umbrella_helper_2dist
 from .amber import umb_rst_2prot
 from .amber import umb_rst_2prot_new
@@ -77,4 +78,5 @@ from . import units
 from . import dl_poly
 from . import dna
 from . import signal
+from . import tunnel
 # from . import analysis
