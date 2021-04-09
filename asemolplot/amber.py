@@ -555,7 +555,7 @@ def umb_rst_2prot(atoms,weights,coord_range,num_windows,force_constant,
 
 def umb_rst_2prot_new(atoms,weights,coord_range,num_windows,force_constant,
 				  harmonic_width,subdir=None,samples=1000,graph=False,
-				  adiab_windows=True,fix_angle=None,fix_third=None):
+				  adiab_windows=True,fix_angle=None,fix_third=None,add_len=None):
 
 	assert len(atoms) == 6
 	assert len(weights) == 2
@@ -735,6 +735,10 @@ def umb_rst_2prot_new(atoms,weights,coord_range,num_windows,force_constant,
 			rst_buffer += str(fix_third[0].pdb_index)+","
 			rst_buffer += str(fix_third[1].pdb_index)+","+end
 
+			if add_len is not None:
+				assert is_instance(add_len,float) or is_instance(add_len,int)
+				this_add = add_len
+
 			r2 = 0.9
 			r3 = 1.5
 
@@ -759,11 +763,58 @@ def umb_rst_2prot_new(atoms,weights,coord_range,num_windows,force_constant,
 			rst_buffer += str(fix_third[1].pdb_index)+","
 			rst_buffer += str(fix_third[2].pdb_index)+","+end
 
-			r2 = 1.4
-			r3 = 2.4
+			r2 = 1.4 + this_add
+			r3 = 2.4 + this_add
 
-			r1 = 0.5
-			r4 = 3.3
+			r1 = 0.5 + this_add
+			r4 = 3.3 + this_add
+
+			rst_buffer += "r1="+str(r1)+","+end
+			rst_buffer += "r2="+str(r2)+","+end
+			rst_buffer += "r3="+str(r3)+","+end
+			rst_buffer += "r4="+str(r4)+","+end
+			rst_buffer += "rk2="+str(rk2)+","+end
+			rst_buffer += "rk3="+str(rk3)+","+end
+			
+			rst_buffer += "/"+end
+
+		if add_len is not None:
+
+			# Additional restraints to extend hydrogen bonds
+
+			assert is_instance(add_len,float) or is_instance(add_len,int)
+
+			# construct the restraints
+
+			rst_buffer += "&rst"+end
+
+			rst_buffer += "iat="
+			rst_buffer += str(atoms[0].pdb_index)+","
+			rst_buffer += str(atoms[2].pdb_index)+","+end
+
+			r2 = 2.5+add_len
+			r3 = 3.0+add_len
+
+			r1 = r2 - 1.0
+			r4 = r3 + 1.0
+
+			rk2 = force_constant
+			rk3 = force_constant
+
+			rst_buffer += "r1="+str(r1)+","+end
+			rst_buffer += "r2="+str(r2)+","+end
+			rst_buffer += "r3="+str(r3)+","+end
+			rst_buffer += "r4="+str(r4)+","+end
+			rst_buffer += "rk2="+str(rk2)+","+end
+			rst_buffer += "rk3="+str(rk3)+","+end
+			
+			rst_buffer += "/"+end
+
+			rst_buffer += "&rst"+end
+
+			rst_buffer += "iat="
+			rst_buffer += str(atoms[3].pdb_index)+","
+			rst_buffer += str(atoms[5].pdb_index)+","+end
 
 			rst_buffer += "r1="+str(r1)+","+end
 			rst_buffer += "r2="+str(r2)+","+end
