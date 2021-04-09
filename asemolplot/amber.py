@@ -736,7 +736,7 @@ def umb_rst_2prot_new(atoms,weights,coord_range,num_windows,force_constant,
 			rst_buffer += str(fix_third[1].pdb_index)+","+end
 
 			if add_len is not None:
-				assert is_instance(add_len,float) or is_instance(add_len,int)
+				assert isinstance(add_len,float) or isinstance(add_len,int)
 				this_add = add_len
 
 			r2 = 0.9
@@ -782,7 +782,7 @@ def umb_rst_2prot_new(atoms,weights,coord_range,num_windows,force_constant,
 
 			# Additional restraints to extend hydrogen bonds
 
-			assert is_instance(add_len,float) or is_instance(add_len,int)
+			assert isinstance(add_len,float) or isinstance(add_len,int)
 
 			# construct the restraints
 
