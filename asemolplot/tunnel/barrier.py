@@ -19,7 +19,7 @@ def eckart(x,barrier,asymmetry,length,xts=0.0):
 
 	reverse_barrier = barrier - asymmetry
 
-	print(reverse_barrier)
+	# print(reverse_barrier)
 
 	A = barrier - reverse_barrier
 
