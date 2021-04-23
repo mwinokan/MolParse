@@ -26,7 +26,8 @@ class Atom:
                occupancy=None,
                temp_factor=None,
                heterogen=None,
-               charge_str=None):
+               charge_str=None,
+               velocity=None):
 
     self._name = name
     self._atomic_number = None
@@ -49,6 +50,7 @@ class Atom:
     self.charge_str = charge_str
     self.ter_line = None
     self.terminal = None
+    self._velocity = velocity
 
   def print(self):
 
@@ -97,8 +99,16 @@ class Atom:
     return self._position
 
   @property
+  def velocity(self):
+    return self._velocity
+
+  @property
   def np_pos(self):
     return np.array((self._position[0] ,self._position[1], self._position[2]))
+
+  @property
+  def np_vel(self):
+    return np.array((self._velocity[0] ,self._velocity[1], self._velocity[2]))
 
   @property
   def x(self):
@@ -115,6 +125,10 @@ class Atom:
   @position.setter
   def position(self,pos):
     self._position = pos
+
+  @velocity.setter
+  def velocity(self,vel):
+    self._velocity = vel
 
   def copy(self):
     return copy.deepcopy(self)
