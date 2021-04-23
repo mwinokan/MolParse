@@ -29,6 +29,9 @@ def write(filename,image,verbosity=1,printScript=False,**parameters):
     # PBD and amp.System:
     elif filename.endswith(".pdb") or filename.endswith(".pdb2") and isinstance(image,System):
       writePDB(filename,image,verbosity=verbosity-1)
+    # GRO and amp.System:
+    elif filename.endswith(".gro") and isinstance(image,System):
+      writeGRO(filename,image,verbosity=verbosity-1)
     # PDB and list of amp.System's:
     elif filename.endswith(".pdb") and isinstance(image,list):
 
@@ -364,6 +367,8 @@ def parseGRO(gro,systemName=None,fix_indices=True,fix_atomnames=True,verbosity=1
 
           # check if last line
           if len(line.strip()) < 40:
+            split_line = line.strip().split()
+            system.box = [float(split_line[0]),float(split_line[1]),float(split_line[2])]
             break
 
           # parse an atom line:
@@ -454,13 +459,18 @@ def parseGROAtomLine(line,res_index,atom_index,chain_counter):
     chain = string.ascii_uppercase[chain_counter%26]
 
     position = []
-    position.append(float(line[20:29].strip()))
+    position.append(float(line[21:29].strip()))
     position.append(float(line[29:37].strip()))
     position.append(float(line[37:45].strip()))
+    
+    velocity = []
+    velocity.append(float(line[45:53].strip()))
+    velocity.append(float(line[53:61].strip()))
+    velocity.append(float(line[61:69].strip()))
 
     hetatm=False
 
-    atom = Atom(atom_name,atom_index,atom_index,position,residue,chain,res_number)
+    atom = Atom(atom_name,atom_index,atom_index,position,residue,chain,res_number,velocity=velocity)
 
     return atom
 
@@ -562,8 +572,8 @@ def writePDB(filename,system,verbosity=1,printScript=False,append=False,model=1)
         if len(atom_serial_str) > 5: 
           atom_serial_str = "XXXXX"
 
-        residue_serial_str = str(residue_serial).rjust(5)
-        if len(atom_serial_str) > 4: 
+        residue_serial_str = str(residue_serial).rjust(4)
+        if len(residue_serial_str) > 4: 
           # residue_serial_str = "XXXX"
           # residue_serial_str = "    "
           residue_serial_str = residue_serial_str[-4:]
@@ -629,6 +639,80 @@ def writePDB(filename,system,verbosity=1,printScript=False,append=False,model=1)
     out_stream = open(filename,"a")
   else:
     out_stream = open(filename,"w")
+
+  out_stream.write(strbuff)
+  out_stream.close()
+
+  if (verbosity > 0):
+    mout.out("Done.") # user output
+    
+
+def writeGRO(filename,system,verbosity=1,printScript=False):
+
+  if (verbosity > 0):
+    mout.out("writing "+mcol.file+
+             filename+
+             mcol.clear+" ... ",
+             printScript=printScript,
+             end='') # user output
+
+  # Check that the input is the correct class
+  assert isinstance(system,System)
+
+  end = '\n'
+
+  strbuff =  system.name+" (amp.io)"+end
+  strbuff += str(system.num_atoms)+end
+
+  atom_serial = 1
+  residue_serial = 1
+
+  for chain in system.chains:
+    for residue in chain.residues:
+      for atom in residue.atoms:
+
+        # strbuff += "ATOM  "
+
+        residue_serial_str = str(residue_serial).rjust(5)
+        if len(residue_serial_str) > 5: 
+          # residue_serial_str = "XXXX"
+          # residue_serial_str = "    "
+          residue_serial_str = residue_serial_str[-5:]
+
+        atom_serial_str = str(atom_serial).rjust(5)
+        if len(atom_serial_str) > 5: 
+          atom_serial_str = atom_serial_str[-5:]
+          # atom_serial_str = "XXXXX"
+
+        strbuff += residue_serial_str
+        strbuff += str(atom.residue).ljust(4)
+        strbuff += " "
+        strbuff += str(atom.name).rjust(5)
+        strbuff += atom_serial_str
+        
+        x_str = '{:.3f}'.format(atom.x).rjust(8)
+        y_str = '{:.3f}'.format(atom.y).rjust(8)
+        z_str = '{:.3f}'.format(atom.z).rjust(8)
+        strbuff += x_str+y_str+z_str
+        
+        x_str = '{:.3f}'.format(atom.velocity[0]).rjust(8)
+        y_str = '{:.3f}'.format(atom.velocity[1]).rjust(8)
+        z_str = '{:.3f}'.format(atom.velocity[2]).rjust(8)
+        strbuff += x_str+y_str+z_str
+
+        strbuff += end
+
+        atom_serial += 1
+
+      residue_serial += 1
+
+  x_str = '{:.3f}'.format(system.box[0]).rjust(12)
+  y_str = '{:.3f}'.format(system.box[1]).rjust(12)
+  z_str = '{:.3f}'.format(system.box[2]).rjust(12)
+  strbuff += x_str+y_str+z_str
+  strbuff += end
+
+  out_stream = open(filename,"w")
 
   out_stream.write(strbuff)
   out_stream.close()
