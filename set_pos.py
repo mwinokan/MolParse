@@ -30,6 +30,7 @@ atom = system.atoms[int(args.index)]
 atom.position[0] = float(args.xpos)
 atom.position[1] = float(args.ypos)
 atom.position[2] = float(args.zpos)
+
 # print(atom.position)
 
 mout.headerOut("Set coordinates of atom "+
