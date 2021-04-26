@@ -679,15 +679,16 @@ def writeGRO(filename,system,verbosity=1,printScript=False):
           # residue_serial_str = "    "
           residue_serial_str = residue_serial_str[-5:]
 
-        atom_serial_str = str(atom_serial).rjust(5)
-        if len(atom_serial_str) > 5: 
-          atom_serial_str = atom_serial_str[-5:]
+        atom_serial_str = str(atom_serial).rjust(4)
+        if len(atom_serial_str) > 4: 
+          atom_serial_str = atom_serial_str[-4:]
           # atom_serial_str = "XXXXX"
 
         strbuff += residue_serial_str
         strbuff += str(atom.residue).ljust(4)
         strbuff += " "
         strbuff += str(atom.name).rjust(5)
+        strbuff += " "
         strbuff += atom_serial_str
         
         x_str = '{:.3f}'.format(atom.x).rjust(8)
