@@ -27,11 +27,11 @@ if args.input.endswith(".pdb"):
 atom = system.atoms[int(args.index)]
 
 # print(atom.position)
-if args.xpos != " "
+if args.xpos != " ":
 	atom.position[0] = float(args.xpos)
-if args.ypos != " "
+if args.ypos != " ":
 	atom.position[1] = float(args.ypos)
-if args.zpos != " "
+if args.zpos != " ":
 	atom.position[2] = float(args.zpos)
 
 # print(atom.position)
