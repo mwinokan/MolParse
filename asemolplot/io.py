@@ -430,9 +430,9 @@ def parseGROAtomLine(line,res_index,atom_index,chain_counter):
     chain = string.ascii_uppercase[chain_counter%26]
 
     position = []
-    position.append(float(line[20:29].strip()))
-    position.append(float(line[29:37].strip()))
-    position.append(float(line[37:45].strip()))
+    position.append(10.0*float(line[20:29].strip()))
+    position.append(10.0*float(line[29:37].strip()))
+    position.append(10.0*float(line[37:45].strip()))
 
     hetatm=False
 
