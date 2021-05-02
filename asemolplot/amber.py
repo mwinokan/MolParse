@@ -571,6 +571,15 @@ def umb_rst_2prot_new(atoms,weights,coord_range,num_windows,force_constant,
 	mout.headerOut("Windows")
 	mout.varOut("#Windows",num_windows,valCol=mcol.arg)
 
+	print(coord_range)
+
+	if add_len is not None:
+		coord_range[0] -= 0.5*add_len
+		coord_range[1] += 0.5*add_len
+		coord_range[2] -= 0.5*add_len
+		coord_range[3] += 0.5*add_len
+	print(coord_range)
+
 	centres=[]
 	
 	for i in range(num_windows):

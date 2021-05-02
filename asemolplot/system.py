@@ -17,6 +17,7 @@ class System:
     self.chains = []
 
     self.bondlist=None
+    self.box = None
 
   def check_indices(self):
 

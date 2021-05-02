@@ -27,8 +27,11 @@ def write(filename,image,verbosity=1,printScript=False,**parameters):
     if filename.endswith(".cjson"):
       writeCJSON(filename,image)
     # PBD and amp.System:
-    elif filename.endswith(".pdb") and isinstance(image,System):
+    elif filename.endswith(".pdb") or filename.endswith(".pdb2") and isinstance(image,System):
       writePDB(filename,image,verbosity=verbosity-1)
+    # GRO and amp.System:
+    elif filename.endswith(".gro") and isinstance(image,System):
+      writeGRO(filename,image,verbosity=verbosity-1)
     # PDB and list of amp.System's:
     elif filename.endswith(".pdb") and isinstance(image,list):
 
@@ -125,13 +128,16 @@ def tagFromLine(line,byResidue):
   except:
     return 0
 
-def parsePDB(pdb,systemName=None,fix_indices=True,fix_atomnames=True,verbosity=1):
+def parsePDB(pdb,systemName=None,fix_indices=True,fix_atomnames=True,verbosity=1,debug=False):
 
   if (verbosity > 0):
     mout.out("parsing "+mcol.file+
              pdb+
              mcol.clear+" ... ",
              end='') # user output
+
+  if debug:
+    mout.warningOut("Debug mode active!")
 
   import os
 
@@ -164,7 +170,7 @@ def parsePDB(pdb,systemName=None,fix_indices=True,fix_atomnames=True,verbosity=1
           elif line.startswith("ATOM"):
             searching = False
             #### PARSELINE
-            atom = parsePDBAtomLine(line,res_counter,atom_counter,chain_counter)
+            atom = parsePDBAtomLine(line,res_counter,atom_counter,chain_counter,debug=debug)
             chain = Chain(atom.chain)
             residue = Residue(atom.residue,res_counter,atom.chain)
             residue.addAtom(atom)
@@ -198,7 +204,7 @@ def parsePDB(pdb,systemName=None,fix_indices=True,fix_atomnames=True,verbosity=1
             continue
           else:
             ### PARSELINE
-            atom = parsePDBAtomLine(line,res_counter,atom_counter,chain_counter)
+            atom = parsePDBAtomLine(line,res_counter,atom_counter,chain_counter,debug=debug)
             
             make_new_res = False
             if residue is None: make_new_res = True
@@ -247,29 +253,48 @@ def parsePDB(pdb,systemName=None,fix_indices=True,fix_atomnames=True,verbosity=1
 
   return system
 
-def parsePDBAtomLine(line,res_index,atom_index,chain_counter):
+def parsePDBAtomLine(line,res_index,atom_index,chain_counter,debug=False):
+
+  if debug:
+    mout.out("Attempting to parse atom with index: "+str(atom_index))
 
   try:
     atom_name = line[12:17].strip()
+    if debug: print(str(atom_index) + ".name: OK")
     residue = line[17:21].strip()
+    if debug: print(str(atom_index) + ".residue: OK")
     try:
       pdb_index = int(line[6:12].strip())
     except:
       pdb_index = atom_index
+    if debug: print(str(atom_index) + ".index: OK")
     chain = line[21:22]
     if chain == ' ':
       chain = string.ascii_uppercase[chain_counter%26]
+    if debug: print(str(atom_index) + ".chain: OK")
     res_number = line[22:26].strip()
+    if debug: print(str(atom_index) + ".res_number: OK")
 
     position = []
     position.append(float(line[31:39].strip()))
     position.append(float(line[39:47].strip()))
     position.append(float(line[47:55].strip()))
+    if debug: print(str(atom_index) + ".position: OK")
 
-    occupancy = float(line[55:61].strip())
-    temp_factor = float(line[61:67].strip())
+    try:
+      occupancy = float(line[55:61].strip())
+    except:
+      occupancy = None
+    if debug: print(str(atom_index) + ".occupancy: OK")
+
+    try:
+      temp_factor = float(line[61:67].strip())
+    except:
+      temp_factor = None
+    if debug: print(str(atom_index) + ".temp_factor: OK")
 
     chg_str = line[78:80].rstrip('\n')
+    if debug: print(str(atom_index) + ".chg_str: OK")
 
     end = line[80:]
 
@@ -277,11 +302,13 @@ def parsePDBAtomLine(line,res_index,atom_index,chain_counter):
       hetatm=True
     else:
       hetatm=False
+    if debug: print(str(atom_index) + ".hetatm: OK")
 
     if 'QM' in end:
       isQM = True
     else:
       isQM = False
+    if debug: print(str(atom_index) + ".isqm: OK")
 
     atom = Atom(atom_name,pdb_index,pdb_index,position,residue,chain,res_number,QM=isQM,occupancy=occupancy,temp_factor=temp_factor,heterogen=hetatm,charge_str=chg_str)
 
@@ -340,6 +367,8 @@ def parseGRO(gro,systemName=None,fix_indices=True,fix_atomnames=True,verbosity=1
 
           # check if last line
           if len(line.strip()) < 40:
+            split_line = line.strip().split()
+            system.box = [float(split_line[0]),float(split_line[1]),float(split_line[2])]
             break
 
           # parse an atom line:
@@ -430,13 +459,18 @@ def parseGROAtomLine(line,res_index,atom_index,chain_counter):
     chain = string.ascii_uppercase[chain_counter%26]
 
     position = []
-    position.append(10.0*float(line[20:29].strip()))
+    position.append(10.0*float(line[21:29].strip()))
     position.append(10.0*float(line[29:37].strip()))
     position.append(10.0*float(line[37:45].strip()))
+    
+    velocity = []
+    velocity.append(10.0*float(line[45:53].strip()))
+    velocity.append(10.0*float(line[53:61].strip()))
+    velocity.append(10.0*float(line[61:69].strip()))
 
     hetatm=False
 
-    atom = Atom(atom_name,atom_index,atom_index,position,residue,chain,res_number)
+    atom = Atom(atom_name,atom_index,atom_index,position,residue,chain,res_number,velocity=velocity)
 
     return atom
 
@@ -538,8 +572,8 @@ def writePDB(filename,system,verbosity=1,printScript=False,append=False,model=1)
         if len(atom_serial_str) > 5: 
           atom_serial_str = "XXXXX"
 
-        residue_serial_str = str(residue_serial).rjust(5)
-        if len(atom_serial_str) > 4: 
+        residue_serial_str = str(residue_serial).rjust(4)
+        if len(residue_serial_str) > 4: 
           # residue_serial_str = "XXXX"
           # residue_serial_str = "    "
           residue_serial_str = residue_serial_str[-4:]
@@ -605,6 +639,81 @@ def writePDB(filename,system,verbosity=1,printScript=False,append=False,model=1)
     out_stream = open(filename,"a")
   else:
     out_stream = open(filename,"w")
+
+  out_stream.write(strbuff)
+  out_stream.close()
+
+  if (verbosity > 0):
+    mout.out("Done.") # user output
+    
+
+def writeGRO(filename,system,verbosity=1,printScript=False):
+
+  if (verbosity > 0):
+    mout.out("writing "+mcol.file+
+             filename+
+             mcol.clear+" ... ",
+             printScript=printScript,
+             end='') # user output
+
+  # Check that the input is the correct class
+  assert isinstance(system,System)
+
+  end = '\n'
+
+  strbuff =  system.name+" (amp.io)"+end
+  strbuff += str(system.num_atoms)+end
+
+  atom_serial = 1
+  residue_serial = 1
+
+  for chain in system.chains:
+    for residue in chain.residues:
+      for atom in residue.atoms:
+
+        # strbuff += "ATOM  "
+
+        residue_serial_str = str(residue_serial).rjust(5)
+        if len(residue_serial_str) > 5: 
+          # residue_serial_str = "XXXX"
+          # residue_serial_str = "    "
+          residue_serial_str = residue_serial_str[-5:]
+
+        atom_serial_str = str(atom_serial).rjust(4)
+        if len(atom_serial_str) > 4: 
+          atom_serial_str = atom_serial_str[-4:]
+          # atom_serial_str = "XXXXX"
+
+        strbuff += residue_serial_str
+        strbuff += str(atom.residue).ljust(4)
+        strbuff += " "
+        strbuff += str(atom.name).rjust(5)
+        strbuff += " "
+        strbuff += atom_serial_str
+        
+        x_str = '{:.3f}'.format(atom.x).rjust(8)
+        y_str = '{:.3f}'.format(atom.y).rjust(8)
+        z_str = '{:.3f}'.format(atom.z).rjust(8)
+        strbuff += x_str+y_str+z_str
+        
+        x_str = '{:.3f}'.format(atom.velocity[0]).rjust(8)
+        y_str = '{:.3f}'.format(atom.velocity[1]).rjust(8)
+        z_str = '{:.3f}'.format(atom.velocity[2]).rjust(8)
+        strbuff += x_str+y_str+z_str
+
+        strbuff += end
+
+        atom_serial += 1
+
+      residue_serial += 1
+
+  x_str = '{:.3f}'.format(system.box[0]).rjust(12)
+  y_str = '{:.3f}'.format(system.box[1]).rjust(12)
+  z_str = '{:.3f}'.format(system.box[2]).rjust(12)
+  strbuff += x_str+y_str+z_str
+  strbuff += end
+
+  out_stream = open(filename,"w")
 
   out_stream.write(strbuff)
   out_stream.close()

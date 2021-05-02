@@ -74,8 +74,10 @@ class Residue:
       this_type = "DNA"
     elif self.name.startswith(('SOL','WAT','TIP','T3P')):
       this_type = "SOL"
-    elif self.name.startswith(('ION','MG','CL','NA')):
+    elif self.name.startswith(('ION','MG','CL','NA','SOD')):
       this_type = "ION"
+    elif self.name.startswith(('DPPC','POPC')):
+      this_type = "LIP"
     elif self.name.startswith(("ALA","ARG","ASN","ASP","ATP",
                                "CYS","GLN","GLU","GLY","HSD",
                                "HSE","HIS","ILE","LEU","LYS",
