@@ -120,8 +120,14 @@ def make_3ter(residue):
 	residue.delete_atom("O2P3")
 	residue.delete_atom("O3T")
 	residue.delete_atom("H3T")
+	residue.delete_atom("HCAP")
 
 	# Rename P3->H3T
 	atom = residue.get_atom("P3")
 	if atom is not None:
 		atom.name = "H3T"
+
+	# # Rename P3->H3T
+	# atom = residue.get_atom("P")
+	# if atom is not None:
+	# 	atom.name = "H3T"

@@ -791,6 +791,8 @@ def umb_rst_2prot_new(atoms,weights,coord_range,num_windows,force_constant,harmo
 			if add_len is not None:
 				assert isinstance(add_len,float) or isinstance(add_len,int)
 				this_add = add_len
+			else:
+				this_add = 0.0
 
 			r2 = 0.9
 			r3 = 1.5
