@@ -70,7 +70,7 @@ from .amber import umbrella_plotter
 from .amber import write_amber_restraints
 
 # Umbrella Integration
-from .umbrella_integrate import umbrella_integrate
+# from .umbrella_integrate import umbrella_integrate
 
 # File conversion
 from .convert import pdb2traj # needs documentation
