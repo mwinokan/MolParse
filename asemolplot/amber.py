@@ -6,6 +6,54 @@ import mplot
 
 from . import signal
 
+from .restraint import Restraint
+
+def write_amber_restraints(restraint_list,filename_prefix,zfill=2,filename_suffix=".RST"):
+
+	os.system("mkdir -p "+os.path.dirname(filename_prefix))
+
+	assert isinstance(restraint_list,list)
+
+	# get all the restraint values
+	all_values = []
+	for res in restraint_list:
+		assert isinstance(res,Restraint)
+		values = res.values()
+		assert values is not None
+		all_values.append(values)
+		assert len(values) == len(all_values[0])
+
+	num_windows = len(all_values[0])
+
+	for i in range(num_windows):
+
+		i_str = str(i).zfill(zfill)
+
+		filename = filename_prefix+i_str+filename_suffix
+		
+		# print(i)
+		# print(filename)
+
+		rst_buffer = "# "+filename+"\n"
+
+		for restraint in restraint_list:
+			rst_buffer += restraint.amber_block(i)
+
+		# print(rst_buffer)
+
+		out_rst = open(filename,"w")
+		out_rst.write(rst_buffer)
+		out_rst.close()
+		mout.out("File written to "+mcol.file+filename)
+
+	import pickle
+
+	pickle_file = os.path.dirname(filename_prefix)+"/amp_res.pkl"
+	with open(pickle_file, 'wb') as file:
+		pickle.dump(restraint_list, file)
+	mout.out("Restraints dumped to to "+mcol.file+pickle_file)
+
+		# exit()
 
 def umbrella_plotter(filenames,bins=20,subdir=None,show_level=2):
 
@@ -190,9 +238,7 @@ def umbrella_helper_2dist(atoms,weights,coord_range,num_windows,force_constant,h
 		out_dat.write(pot_buffer)
 		out_dat.close()
 
-def umb_rst_2prot(atoms,weights,coord_range,num_windows,force_constant,
-				  harmonic_width,subdir=None,samples=1000,graph=False,
-				  adiab_windows=True,fix_angle=None,fix_third=None):
+def umb_rst_2prot(atoms,weights,coord_range,num_windows,force_constant,harmonic_width,subdir=None,samples=1000,graph=False,adiab_windows=True,fix_angle=None,fix_third=None):
 
 	assert len(atoms) == 6
 	assert len(weights) == 2
@@ -553,9 +599,7 @@ def umb_rst_2prot(atoms,weights,coord_range,num_windows,force_constant,
 		out_dat.write(pot_buffer)
 		out_dat.close()
 
-def umb_rst_2prot_new(atoms,weights,coord_range,num_windows,force_constant,
-				  harmonic_width,subdir=None,samples=1000,graph=False,
-				  adiab_windows=True,fix_angle=None,fix_third=None,add_len=None):
+def umb_rst_2prot_new(atoms,weights,coord_range,num_windows,force_constant,harmonic_width,subdir=None,samples=1000,graph=False,adiab_windows=True,fix_angle=None,fix_third=None,add_len=None):
 
 	assert len(atoms) == 6
 	assert len(weights) == 2

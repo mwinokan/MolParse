@@ -15,6 +15,7 @@ from .system import System
 from .chain import Chain
 from .residue import Residue
 from .atom import Atom
+from .restraint import Restraint
 
 # ase.visualize wrappers
 from .gui import view
@@ -66,6 +67,10 @@ from .amber import umb_rst_2prot_new
 from .amber import umb_rst_2prot_1rc
 from .amber import umb_rst_2prot_asy
 from .amber import umbrella_plotter
+from .amber import write_amber_restraints
+
+# Umbrella Integration
+from .umbrella_integrate import umbrella_integrate
 
 # File conversion
 from .convert import pdb2traj # needs documentation
