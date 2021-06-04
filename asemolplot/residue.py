@@ -188,7 +188,7 @@ class Residue:
     return angle(i.position,j.position,k.position)
 
   def centre_of_mass(self,verbosity=1):
-    return CoM()
+    return self.CoM(verbosity=verbosity)
 
   def CoM(self,verbosity=1):
 
