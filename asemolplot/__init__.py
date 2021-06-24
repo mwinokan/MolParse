@@ -44,6 +44,7 @@ from .analysis import getAtomLabel
 
 # Structure Comparison
 from .compare import compareSystems
+from .compare import euclid_dist
 
 # Graphing
 from .graphing import showFigs

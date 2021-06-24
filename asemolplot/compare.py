@@ -132,3 +132,15 @@ def compare_bond_stat_lists(system_data,precision=6,diffPrecision=2,dataFile=Fal
   # print(system1.positions)
   # print(system2.positions)
 
+def euclid_dist(system1,system2):
+
+  import numpy as np
+
+  all_positions1=[]
+  all_positions2=[]
+
+  for i,atom in enumerate(system1.atoms):
+    all_positions1 += atom.position
+    all_positions2 += system2.atoms[i].position
+
+  return np.linalg.norm(np.array(all_positions2) - np.array(all_positions1))
