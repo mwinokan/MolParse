@@ -3,6 +3,7 @@ import pandas
 import mout
 import re
 import mcol
+import os
 
 def csv_strip(filename,output=None,overwrite=False):
 
@@ -19,11 +20,18 @@ def csv_strip(filename,output=None,overwrite=False):
 
 	file = open(output,'w')
 
-	for line in lines:
-		line = re.sub(r'\t', ' ', line)
-		line = re.sub(' +',' ',line)
-		line = line.strip()
-		file.write(line+'\n')
+	test_line = re.sub(r'\t', ' ', lines[0])
+	test_line = re.sub(' +',' ',test_line)
+	test_line = test_line.strip()
+
+	if test_line != lines[0]:
+		for line in lines:
+			line = re.sub(r'\t', ' ', line)
+			line = re.sub(' +',' ',line)
+			line = line.strip()
+			file.write(line+'\n')
+	else:
+		mout.warningOut("Skipping already stipped file: "+filename)
 
 	file.close()
 
@@ -41,13 +49,24 @@ def parseDat(filename,num_columns=2,header_rows=1,delimiter=' ',debug=False,pre_
 			labels.append("y"+str(i))
 
 	if pre_strip:
-		csv_strip(filename,overwrite=True)
+		# csv_strip(filename,overwrite=True)
+		csv_strip(filename,output="__temp__",overwrite=False)
+		
+		dataframe = pandas.read_csv("__temp__",
+									skiprows=header_rows,
+									delimiter=delimiter,
+									usecols=columns,
+									names=labels)
 
-	dataframe = pandas.read_csv(filename,
-								skiprows=header_rows,
-								delimiter=delimiter,
-								usecols=columns,
-								names=labels)
+		os.system("rm __temp__")
+
+	else:
+
+		dataframe = pandas.read_csv(filename,
+									skiprows=header_rows,
+									delimiter=delimiter,
+									usecols=columns,
+									names=labels)
 
 	if debug: print(dataframe)
 
