@@ -118,6 +118,28 @@ class Restraint:
 			self._values = values
 			return values
 
+	def equi_values(self,n):
+		assert self._values is not None
+		
+		from scipy.interpolate import interp1d
+
+		x = [i for i in range(len(self._values))]
+		
+		inter_func = interp1d(x,self._values)
+
+		equi=[]
+
+		for i in range(n):
+
+			this_x = x[0] + i*(x[-1]-x[0])/(n-1)
+
+			equi.append(inter_func(this_x))
+
+		return equi
+
+	def set_values(self,values):
+		self._values = values
+
 	def fetch_atoms(self,new_system,new_residues,res_map=None,verbosity=1):
 
 		count = 0
@@ -151,8 +173,10 @@ class Restraint:
 					count += 1
 
 			if not found:
-				mout.errorOut("Could not find match for "+atom.name+" ("+atom.residue+")"+" in residues "+str(new_residues),fatal=True,code="Restraint.fetch_atoms")
 
+				mout.varOut("atoms",self.atoms)
+				mout.varOut("new_residues",new_residues)
+				mout.errorOut("Could not find match for "+atom.name+" ("+atom.residue+")"+" in residues "+str(new_residues),fatal=True,code="Restraint.fetch_atoms")
 		
 		if verbosity > 0:
 			mout.out("Retrieved "+str(count)+" atoms from "+new_system.name+"'s "+str(new_residues))
