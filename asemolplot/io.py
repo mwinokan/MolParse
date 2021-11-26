@@ -518,10 +518,12 @@ def parseGROAtomLine(line,res_index,atom_index,chain_counter):
     position.append(10.0*float(line[29:37].strip()))
     position.append(10.0*float(line[37:45].strip()))
     
-    velocity = []
-    velocity.append(10.0*float(line[45:53].strip()))
-    velocity.append(10.0*float(line[53:61].strip()))
-    velocity.append(10.0*float(line[61:69].strip()))
+    try:
+      velocity.append(10.0*float(line[45:53].strip()))
+      velocity.append(10.0*float(line[53:61].strip()))
+      velocity.append(10.0*float(line[61:69].strip()))
+    except:
+      velocity = [0.0,0.0,0.0]
 
     hetatm=False
 
