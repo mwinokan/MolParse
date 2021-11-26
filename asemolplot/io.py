@@ -746,14 +746,14 @@ def writeGRO(filename,system,verbosity=1,printScript=False):
         strbuff += " "
         strbuff += atom_serial_str
         
-        x_str = '{:.3f}'.format(atom.x).rjust(8)
-        y_str = '{:.3f}'.format(atom.y).rjust(8)
-        z_str = '{:.3f}'.format(atom.z).rjust(8)
+        x_str = '{:.3f}'.format(atom.x/10.0).rjust(8)
+        y_str = '{:.3f}'.format(atom.y/10.0).rjust(8)
+        z_str = '{:.3f}'.format(atom.z/10.0).rjust(8)
         strbuff += x_str+y_str+z_str
         
-        x_str = '{:.3f}'.format(atom.velocity[0]).rjust(8)
-        y_str = '{:.3f}'.format(atom.velocity[1]).rjust(8)
-        z_str = '{:.3f}'.format(atom.velocity[2]).rjust(8)
+        x_str = '{:.3f}'.format(atom.velocity[0]/10.0).rjust(8)
+        y_str = '{:.3f}'.format(atom.velocity[1]/10.0).rjust(8)
+        z_str = '{:.3f}'.format(atom.velocity[2]/10.0).rjust(8)
         strbuff += x_str+y_str+z_str
 
         strbuff += end
