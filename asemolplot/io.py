@@ -374,7 +374,7 @@ def parsePDBAtomLine(line,res_index,atom_index,chain_counter,debug=False):
     mout.errorOut("Unsupported PDB line shown above",fatal=True)
 
 # def parseGRO(gro,systemName=None,fix_indices=True,fix_atomnames=True,verbosity=1,auto_ter=None):
-def parseGRO(gro,systemName=None,fix_indices=True,fix_atomnames=True,verbosity=1,auto_ter=["DA3","DT3","DG3","DC3"]):
+def parseGRO(gro,systemName=None,fix_indices=True,fix_atomnames=True,verbosity=1,auto_ter=["DA3","DT3","DG3","DC3"],reindex=False):
 
   if (verbosity > 0):
     mout.out("parsing "+mcol.file+
@@ -432,7 +432,10 @@ def parseGRO(gro,systemName=None,fix_indices=True,fix_atomnames=True,verbosity=1
           # first atom
           if line_counter == 3:
             chain = Chain(atom.chain)
-            residue = Residue(atom.residue,res_counter,atom.chain)
+            if reindex:
+              residue = Residue(atom.residue,res_counter,atom.chain)
+            else:
+              residue = Residue(atom.residue,atom.res_number,atom.chain)
             # residue.addAtom(atom)
             last_residue_name = atom.residue
             last_residue_number = atom.res_number
@@ -449,7 +452,10 @@ def parseGRO(gro,systemName=None,fix_indices=True,fix_atomnames=True,verbosity=1
             if residue is not None: 
               chain.add_residue(residue)
               res_counter += 1
-            residue = Residue(atom.residue,res_counter,atom.chain)
+            if reindex:
+              residue = Residue(atom.residue,res_counter,atom.chain)
+            else:
+              residue = Residue(atom.residue,atom.res_number,atom.chain)
 
           # add the atom to the residue
           residue.addAtom(atom)
@@ -518,6 +524,7 @@ def parseGROAtomLine(line,res_index,atom_index,chain_counter):
     position.append(10.0*float(line[29:37].strip()))
     position.append(10.0*float(line[37:45].strip()))
     
+    velocity = []
     try:
       velocity.append(10.0*float(line[45:53].strip()))
       velocity.append(10.0*float(line[53:61].strip()))
@@ -527,7 +534,7 @@ def parseGROAtomLine(line,res_index,atom_index,chain_counter):
 
     hetatm=False
 
-    atom = Atom(atom_name,atom_index,atom_index,position,residue,chain,res_number,velocity=velocity)
+    atom = Atom(atom_name,atom_index,gro_index,position,residue,chain,res_number,velocity=velocity)
 
     return atom
 
@@ -730,13 +737,13 @@ def writeGRO(filename,system,verbosity=1,printScript=False):
 
         # strbuff += "ATOM  "
 
-        residue_serial_str = str(residue_serial).rjust(5)
+        residue_serial_str = str(atom.res_number).rjust(5)
         if len(residue_serial_str) > 5: 
           # residue_serial_str = "XXXX"
           # residue_serial_str = "    "
           residue_serial_str = residue_serial_str[-5:]
 
-        atom_serial_str = str(atom_serial).rjust(4)
+        atom_serial_str = str(atom.pdb_index).rjust(4)
         if len(atom_serial_str) > 4: 
           atom_serial_str = atom_serial_str[-4:]
           # atom_serial_str = "XXXXX"
@@ -753,9 +760,9 @@ def writeGRO(filename,system,verbosity=1,printScript=False):
         z_str = '{:.3f}'.format(atom.z/10.0).rjust(8)
         strbuff += x_str+y_str+z_str
         
-        x_str = '{:.3f}'.format(atom.velocity[0]/10.0).rjust(8)
-        y_str = '{:.3f}'.format(atom.velocity[1]/10.0).rjust(8)
-        z_str = '{:.3f}'.format(atom.velocity[2]/10.0).rjust(8)
+        x_str = '{:.4f}'.format(atom.velocity[0]/10.0).rjust(8)
+        y_str = '{:.4f}'.format(atom.velocity[1]/10.0).rjust(8)
+        z_str = '{:.4f}'.format(atom.velocity[2]/10.0).rjust(8)
         strbuff += x_str+y_str+z_str
 
         strbuff += end
@@ -764,11 +771,14 @@ def writeGRO(filename,system,verbosity=1,printScript=False):
 
       residue_serial += 1
 
-  x_str = '{:.3f}'.format(system.box[0]).rjust(12)
-  y_str = '{:.3f}'.format(system.box[1]).rjust(12)
-  z_str = '{:.3f}'.format(system.box[2]).rjust(12)
-  strbuff += x_str+y_str+z_str
-  strbuff += end
+  try:
+    x_str = '{:.5f}'.format(system.box[0]).rjust(10)
+    y_str = '{:.5f}'.format(system.box[1]).rjust(10)
+    z_str = '{:.5f}'.format(system.box[2]).rjust(10)
+    strbuff += x_str+y_str+z_str
+    strbuff += end
+  except TypeError:
+    mout.errorOut("System has no box information")
 
   out_stream = open(filename,"w")
 
