@@ -133,6 +133,9 @@ class Atom:
   def copy(self):
     return copy.deepcopy(self)
 
+  def summary(self):
+    print(f'Atom {self.name}, index={self.index}, pdb_index={self.pdb_index}, res={self.residue}')
+
   def __repr__(self):
     return self.name
   def __str__(self):
