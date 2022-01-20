@@ -190,6 +190,14 @@ class Residue:
   def centre_of_mass(self,verbosity=1):
     return self.CoM(verbosity=verbosity)
 
+  def summary(self):
+    mout.headerOut(f'Residue {self.name}, index={self.number}, #atoms={self.num_atoms}\n')
+
+    for atom in self.atoms:
+
+      print(atom.name,atom.index,atom.pdb_index)
+    
+
   def CoM(self,verbosity=1):
 
     position_list = self.positions
@@ -209,3 +217,5 @@ class Residue:
     return self.name
   def __str__(self):
     return self.name
+  def __len__(self):
+    return len(self.atoms)
