@@ -34,6 +34,8 @@ class Chain:
 
   def add_residue(self,residue):
     self.residues.append(residue)
+    if self.num_residues > 1 and self.residues[-1].type != self.type:
+      mout.errorOut(f'Differing residue types in same chain {self.residues[-1]} ({self.residues[-1].type}), {self.residues[0]} ({self.type})')
 
   @property
   def num_atoms(self):
@@ -111,3 +113,5 @@ class Chain:
     return self.name
   def __str__(self):
     return self.name
+  def __len__(self):
+    return len(self.residues)
