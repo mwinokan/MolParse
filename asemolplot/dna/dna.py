@@ -85,10 +85,7 @@ def fix_termini(chain):
 	make_3ter(chain.residues[-1])
 
 def make_5ter(residue):
-	assert any([residue.name=="DA",
-				   residue.name=="DC",
-				   residue.name=="DG",
-				   residue.name=="DT"])
+	assert residue.name in ["DA","DC","DG","DT"]
 
 	# Append 5 to residue name
 	residue.name += "5"
@@ -107,10 +104,7 @@ def make_5ter(residue):
 	residue.get_atom("P").name = "H5T"
 
 def make_3ter(residue):
-	assert any([residue.name=="DA",
-			   residue.name=="DC",
-			   residue.name=="DG",
-			   residue.name=="DT"])
+	assert residue.name in ["DA","DC","DG","DT"]
 
 	# Append 3 to residue name
 	residue.name += "3"
@@ -131,3 +125,33 @@ def make_3ter(residue):
 	# atom = residue.get_atom("P")
 	# if atom is not None:
 	# 	atom.name = "H3T"
+
+def prep4gmx(system,verbosity=1):
+	system.rename_residues("ADE","DA",verbosity=verbosity)
+	system.rename_residues("THY","DT",verbosity=verbosity)
+	system.rename_residues("CYT","DC",verbosity=verbosity)
+	system.rename_residues("GUA","DG",verbosity=verbosity)
+
+	# Rename DNA Backbone atoms
+	system.rename_atoms("OP1","O1P",res_filter="D",verbosity=verbosity)
+	system.rename_atoms("OP2","O2P",res_filter="D",verbosity=verbosity)
+	system.rename_atoms("C7","C5M",res_filter="D",verbosity=verbosity)
+
+	system.rename_atoms("H5'1","H5'",res_filter="D",verbosity=verbosity)
+	system.rename_atoms("H5'2","H5''",res_filter="D",verbosity=verbosity)
+	system.rename_atoms("H2'1","H2'",res_filter="D",verbosity=verbosity)
+	system.rename_atoms("H2'2","H2''",res_filter="D",verbosity=verbosity)
+
+	# Deal with DNA termini
+	for chain in system.chains:
+		fix_termini(chain)
+
+def get_dna_basepairs(chain1,chain2):
+
+	# checks
+	assert chain1.type == "DNA"
+	assert chain2.type == "DNA"
+	assert len(chain1) == len(chain2)
+
+	return [[a,b] for a,b in zip(chain1.residues,
+								reversed(chain2.residues))]
