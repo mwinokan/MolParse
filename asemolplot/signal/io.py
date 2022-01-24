@@ -35,7 +35,12 @@ def csv_strip(filename,output=None,overwrite=False):
 
 	file.close()
 
-def parseDat(filename,num_columns=2,header_rows=1,delimiter=' ',debug=False,pre_strip=False):
+def parseDat(filename,
+			 num_columns=2,
+			 header_rows=1,
+			 delimiter=' ',
+			 debug=False,
+			 pre_strip=False):
 
 	columns=list(range(num_columns))
 
