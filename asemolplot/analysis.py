@@ -39,7 +39,15 @@ def getBondLabel(trajectory,index_pair,full=False):
   else:
     return bond_title
 
-def bondLengthStats(trajectory,index_pair,printScript=False,verbosity=1,timestep=None,yUnit="Angstroms",fitMin=None,fitMax=None,returnData=False,dataFile=None):
+def bondLengthStats(trajectory,
+                    index_pair,
+                    printScript=False,
+                    verbosity=1,
+                    timestep=None,
+                    yUnit="Angstroms",
+                    fitMin=None,fitMax=None,
+                    returnData=False,
+                    dataFile=None):
 
   # atom_symbols = trajectory[0].get_chemical_symbols()
   # atom_tags = trajectory[0].get_tags()
