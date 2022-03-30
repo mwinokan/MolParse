@@ -45,6 +45,8 @@ def write(filename,image,verbosity=1,printScript=False,**parameters):
           else:
             writePDB(filename,frame,verbosity=verbosity-1,append=True,model=index+1)
 
+      elif all([isinstance(i,aseatoms.Atoms) for i in image ]):
+        io.write(filename,image,**parameters)
       else:
         mout.errorOut("Unsupported",fatal=True)
 

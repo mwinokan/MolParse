@@ -171,6 +171,15 @@ class System:
                               mcol.arg+residue.name+str([residue.number]))
     return number_deleted
 
+  def get_atom_by_index(self,index,pdb=True):
+    for atom in self.atoms:
+      if pdb:
+        if atom.pdb_index == index:
+          return atom
+      else:
+        if atom.index == index:
+          return atom
+
   def remove_atoms(self,name,res_filter=None,verbosity=2):
     number_deleted=0
     self.fix_indices()

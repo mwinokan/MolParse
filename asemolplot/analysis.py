@@ -80,8 +80,9 @@ def bondLengthStats(trajectory,
     xlab = "MD Steps"
     xUnit = "MD Step"
   else:  
+    mout.warningOut(f"Scaling xdata by {timestep}x")
     xlab = "Time [fs]"
-    xUnit = "picosecond"
+    xUnit = "femtoseconds"
 
   if len(trajectory) > 1:
 
@@ -90,7 +91,8 @@ def bondLengthStats(trajectory,
       if timestep is None:
         xdata.append(n)
       else:
-        xdata.append(n*timestep/ase.units.fs)
+        # xdata.append(n*timestep/ase.units.fs)
+        xdata.append(n*timestep)
 
       dist = atoms.get_distance(index1,index2)
 

@@ -41,6 +41,7 @@ argparser.add_argument("-ry","--rotate-y",type=float,help="Rotation x")
 argparser.add_argument("-rz","--rotate-z",type=float,help="Rotation x")
 argparser.add_argument("-s","--scale",type=float,help="Scale for non PoV-ray")
 argparser.add_argument("-fr","--frame-rate",type=int,help="Animation frame rate")
+argparser.add_argument("-m","--mask",help="Plot only atoms in this mask (PDB)",type=str)
 
 argparser.add_argument("-cw","--width",type=int,help="Canvas Width")
 argparser.add_argument("-ch","--height",type=int,help="Canvas Height")
@@ -69,6 +70,44 @@ custom_style = amp.styles.standard_cell.copy()
 # print(args.rotate_x)
 # print(args.rotate_y)
 # print(args.rotate_z)
+
+if args.mask is not None:
+
+  # load the mask
+  if args.mask.endswith('.pdb'):
+    mask = amp.parsePDB(args.mask)
+  else:
+    mout.errorOut("Only PDB masks are currently supported",fatal=True)
+
+  if infile.endswith('.pdb'):
+    system = amp.parsePDB(infile)
+  else:
+    mout.errorOut("Only PDB inputs are currently supported with masking",fatal=True)
+
+  # get the indices from the mask
+  indices = [a.pdb_index for a in mask.atoms]
+  mout.varOut("len(mask)",len(indices))
+  filtered_atoms = [system.get_atom_by_index(i) for i in indices]
+  filter_indices = [a.index for a in filtered_atoms]
+
+  from ase import Atoms
+
+  # filter the trajectory
+  filtered_traj = []
+  trajectory = amp.read(infile,index=":",tagging=False)
+  for image in trajectory:
+    atoms = Atoms()
+    for i,atom in enumerate(image):
+      if i in filter_indices:
+        atoms.append(atom)
+    filtered_traj.append(atoms)
+    print(type(atoms))
+
+  print(type(filtered_traj))
+  print(filtered_traj)
+  amp.write("__temp__.pdb",filtered_traj)
+
+  exit()
 
 if args.rotate_x is not None or args.rotate_y is not None or args.rotate_z is not None:
   custom_style["rotation"] = ""

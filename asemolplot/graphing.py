@@ -7,6 +7,8 @@ import numpy as np
 
 from ase import units
 
+# from math import acos
+
 from .analysis import bondLengthStats
 from .analysis import bondAngleStats
 from .analysis import getBondLabel
@@ -155,7 +157,26 @@ def graphDisplacement(trajectory,show=True,filename=None,relative=True,verbosity
   if (verbosity > 0):
     mout.out("Done.") # user output
 
-def graphBondLength(trajectory,indices,printScript=False,show=True,filename=None,fitMin=None,fitMax=None,verbosity=2,timestep=None,title=None,fitOrder=None,yUnit="Angstroms",dataFile=None,ymin=0,ymax=None,xmin=None,xmax=None,write_data=False):
+def graphBondLength(trajectory,
+                    indices,
+                    printScript=False,
+                    show=True,
+                    filename=None,
+                    fitMin=None,
+                    fitMax=None,
+                    verbosity=2,
+                    timestep=None,
+                    title=None,
+                    fitOrder=None,
+                    yUnit="Angstroms",
+                    dataFile=None,
+                    ymin=0,
+                    ymax=None,
+                    xmin=None,
+                    xmax=None,
+                    write_data=False,
+                    write_ang=False,
+                    return_data=False):
   """
     Graph the bond lengths (displacement) between atoms.
 
@@ -171,7 +192,7 @@ def graphBondLength(trajectory,indices,printScript=False,show=True,filename=None
     xUnit = "MD Step"
   else:  
     xlab = "Time [fs]"
-    xUnit = "picosecond"
+    xUnit = "femtoseconds"
 
   if many:
     
@@ -185,7 +206,7 @@ def graphBondLength(trajectory,indices,printScript=False,show=True,filename=None
       ydata.append(this_data)
 
     if fitOrder is None:
-      mplot.graph2D(xdata,ydata,ytitles=labels,show=show,xlab=xlab,ylab="Distance [Angstrom]",filename=filename,title=title,verbosity=verbosity-1)
+      mplot.graph2D(xdata,ydata,ytitles=labels,show=show,xlab=xlab,ylab="Distance [Angstrom]",filename=filename,title=title,verbosity=verbosity-1,ymin=ymin,ymax=ymax,xmin=xmin,xmax=xmax)
     else:
       if verbosity > 1:
         print("")
@@ -207,7 +228,7 @@ def graphBondLength(trajectory,indices,printScript=False,show=True,filename=None
     val, err, label, xdata, ydata = bondLengthStats(trajectory,indices,printScript=printScript,verbosity=verbosity-2,timestep=timestep,yUnit=yUnit,returnData=True)
 
     if fitOrder is None:
-      mplot.graph2D(xdata,ydata,show=show,xlab=xlab,ylab="Distance [Angstrom]",filename=filename,title=label,verbosity=verbosity-1)
+      mplot.graph2D(xdata,ydata,show=show,xlab=xlab,ylab="Distance [Angstrom]",filename=filename,title=label,verbosity=verbosity-1,ymin=ymin,ymax=ymax,xmin=xmin,xmax=xmax)
     else:
       if verbosity > 1:
         print("")
@@ -231,16 +252,38 @@ def graphBondLength(trajectory,indices,printScript=False,show=True,filename=None
 
     if many:
 
-      data_dump.write("# x "+str(labels)+"\n")
+      data_dump.write("# x "+str(labels))
+
+      if write_ang:
+        data_dump.write(" opening_angle")
+
+      data_dump.write("\n")
       data_dump.close()
+
+      # generate the angle data
+      angdata=[]
+      for image in trajectory:
+        positions = image.get_positions()
+        vec1 = positions[indices[0][-1]] - positions[indices[-1][0]]
+        vec2 = positions[indices[0][0]] - positions[indices[-1][-1]]
+        unit_vec1 = vec1 / np.linalg.norm(vec1)
+        unit_vec2 = vec2 / np.linalg.norm(vec2)
+        dot_product = np.dot(unit_vec1, unit_vec2)
+        angle = np.arccos(dot_product)
+        angdata.append(angle)
 
       # data_dump = open(os.path.splitext(base)[0]+".dat",'a')
       data_dump = open(filename.replace(".png",".dat"),'a')
 
       for index,x in enumerate(xdata):
-        data_dump.write(str(xdata[index])+" ")
+        # data_dump.write(str(xdata[index])+" ")
+        data_dump.write(f"{xdata[index]:.5f} ")
         for data in ydata:
-          data_dump.write(str(data[index])+" ")
+          # data_dump.write(str(data[index])+" ")
+          data_dump.write(f"{data[index]:.5f} ")
+        if write_ang:
+          # data_dump.write(str(angdata[index])+" ")
+          data_dump.write(f"{angdata[index]:.5f} ")
         data_dump.write("\n")
 
     else:
@@ -262,6 +305,8 @@ def graphBondLength(trajectory,indices,printScript=False,show=True,filename=None
 
   if fitOrder is not None:
     return val, err, fit_func
+  elif return_data:
+    return xdata,ydata
   else:
     return None, None, None
 
