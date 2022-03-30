@@ -7,3 +7,5 @@ from .io import parseDat
 from .io import csv_strip
 
 from .peaks import peakFinder
+
+from .fitwizard import fitwizard
