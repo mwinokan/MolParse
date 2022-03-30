@@ -5,7 +5,7 @@ import mout # https://github.com/mwinokan/MPyTools
 
 from . import styles
 
-def makeImage(filename,image,verbosity=1,printScript=False,**style):
+def makeImage(filename,image,filter=None,verbosity=1,printScript=False,**style):
 
   if not filename.endswith(".png"):
     filename = filename+".png"
