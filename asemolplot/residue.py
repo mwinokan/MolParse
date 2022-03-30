@@ -1,6 +1,8 @@
 
+from importlib import reload
 import mcol # https://github.com/mwinokan/MPyTools
 import mout # https://github.com/mwinokan/MPyTools
+reload(mout)
 import copy
 
 from .atom import Atom
@@ -82,7 +84,7 @@ class Residue:
                                "CYS","GLN","GLU","GLY","HSD",
                                "HSE","HIS","ILE","LEU","LYS",
                                "MET","PHE","PRO","SER","THR",
-                               "TRP","TYR","VAL")):
+                               "TRP","TYR","VAL","HID")):
       this_type = "PRO"
     else:
       mout.warningOut("Unknown residue type for "+mcol.arg+self.name)
