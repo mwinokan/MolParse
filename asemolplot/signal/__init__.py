@@ -8,4 +8,7 @@ from .io import csv_strip
 
 from .peaks import peakFinder
 
-from .fitwizard import fitwizard
+import socket
+if not 'eureka' in socket.gethostname():
+	from .fitwizard import fitwizard
+	
