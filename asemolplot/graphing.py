@@ -259,6 +259,8 @@ def graphBondLength(trajectory,
 
       if write_torsion:
         data_dump.write(" opening_angle opening_torsion")
+        if write_exang:
+          data_dump.write(" psi phi")
       elif write_ang:
         data_dump.write(" opening_angle")
 
