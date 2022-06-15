@@ -305,8 +305,8 @@ def graphBondLength(trajectory,
           
           unit_vec1 = vec1 / np.linalg.norm(vec1)
           unit_vec2 = vec2 / np.linalg.norm(vec2)
-          unit_vec1p = vec1p / np.linalg.norm(vec1p)
-          unit_vec2p = vec2p / np.linalg.norm(vec2p)
+          # unit_vec1p = vec1p / np.linalg.norm(vec1p)
+          # unit_vec2p = vec2p / np.linalg.norm(vec2p)
           unit_vec1pp = vec1pp / np.linalg.norm(vec1pp)
           unit_vec2pp = vec2pp / np.linalg.norm(vec2pp)
 
@@ -327,8 +327,11 @@ def graphBondLength(trajectory,
           if write_exang:
 
             # calculate the projected opening angles
-            psi = np.arctan(np.dot(unit_vec1,unit_vec2p)/unit_vec1_dot_vec2)
-            phi = np.arctan(np.dot(unit_vec2,unit_vec1p)/unit_vec1_dot_vec2)
+            vec1_dot_vec2 = np.dot(vec1,vec2)
+            vec1ppp = vec1p - np.dot(vec1p,vec1)*vec1
+            vec2ppp = vec2p - np.dot(vec2p,vec2)*vec2
+            psi = np.arctan(np.dot(vec2,vec1ppp)/vec1_dot_vec2)
+            phi = np.arctan(np.dot(vec1,vec2ppp)/vec1_dot_vec2)
 
             # Because it is based on atan, it does not need flipping
             exangdata1.append(psi)
