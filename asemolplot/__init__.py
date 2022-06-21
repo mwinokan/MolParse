@@ -9,6 +9,7 @@ from .io import parseGRO
 
 # Manipulation
 from .manipulate import interpolate
+from .manipulate import auto_rotate
 
 # Custom Classes
 from .system import System

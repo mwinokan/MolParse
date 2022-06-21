@@ -67,3 +67,32 @@ def smooth_interpolate(start,end,frames,i):
 	import math
 	angle = simple_interpolate(0.0,math.pi,frames,i)
 	return start + 0.5*(1-math.cos(angle))*(end-start)
+
+def auto_rotate(atoms):
+
+	atoms = atoms.copy()
+
+	positions = atoms.get_positions()
+
+	positions = [
+				[ p[0] for p in positions],
+				[ p[1] for p in positions],
+				[ p[2] for p in positions],
+				]
+
+	import numpy as np
+	from numpy.linalg import svd
+	
+	# fit a plane to the atomic positions
+	points = np.reshape(positions, (np.shape(positions)[0], -1)) # Collapse trialing dimensions
+	assert points.shape[0] <= points.shape[1], "There are only {} points in {} dimensions.".format(points.shape[1], points.shape[0])
+	central_point = points.mean(axis=1)
+	x = points - central_point[:,np.newaxis]
+	M = np.dot(x, x.T) # Could also use np.cov(x) here.
+	normal_vector = svd(M)[0][:,-1]
+
+	# rotate the normal onto the Z-axis
+
+	atoms.rotate(normal_vector,'z')
+
+	return atoms
