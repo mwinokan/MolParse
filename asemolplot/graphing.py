@@ -159,6 +159,7 @@ def graphDisplacement(trajectory,show=True,filename=None,relative=True,verbosity
 
 def graphBondLength(trajectory,
                     indices,
+                    torsion_indices=None,
                     printScript=False,
                     show=True,
                     filename=None,
@@ -174,8 +175,12 @@ def graphBondLength(trajectory,
                     ymax=None,
                     xmin=None,
                     xmax=None,
+                    noplot=False,
                     write_data=False,
                     write_ang=False,
+                    write_torsion=False,
+                    write_exang=False,
+                    debug_plot=False,
                     return_data=False):
   """
     Graph the bond lengths (displacement) between atoms.
@@ -206,7 +211,8 @@ def graphBondLength(trajectory,
       ydata.append(this_data)
 
     if fitOrder is None:
-      mplot.graph2D(xdata,ydata,ytitles=labels,show=show,xlab=xlab,ylab="Distance [Angstrom]",filename=filename,title=title,verbosity=verbosity-1,ymin=ymin,ymax=ymax,xmin=xmin,xmax=xmax)
+      if not noplot:
+        mplot.graph2D(xdata,ydata,ytitles=labels,show=show,xlab=xlab,ylab="Distance [Angstrom]",filename=filename,title=title,verbosity=verbosity-1,ymin=ymin,ymax=ymax,xmin=xmin,xmax=xmax)
     else:
       if verbosity > 1:
         print("")
@@ -219,7 +225,8 @@ def graphBondLength(trajectory,
         dataFile.write('\n')
       val,err,fit_func = mplot.fit(xdata,ydata,rank=fitOrder,verbosity=verbosity-1,title=title,fitMin=fitMin,fitMax=fitMax,yUnit=yUnit,xUnit=xUnit,dataFile=dataFile)
       text = mplot.getCoeffStr(val,err,1,yUnit=yUnit,xUnit=xUnit)
-      mplot.graph2D(xdata,ydata,fitFunc=fit_func,ytitles=labels,show=show,xlab=xlab,ylab="Distance [Angstrom]",filename=filename,title=title,verbosity=verbosity,subtitle=text,ymin=ymin,ymax=ymax,xmin=xmin,xmax=xmax)
+      if not noplot:
+        mplot.graph2D(xdata,ydata,fitFunc=fit_func,ytitles=labels,show=show,xlab=xlab,ylab="Distance [Angstrom]",filename=filename,title=title,verbosity=verbosity,subtitle=text,ymin=ymin,ymax=ymax,xmin=xmin,xmax=xmax)
 
   else:
 
@@ -228,7 +235,8 @@ def graphBondLength(trajectory,
     val, err, label, xdata, ydata = bondLengthStats(trajectory,indices,printScript=printScript,verbosity=verbosity-2,timestep=timestep,yUnit=yUnit,returnData=True)
 
     if fitOrder is None:
-      mplot.graph2D(xdata,ydata,show=show,xlab=xlab,ylab="Distance [Angstrom]",filename=filename,title=label,verbosity=verbosity-1,ymin=ymin,ymax=ymax,xmin=xmin,xmax=xmax)
+      if not noplot:
+        mplot.graph2D(xdata,ydata,show=show,xlab=xlab,ylab="Distance [Angstrom]",filename=filename,title=label,verbosity=verbosity-1,ymin=ymin,ymax=ymax,xmin=xmin,xmax=xmax)
     else:
       if verbosity > 1:
         print("")
@@ -241,7 +249,8 @@ def graphBondLength(trajectory,
         dataFile.write('\n')
       val,err,fit_func = mplot.fit(xdata,ydata,rank=fitOrder,verbosity=verbosity-1,fitMin=fitMin,fitMax=fitMax,title=title,yUnit=yUnit,xUnit=xUnit,dataFile=dataFile)
       text = mplot.getCoeffStr(val,err,1,yUnit=yUnit,xUnit=xUnit)
-      mplot.graph2D(xdata,ydata,fitFunc=fit_func,show=show,xlab=xlab,ylab="Distance [Angstrom]",filename=filename,title=label,verbosity=verbosity,subtitle=text,ymin=ymin,ymax=ymax,xmin=xmin,xmax=xmax)
+      if not noplot:
+        mplot.graph2D(xdata,ydata,fitFunc=fit_func,show=show,xlab=xlab,ylab="Distance [Angstrom]",filename=filename,title=label,verbosity=verbosity,subtitle=text,ymin=ymin,ymax=ymax,xmin=xmin,xmax=xmax)
 
   if write_data:
 
@@ -254,23 +263,110 @@ def graphBondLength(trajectory,
 
       data_dump.write("# x "+str(labels))
 
-      if write_ang:
+      if write_torsion:
+        data_dump.write(" opening_angle opening_torsion")
+        if write_exang:
+          data_dump.write(" psi phi")
+      elif write_ang:
         data_dump.write(" opening_angle")
 
       data_dump.write("\n")
       data_dump.close()
 
+      # generate the torsion data
+      if write_torsion:
+        angdata=[]
+        torsdata=[]
+        exangdata1=[]
+        exangdata2=[]
+        for image in trajectory:
+          positions = image.get_positions()
+          symbols = image.get_chemical_symbols()
+
+
+          # DC:O2 -> DC:N4
+          # print(1,symbols[torsion_indices[1]],symbols[torsion_indices[0]])
+          vec1 = positions[torsion_indices[1]]-positions[torsion_indices[0]]
+          
+          # DG:N2 -> DG:O6
+          # print(2,symbols[torsion_indices[5]],symbols[torsion_indices[4]])
+          vec2 = positions[torsion_indices[5]]-positions[torsion_indices[4]]
+          
+          # DC:N1 -> DC:N3
+          # print(3,symbols[torsion_indices[3]],symbols[torsion_indices[2]])
+          vec1p = positions[torsion_indices[3]]-positions[torsion_indices[2]]
+          
+          # DG:C4 -> DG:N1
+          # print(4,symbols[torsion_indices[7]],symbols[torsion_indices[6]])
+          vec2p = positions[torsion_indices[7]]-positions[torsion_indices[6]]
+          
+          vec1pp = np.cross(vec1,vec1p)
+          vec2pp = np.cross(vec2,vec2p)
+          
+          unit_vec1 = vec1 / np.linalg.norm(vec1)
+          unit_vec2 = vec2 / np.linalg.norm(vec2)
+          # unit_vec1p = vec1p / np.linalg.norm(vec1p)
+          # unit_vec2p = vec2p / np.linalg.norm(vec2p)
+          unit_vec1pp = vec1pp / np.linalg.norm(vec1pp)
+          unit_vec2pp = vec2pp / np.linalg.norm(vec2pp)
+
+          unit_vec1pp_dot_vec2pp = np.dot(unit_vec1pp, unit_vec2pp)
+          tau = np.arccos(unit_vec1pp_dot_vec2pp)
+          torsdata.append(np.pi-tau)
+
+          unit_vec1_dot_vec2 = np.dot(unit_vec1, unit_vec2)
+          theta = np.arccos(unit_vec1_dot_vec2)
+
+          # we potentially need to flip the angles
+          vec1_cross_vec2 = np.cross(vec1,vec2)
+          flip = np.dot(vec1_cross_vec2,vec2pp) > 0
+          if flip:
+            theta = -theta
+          angdata.append(theta)
+
+          if write_exang:
+
+            # calculate the projected opening angles
+            vec1_dot_vec2 = np.dot(vec1,vec2)
+            vec1ppp = vec1p - np.dot(vec1p,vec1)*vec1
+            vec2ppp = vec2p - np.dot(vec2p,vec2)*vec2
+            psi = np.arctan(np.dot(vec2,vec1ppp)/vec1_dot_vec2)
+            phi = np.arctan(np.dot(vec1,vec2ppp)/vec1_dot_vec2)
+
+            # Because it is based on atan, it does not need flipping
+            exangdata1.append(psi)
+            exangdata2.append(phi)
+
+        if debug_plot:
+          import matplotlib.pyplot as plt
+          fig,ax = plt.subplots()
+          plt.plot(xdata,ydata[0],label="bot")
+          # plt.plot(xdata,ydata[1],label="mid")
+          plt.plot(xdata,ydata[2],label="top")
+          plt.plot(xdata,angdata,label="ang")
+          plt.plot(xdata,exangdata1,label="psi")
+          plt.plot(xdata,exangdata2,label="phi")
+          plt.plot(xdata,torsdata,label="tors")
+          ax.set_xlim(0,xdata[100])
+          plt.legend(loc='best')
+          plt.show()
+          plt.close()
+          exit()
+      
       # generate the angle data
-      angdata=[]
-      for image in trajectory:
-        positions = image.get_positions()
-        vec1 = positions[indices[0][-1]] - positions[indices[-1][0]]
-        vec2 = positions[indices[0][0]] - positions[indices[-1][-1]]
-        unit_vec1 = vec1 / np.linalg.norm(vec1)
-        unit_vec2 = vec2 / np.linalg.norm(vec2)
-        dot_product = np.dot(unit_vec1, unit_vec2)
-        angle = np.arccos(dot_product)
-        angdata.append(angle)
+      elif write_ang:
+        angdata=[]
+        for image in trajectory:
+          positions = image.get_positions()
+          vec1 = positions[indices[0][-1]] - positions[indices[-1][0]]
+          vec2 = positions[indices[0][0]] - positions[indices[-1][-1]]
+          unit_vec1 = vec1 / np.linalg.norm(vec1)
+          unit_vec2 = vec2 / np.linalg.norm(vec2)
+          dot_product = np.dot(unit_vec1, unit_vec2)
+          angle = np.arccos(dot_product)
+          if angle > np.pi/2:
+            angle = angle - np.pi
+          angdata.append(angle)
 
       # data_dump = open(os.path.splitext(base)[0]+".dat",'a')
       data_dump = open(filename.replace(".png",".dat"),'a')
@@ -281,7 +377,14 @@ def graphBondLength(trajectory,
         for data in ydata:
           # data_dump.write(str(data[index])+" ")
           data_dump.write(f"{data[index]:.5f} ")
-        if write_ang:
+        if write_torsion:
+          # data_dump.write(str(angdata[index])+" ")
+          data_dump.write(f"{angdata[index]:.5f} ")
+          data_dump.write(f"{torsdata[index]:.5f} ")
+          if write_exang:
+            data_dump.write(f"{exangdata1[index]:.5f} ")
+            data_dump.write(f"{exangdata2[index]:.5f} ")
+        elif write_ang:
           # data_dump.write(str(angdata[index])+" ")
           data_dump.write(f"{angdata[index]:.5f} ")
         data_dump.write("\n")
@@ -306,6 +409,8 @@ def graphBondLength(trajectory,
   if fitOrder is not None:
     return val, err, fit_func
   elif return_data:
+    if torsion_indices is not None:
+      return xdata,ydata,angdata,torsdata
     return xdata,ydata
   else:
     return None, None, None

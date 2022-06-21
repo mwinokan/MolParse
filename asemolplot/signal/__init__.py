@@ -10,5 +10,7 @@ from .peaks import peakFinder
 
 import socket
 if not 'eureka' in socket.gethostname():
-	from .fitwizard import fitwizard
+	if not 'login' in socket.gethostname():
+		if not 'node' in socket.gethostname():
+			from .fitwizard import fitwizard
 	
