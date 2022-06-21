@@ -6,6 +6,7 @@ import copy
 import numpy as np
 
 from ase.data import atomic_numbers as ase_atomic_numbers # Atom only
+from ase.data import atomic_masses as ase_atomic_masses # Atom only
 
 class Atom:
 
@@ -40,7 +41,7 @@ class Atom:
     self.res_number = int(res_number)
     self.charge = charge
     self.FF_atomtype = FF_atomtype
-    self.mass = mass
+    self._mass = mass
     self.LJ_sigma = LJ_sigma
     self.LJ_epsilon = LJ_epsilon
     self.QM = QM
@@ -93,6 +94,13 @@ class Atom:
   @property
   def atomic_number(self):
     return ase_atomic_numbers[self.species]
+
+  @property
+  def mass(self):
+    if self._mass is None:
+      return ase_atomic_masses[self.atomic_number]
+    else:
+      return self._mass
   
   @property
   def position(self):

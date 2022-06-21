@@ -120,6 +120,13 @@ class Residue:
     return charges
 
   @property
+  def masses(self):
+    masses = []
+    for atom in self._atoms:
+      masses.append(atom.mass)
+    return masses
+
+  @property
   def atoms(self):
     return self._atoms
 
@@ -193,13 +200,12 @@ class Residue:
     return self.CoM(verbosity=verbosity)
 
   def summary(self):
-    mout.headerOut(f'Residue {self.name}, index={self.number}, #atoms={self.num_atoms}\n')
+    mout.headerOut(f'\nResidue {self.name}, index={self.number}, #atoms={self.num_atoms}')
 
     for atom in self.atoms:
 
       print(atom.name,atom.index,atom.pdb_index)
     
-
   def CoM(self,verbosity=1):
 
     position_list = self.positions

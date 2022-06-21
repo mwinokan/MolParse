@@ -69,7 +69,7 @@ class System:
       charge += atom.charge
     return charge
 
-  def summary(self,res_limit=10):
+  def summary(self,res_limit=20):
     if self.description is not None:
       mout.headerOut("\n"+self.description)
     mout.headerOut("\nSystem "+mcol.arg+self.name+
@@ -231,6 +231,13 @@ class System:
     return charges
 
   @property
+  def masses(self):
+    masses = []
+    for chain in self.chains:
+      masses += chain.masses
+    return masses
+
+  @property
   def atoms(self):
     atoms = []
     for chain in self.chains:
@@ -315,6 +322,12 @@ class System:
       atomtype_list += chain.FF_atomtypes
     return atomtype_list
 
+  @property
+  def ase_atoms(self):
+    from .io import write, read
+    write("__temp__.pdb",self,verbosity=0)
+    return read("__temp__.pdb",verbosity=0)
+
   def write_CJSON(self,filename,use_atom_types=False,gulp_names=False):
     from .io import writeCJSON
     writeCJSON(filename,self,use_atom_types=use_atom_types,gulp_names=gulp_names)
@@ -329,6 +342,11 @@ class System:
 
     for index,atom in enumerate(self.atoms):
       atom.position = atoms[index].position
+
+  def rotate(self,angle,vector,center=(0,0,0)):
+    ase_atoms = self.ase_atoms
+    ase_atoms.rotate(angle,vector,center=center)
+    self.set_coordinates(ase_atoms)
 
   def copy(self):
     return copy.deepcopy(self)

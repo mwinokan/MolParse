@@ -80,6 +80,13 @@ class Chain:
     return charges
 
   @property
+  def masses(self):
+    masses = []
+    for residue in self.residues:
+      masses += residue.masses
+    return masses
+
+  @property
   def atoms(self):
     atoms = []
     for residue in self.residues:
