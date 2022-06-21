@@ -109,8 +109,8 @@ def getAndSetTags(pdb,atoms,byResidue=False):
           # get the tags:
           taglist.append(tagFromLine(line,byResidue=byResidue))
 
-  print(len(taglist))
-  print(len(atoms))
+  # print(len(taglist))
+  # print(len(atoms))
 
   # set the tags
   if isinstance(atoms,aseatoms.Atoms):
