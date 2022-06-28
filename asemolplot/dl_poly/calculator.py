@@ -1,17 +1,11 @@
 
 from ase.calculators.general import Calculator
-from ase.calculators.calculator import compare_atoms, PropertyNotImplementedError
-
-from .dl_poly_py import SPE
-
-from asemolplot import write, read
-
-import mout
-import mcol
-
-import os
 
 class DL_POLY(Calculator):
+  import mout
+  import mcol
+  from ase.calculators.calculator import compare_atoms, PropertyNotImplementedError
+  import os
 
   def __init__(self,field,control,workdir="DL_POLY",name="DL_POLY",output="OUTPUT",verbosity=1,debug=False,num_procs=8,backup=False):
 
@@ -103,6 +97,9 @@ class DL_POLY(Calculator):
         os.system("rm -fv "+self.statis_path)
 
   def calculate(self,atoms):
+    from asemolplot import write, read
+    from .dl_poly_py import SPE
+
     if self.debug: mout.debugOut(self.name+".calculate")
 
     # Check pre-requisites

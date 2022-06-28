@@ -1,8 +1,8 @@
 
-import mout
-import mcol
-
 def get_hbond_pairs(residue1,residue2):
+
+	import mout
+	import mcol
 	legal = check_legality(residue1,residue2)
 
 	if not legal:
@@ -64,7 +64,6 @@ def get_hbond_pairs(residue1,residue2):
 	return False
 
 def check_legality(residue1,residue2):
-
 	if residue1.name.startswith("DA") or residue1.name == "ADE":
 		if residue2.name.startswith("DT") or residue2.name == "THY":
 			return True
@@ -120,11 +119,6 @@ def make_3ter(residue):
 	atom = residue.get_atom("P3")
 	if atom is not None:
 		atom.name = "H3T"
-
-	# # Rename P3->H3T
-	# atom = residue.get_atom("P")
-	# if atom is not None:
-	# 	atom.name = "H3T"
 
 def prep4gmx(system,verbosity=1):
 	system.rename_residues("ADE","DA",verbosity=verbosity)

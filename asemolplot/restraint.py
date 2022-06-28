@@ -1,12 +1,4 @@
 
-import mout
-
-import numpy as np
-
-import copy
-
-from .system import System
-
 class Restraint:
 
 	def __init__(self,atoms,type=None,weights=None,force_constant=None):
@@ -23,6 +15,7 @@ class Restraint:
 		self.name = self.determine_name()
 
 	def determine_type(self):
+		import mout
 
 		''' Restraint types:
 				Two-Atom: Distance							Implemented
@@ -63,6 +56,8 @@ class Restraint:
 			return "restraint"
 
 	def value(self,system,scale_angle=None):
+		import numpy as np
+		import mout
 		
 		this_atoms = []
 		for atom in self.atoms:
@@ -110,6 +105,7 @@ class Restraint:
 		if system_list is None:
 			return self._values
 		else:
+			from .system import System
 			assert isinstance(system_list,list)
 			values = []
 			for system in system_list:
@@ -141,6 +137,8 @@ class Restraint:
 		self._values = values
 
 	def fetch_atoms(self,new_system,new_residues,res_map=None,verbosity=1):
+
+		import mout
 
 		count = 0
 
@@ -229,6 +227,7 @@ class Restraint:
 		return rst_buffer
 
 	def copy(self):
+		import copy
 		return copy.deepcopy(self)
 
 	def __repr__(self):

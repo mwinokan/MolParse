@@ -1,13 +1,4 @@
 
-import mcol # https://github.com/mwinokan/MPyTools
-import mout # https://github.com/mwinokan/MPyTools
-import copy
-
-from .chain import Chain
-# from .bondlist import Connectivity
-
-import numpy as np
-
 class System:
 
   def __init__(self,name):
@@ -33,6 +24,7 @@ class System:
       residue.number = index
 
   def fix_atomnames(self,verbosity=1):
+    import mout
     count=0
     for index,atom in enumerate(self.atoms):
       if atom.name[0].isnumeric():
@@ -46,6 +38,8 @@ class System:
       mout.warningOut("Fixed "+str(count)+" atom names which appeared to have cycled.")
 
   def add_chain(self,chain):
+    from .chain import Chain
+    assert isinstance(chain,Chain)
     self.chains.append(chain)
 
   def add_system(self,system):
@@ -70,6 +64,8 @@ class System:
     return charge
 
   def summary(self,res_limit=20):
+    import mout
+    import mcol
     if self.description is not None:
       mout.headerOut("\n"+self.description)
     mout.headerOut("\nSystem "+mcol.arg+self.name+
@@ -101,6 +97,8 @@ class System:
     return names
 
   def rename_atoms(self,old,new,res_filter=None,verbosity=2):
+    import mcol
+    import mout
     count=0
     for residue in self.residues:
       if res_filter is not None and res_filter not in residue.name:
@@ -119,6 +117,8 @@ class System:
     return count
 
   def rename_residues(self,old,new,verbosity=2):
+    import mcol
+    import mout
     count=0
     for residue in self.residues:
       if residue.name == old:
@@ -131,12 +131,16 @@ class System:
     return count
 
   def get_chain(self,name):
+    import mout
+    import mcol
     for chain in self.chains:
       if chain.name == name:
         return chain
     mout.errorOut("Chain with name "+mcol.arg+name+mcol.error+" not found.",fatal=True)
 
   def remove_chain(self,name,verbosity=1):
+    import mcol
+    import mout
     for index,chain in enumerate(self.chains):
       if chain.name == name:
         if verbosity > 0:
@@ -146,6 +150,8 @@ class System:
     mout.errorOut("Chain with name "+mcol.arg+name+mcol.error+" not found.",fatal=True)
     
   def remove_heterogens(self,verbosity=1):
+    import mcol
+    import mout
     del_list = []
     atoms = self.atoms
     for index,atom in enumerate(atoms):
@@ -156,6 +162,9 @@ class System:
       mout.warningOut("Removed "+mcol.result+str(number_deleted)+mcol.warning+" heterogens")
 
   def remove_atoms_by_index(self,del_list,verbosity=1):
+    import mcol
+    import mout
+
     number_deleted=0
     self.fix_indices()
     for chain in self.chains:
@@ -181,6 +190,9 @@ class System:
           return atom
 
   def remove_atoms(self,name,res_filter=None,verbosity=2):
+    import mcol
+    import mout
+
     number_deleted=0
     self.fix_indices()
     for chain in self.chains:
@@ -248,6 +260,8 @@ class System:
     return CoM(set=set,shift=shift)
 
   def CoM(self,set=None,shift=None):
+    import mout
+    import numpy as np
 
     position_list = self.positions
 
@@ -349,6 +363,7 @@ class System:
     self.set_coordinates(ase_atoms)
 
   def copy(self):
+    import copy
     return copy.deepcopy(self)
 
   def __repr__(self):

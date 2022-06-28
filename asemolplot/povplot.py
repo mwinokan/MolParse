@@ -1,9 +1,3 @@
-from ase import io
-
-import mcol # https://github.com/mwinokan/MPyTools
-import mout # https://github.com/mwinokan/MPyTools
-
-from . import styles
 
 isPovLoaded = False
 
@@ -28,6 +22,10 @@ def loadPov(verbosity=1,purge=True,anaconda=False):
   isPovLoaded = True
 
 def makePovImage(filename,image,verbosity=1,rmPovFiles=True,bonds=False,bondradius=1.1,forceLoad=False,printScript=False,**style):
+  from ase import io
+  import mcol
+  import mout
+
   if (not isPovLoaded or forceLoad):
     loadPov(verbosity=verbosity-1)
 
@@ -68,6 +66,10 @@ def makePovImage(filename,image,verbosity=1,rmPovFiles=True,bonds=False,bondradi
     mout.out("Done.") # user output
 
 def makePovImages(filename,subdirectory="pov",interval=1,verbosity=1,rmPovFiles=True,bonds=False,bondradius=1.1,filenamePadding=4,printScript=False,forceLoad=False,index=":",**style):
+  from ase import io
+  import mcol
+  import mout
+
   if (not isPovLoaded or forceLoad):
     loadPov(verbosity=verbosity-1)
 
@@ -107,6 +109,9 @@ def makePovImages(filename,subdirectory="pov",interval=1,verbosity=1,rmPovFiles=
 
 # Using ImageMagick (artefacting!):
 def makePovAnimationIM(filename,subdirectory="pov",interval=1,verbosity=1,**style):
+  import mcol
+  import mout
+
   if (not isPovLoaded or forceLoad):
     loadPov(verbosity=verbosity-1)
 
@@ -131,9 +136,16 @@ def makePovAnimationIM(filename,subdirectory="pov",interval=1,verbosity=1,**styl
 
 # Using imageio
 # https://stackoverflow.com/questions/753190/programmatically-generate-video-or-animated-gif-in-python
-def makePovAnimation(filename,subdirectory="pov",interval=1,gifstyle=styles.gif_standard,verbosity=1,printScript=False,forceLoad=False,useExisting=False,dryRun=False,**plotstyle):
+def makePovAnimation(filename,subdirectory="pov",interval=1,gifstyle=None,verbosity=1,printScript=False,forceLoad=False,useExisting=False,dryRun=False,**plotstyle):
+  import mcol
+  import mout
+
   if (not isPovLoaded or forceLoad):
     loadPov(verbosity=verbosity-1)
+
+  from . import styles
+  if gifstyle is None:
+    gifstyle = styles.gif_standard
 
   if plotstyle == {}:
     plotstyle=styles.standard
@@ -291,6 +303,8 @@ def makePovAnimation(filename,subdirectory="pov",interval=1,gifstyle=styles.gif_
     mout.out("Done.") # user output
 
 def crop(filename,width=500,height=500,xshift=0,yshift=0,verbosity=1):
+  import mcol
+  import mout
   import os
 
   import module # https://github.com/mwinokan/MPyTools

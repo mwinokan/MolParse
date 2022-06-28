@@ -1,13 +1,13 @@
 
-import os
 
-import mout
-import mcol
 
 def SPE(control="CONTROL",config="CONFIG",
         field="FIELD",workdir="DL_POLY",
         num_procs=8,log="_amp.dl_poly.log",
         verbosity=2,output="OUTPUT"):
+  import os
+  import mout
+  import mcol
   
   if verbosity > 0:
     mout.headerOut("Calling "+mcol.func+"DL_POLY"+mcol.clear+mcol.bold+"...")
@@ -48,6 +48,9 @@ def SPE(control="CONTROL",config="CONFIG",
   return e_tot
 
 def totalEnergy(dlpoly,verbosity=1):
+  import mout
+  import mcol
+
   if dlpoly.statis is None:
     mout.errorOut("STATIS file not loaded",code="amp.dl_poly.totalEnergy[1]")
     return None

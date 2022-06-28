@@ -1,9 +1,9 @@
 
 # import math
 
-import numpy as np
 
 def find_barrier_stationary_points(xdata,ydata,yerr,reduction_order=2,show=False):
+	import numpy as np
 
 	import scipy.signal as sps
 
@@ -59,9 +59,11 @@ def eckartFit(xdata,ydata):
 	return None
 
 def sqrt(x):
+	import numpy as np
 	return np.power(x,0.5)
 
 def eckart(x,barrier,asymmetry,length,xts=0.0):
+	import numpy as np
 
 	if isinstance(x,list):
 		x = np.array(x)

@@ -1,13 +1,5 @@
 
-from importlib import reload
-import mcol # https://github.com/mwinokan/MPyTools
-import mout # https://github.com/mwinokan/MPyTools
-reload(mout)
-import copy
-
-from .atom import Atom
-
-import numpy as np
+# from importlib import reload
 
 class Residue:
   def __init__(self,name,number=None,chain=None):
@@ -19,6 +11,8 @@ class Residue:
 
   def rename(self,new,verbosity=1):
     if verbosity > 0:
+      import mcol
+      import mout
       mout.out("Renaming residue "+
                mcol.arg+self.name+str([self.number])+mcol.clear+" of chain "+
                mcol.varName+self.chain+
@@ -87,11 +81,15 @@ class Residue:
                                "TRP","TYR","VAL","HID")):
       this_type = "PRO"
     else:
+      import mcol
+      import mout
       mout.warningOut("Unknown residue type for "+mcol.arg+self.name)
       this_type = None
     return this_type
 
   def addAtom(self,atom):
+    from .atom import Atom
+    assert isinstance(atom,Atom)
     self._atoms.append(atom)
 
   def translate(self,vector):
@@ -99,7 +97,7 @@ class Residue:
       atom.position = atom.np_pos + vector
 
   def print(self):
-
+    import mout
     mout.varOut("Residue Name",self.name)
     mout.varOut("Residue Chain",self.chain)
     mout.varOut("Residue Number",self.number)
@@ -133,7 +131,9 @@ class Residue:
   def get_atom(self,name):
     for atom in self._atoms:
       if atom.name == name: return atom
-    # print(self.atom_names())
+
+    import mout
+    import mcol
     mout.errorOut("No atom "+
                   mcol.arg+name+
                   mcol.error+" in residue "+
@@ -141,6 +141,8 @@ class Residue:
     return None
 
   def delete_atom(self,name,verbosity=1):
+    import mcol
+    import mout
     for index,atom in enumerate(self._atoms):
       if atom.name == name:
         del self._atoms[index]
@@ -158,14 +160,8 @@ class Residue:
                       mcol.warning+" in residue "+
                       mcol.arg+self.name)
 
-  # def index_from_name(self,name):
-  #   return self.get_atom(name).index
-  #   # mout.errorOut("No atom "+
-  #   #               mcol.arg+name+
-  #   #               mcol.error+" in residue "+
-  #   #               mcol.arg+self.name+str([self.number]),fatal=True,code="Residue.2")
-
   def copy(self):
+    import copy
     return copy.deepcopy(self)
 
   def get_distance(self,i,j):
@@ -200,13 +196,14 @@ class Residue:
     return self.CoM(verbosity=verbosity)
 
   def summary(self):
+    import mout
     mout.headerOut(f'\nResidue {self.name}, index={self.number}, #atoms={self.num_atoms}')
 
     for atom in self.atoms:
-
       print(atom.name,atom.index,atom.pdb_index)
     
   def CoM(self,verbosity=1):
+    import numpy as np
 
     position_list = self.positions
 

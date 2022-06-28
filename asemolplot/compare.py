@@ -1,8 +1,7 @@
 
-import mout
-import mcol
-
 def compareSystems(system1,system2):
+  import mout
+  import mcol
 
   use_cs4qb = True
 
@@ -75,6 +74,9 @@ def compareSystems(system1,system2):
     with open('compare.json', 'w') as f: json.dump(system_data[2], f,indent=4)
 
 def compare_bond_stat_lists(system_data,precision=6,diffPrecision=2,dataFile=False):
+
+  import mout
+  import mcol
 
   diff_list = []
   pcnt_diff_list = []

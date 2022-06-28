@@ -1,11 +1,8 @@
-from ase import io
-
-import mcol # https://github.com/mwinokan/MPyTools
-import mout # https://github.com/mwinokan/MPyTools
-
-from . import styles
 
 def makeImage(filename,image,filter=None,verbosity=1,printScript=False,**style):
+  import mcol
+  import mout
+  from ase import io
 
   if not filename.endswith(".png"):
     filename = filename+".png"
@@ -50,9 +47,11 @@ def makeImage(filename,image,filter=None,verbosity=1,printScript=False,**style):
     mout.out("Done.") # user output
 
 def makeImages(filename,subdirectory="amp",interval=1,verbosity=1,filenamePadding=4,printScript=False,index=":",**style):
-  
+  from ase import io
   import os
   import math
+  import mcol
+  import mout
   
   os.system("mkdir -p "+subdirectory)
   os.system("rm "+subdirectory+"/* 2> /dev/null")
@@ -82,11 +81,16 @@ def makeImages(filename,subdirectory="amp",interval=1,verbosity=1,filenamePaddin
 
 # Using imageio
 # https://stackoverflow.com/questions/753190/programmatically-generate-video-or-animated-gif-in-python
-def makeAnimation(filename,subdirectory="amp",interval=1,gifstyle=styles.gif_standard,verbosity=1,printScript=False,useExisting=False,dryRun=False,**plotstyle):
-  
+def makeAnimation(filename,subdirectory="amp",interval=1,gifstyle=None,verbosity=1,printScript=False,useExisting=False,dryRun=False,**plotstyle):
+  import mcol
+  import mout
+
+  from . import styles
+  if gifstyle is None:
+    gifstyle = styles.gif_standard
+
   if plotstyle == {}:
     plotstyle=styles.standard
-  # print(plotstyle)
 
   global num_traj_images
   global num_frames

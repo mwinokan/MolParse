@@ -1,34 +1,7 @@
 
-import mcol # https://github.com/mwinokan/MPyTools
-import mout # https://github.com/mwinokan/MPyTools
-import copy
-
-import numpy as np
-
-from ase.data import atomic_numbers as ase_atomic_numbers # Atom only
-from ase.data import atomic_masses as ase_atomic_masses # Atom only
-
 class Atom:
 
-  def __init__(self,
-               name,
-               index,
-               pdb_index,
-               position,
-               residue,
-               chain=None,
-               res_number=None,
-               charge=0.0,
-               FF_atomtype=None,
-               mass=None,
-               LJ_sigma=None,
-               LJ_epsilon=None,
-               QM=False,
-               occupancy=None,
-               temp_factor=None,
-               heterogen=None,
-               charge_str=None,
-               velocity=None):
+  def __init__(self,name,index,pdb_index,position,residue,chain=None,res_number=None,charge=0.0,FF_atomtype=None,mass=None,LJ_sigma=None,LJ_epsilon=None,QM=False,occupancy=None,temp_factor=None,heterogen=None,charge_str=None,velocity=None):
 
     self._name = name
     self._atomic_number = None
@@ -54,7 +27,7 @@ class Atom:
     self._velocity = velocity
 
   def print(self):
-
+    import mout
     mout.varOut("Atom Name",self._name)
     mout.varOut("Atom Species",self.species)
     mout.varOut("Atom (ASE) Index",self.index)
@@ -76,6 +49,8 @@ class Atom:
 
   def set_name(self,name,verbosity=1):
     if verbosity > 0:
+      import mout
+      import mcol
       mout.out("Renaming atom "+
                mcol.arg+self.name+str([self.index])+mcol.clear+" of residue "+
                mcol.varName+self.residue+str([self.res_number])+
@@ -93,11 +68,13 @@ class Atom:
 
   @property
   def atomic_number(self):
+    from ase.data import atomic_numbers as ase_atomic_numbers # Atom only
     return ase_atomic_numbers[self.species]
 
   @property
   def mass(self):
     if self._mass is None:
+      from ase.data import atomic_masses as ase_atomic_masses # Atom only
       return ase_atomic_masses[self.atomic_number]
     else:
       return self._mass
@@ -112,10 +89,12 @@ class Atom:
 
   @property
   def np_pos(self):
+    import numpy as np
     return np.array((self._position[0] ,self._position[1], self._position[2]))
 
   @property
   def np_vel(self):
+    import numpy as np
     return np.array((self._velocity[0] ,self._velocity[1], self._velocity[2]))
 
   @property
@@ -139,6 +118,7 @@ class Atom:
     self._velocity = vel
 
   def copy(self):
+    import copy
     return copy.deepcopy(self)
 
   def summary(self):

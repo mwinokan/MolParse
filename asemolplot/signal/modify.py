@@ -1,8 +1,6 @@
 
-
-import mout
-
 def runningAverage(xdata,ydata,averaging_window=5,cutoff_style=None,debug=False):
+	import mout
 
 	many = any(isinstance(el,list) for el in ydata)
 
@@ -75,10 +73,6 @@ def differentiate(xdata,ydata):
 	else:
 
 		for i,x in enumerate(xdata):
-
-			# this_x = x
-			# this_y = ydata[i]
-			
 			result_x.append(xdata[i])
 
 			if i!=0: 
@@ -91,9 +85,4 @@ def differentiate(xdata,ydata):
 
 				result_y.append(0.0)
 
-			# last_x = this_x
-			# last_y = this_y
-
 	return result_x,result_y
-
-# def peakFinder():

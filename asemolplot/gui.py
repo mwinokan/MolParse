@@ -1,4 +1,5 @@
-from ase import visualize
 
 def view(atoms,**kwargs):
-  visualize.view(atoms,**kwargs)
+	from ase import visualize
+	visualize.view(atoms,**kwargs)
+	

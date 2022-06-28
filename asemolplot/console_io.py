@@ -1,8 +1,7 @@
 
-import mcol # https://github.com/mwinokan/MPyTools
-import mout # https://github.com/mwinokan/MPyTools
-
 def printEnergy(atoms,perAtom=True,precision=8,printScript=False):
+  import mcol # https://github.com/mwinokan/MPyTools
+  import mout # https://github.com/mwinokan/MPyTools
   if (perAtom):
     epot = atoms.get_potential_energy() / len(atoms)
     ekin = atoms.get_kinetic_energy() / len(atoms)

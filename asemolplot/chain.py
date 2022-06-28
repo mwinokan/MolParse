@@ -1,10 +1,4 @@
 
-import mcol # https://github.com/mwinokan/MPyTools
-import mout # https://github.com/mwinokan/MPyTools
-import copy
-
-from .residue import Residue
-
 class Chain:
 
   def __init__(self,name):
@@ -33,6 +27,10 @@ class Chain:
     return len(self.residues)
 
   def add_residue(self,residue):
+    import mcol
+    import mout
+    from .residue import Residue
+    assert isinstance(residue,Residue)
     self.residues.append(residue)
     if self.num_residues > 1 and self.residues[-1].type != self.type:
       mout.errorOut(f'Differing residue types in same chain {self.residues[-1]} ({self.residues[-1].type}), {self.residues[0]} ({self.type})')
@@ -101,6 +99,8 @@ class Chain:
     return atomtype_list
 
   def index_from_name(self,namestring):
+    import mcol
+    import mout
 
     search_residue, search_atom = namestring.split("_")
 
@@ -114,6 +114,7 @@ class Chain:
               mcol.arg+search_residue+" of chain "+mcol.arg+self.name,fatal=True,code="Chain.1")
 
   def copy(self):
+    import copy
     return copy.deepcopy(self)
 
   def __repr__(self):
