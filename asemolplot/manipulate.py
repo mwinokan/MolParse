@@ -1,11 +1,8 @@
 
-import mout
-import mcol
-import ase
-
-from .system import System
-
 def interpolate(input1,input2,frames=10,verbosity=2,smooth=False,indices=None):
+	import mout
+	from ase import aseatoms
+	from .system import System
 
 	if verbosity > 0:
 		mout.headerOut("Interpolating...")
@@ -14,8 +11,8 @@ def interpolate(input1,input2,frames=10,verbosity=2,smooth=False,indices=None):
 		mout.varOut("input2",str(input2))
 		mout.varOut("frames",frames)
 
-	if isinstance(input1,ase.Atoms):
-		mout.out("Input1 = ase.atoms")
+	if isinstance(input1,aseatoms):
+		mout.out("Input1 = ase.Atoms")
 		mout.errorOut("Not supported yet",fatal=True)
 	elif isinstance(input1,System):
 		mout.out("Input1 = amp.system")
@@ -92,7 +89,6 @@ def auto_rotate(atoms):
 	normal_vector = svd(M)[0][:,-1]
 
 	# rotate the normal onto the Z-axis
-
 	atoms.rotate(normal_vector,'z')
 
 	return atoms

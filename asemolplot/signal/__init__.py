@@ -8,9 +8,11 @@ from .io import csv_strip
 
 from .peaks import peakFinder
 
-import socket
-if not 'eureka' in socket.gethostname():
-	if not 'login' in socket.gethostname():
-		if not 'node' in socket.gethostname():
-			from .fitwizard import fitwizard
+# the fitwizard should be loaded only as needed via: from ase.signal 
+
+# import socket
+# if not 'eureka' in socket.gethostname():
+# 	if not 'login' in socket.gethostname():
+# 		if not 'node' in socket.gethostname():
+# 			from .fitwizard import fitwizard
 	

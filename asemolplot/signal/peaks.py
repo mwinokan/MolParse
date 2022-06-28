@@ -1,15 +1,12 @@
 
-import mout
 
-import statistics
 
-from .modify import differentiate
-
-from scipy.optimize import curve_fit
-from scipy import asarray as ar,exp
 
 
 def peakFinder(xdata,ydata,min_width,min_height,baseline=None,threshold=1.0e-2,search_coeff=0.1):
+	import statistics
+	import mout
+	from .modify import differentiate
 
 	many = any(isinstance(el,list) for el in ydata)
 
@@ -18,8 +15,6 @@ def peakFinder(xdata,ydata,min_width,min_height,baseline=None,threshold=1.0e-2,s
 	if many:
 
 		peaklist = []
-
-		# mout.errorOut("peakFinder. Unsupported",fatal=True)
 
 		for data in ydata:
 			peaklist.append(peakFinder(xdata,data,
@@ -113,6 +108,9 @@ class Peak:
 		return gaussian_fit(xdata,ydata,[self.start_x,self.end_x],return_data=return_data,baseline=baseline,filename=filename)
 
 def gaussian_fit(xdata,ydata,window,return_data=False,index_window=False,baseline=0.0,filename=None):
+	import mout
+	from scipy.optimize import curve_fit
+	from scipy import asarray as ar
 
 	many = any(isinstance(el,list) for el in ydata)
 
@@ -164,7 +162,8 @@ def gaussian_fit(xdata,ydata,window,return_data=False,index_window=False,baselin
 		return a,mean,sigma
 
 def gaus(x,a,x0,sigma):
-    return a*exp(-(x-x0)**2/(2*sigma**2))+___BASELINE
+	from scipy import asarray as exp
+	return a*exp(-(x-x0)**2/(2*sigma**2))+___BASELINE
 
 def closest_index(value,xdata):
 

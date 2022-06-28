@@ -1,18 +1,10 @@
-from ase import io
-from ase import atoms as aseatoms
-
-import mcol # https://github.com/mwinokan/MPyTools
-import mout # https://github.com/mwinokan/MPyTools
-
-import string
-
-# Custom Classes
-from .system import System
-from .chain import Chain
-from .residue import Residue
-from .atom import Atom
 
 def write(filename,image,verbosity=1,printScript=False,**parameters):
+  from ase import io
+  from ase import atoms as aseatoms
+  import mcol
+  import mout
+  from .system import System
 
   if (verbosity > 0):
     mout.out("writing "+mcol.file+
@@ -37,7 +29,6 @@ def write(filename,image,verbosity=1,printScript=False,**parameters):
 
       ### List of Systems
       if all([isinstance(i,System) for i in image ]):
-        # mout.out("Cool")
 
         for index,frame in enumerate(image):
           if index == 0:
@@ -62,6 +53,9 @@ def write(filename,image,verbosity=1,printScript=False,**parameters):
     mout.out("Done.") # user output
 
 def read(filename,index=None,printScript=False,verbosity=1,tagging=True,tagByResidue=False,**parameters):
+  from ase import io
+  import mcol
+  import mout
 
   if (verbosity > 0):
     mout.out("reading "+mcol.file+
@@ -86,6 +80,8 @@ def read(filename,index=None,printScript=False,verbosity=1,tagging=True,tagByRes
   return atoms
 
 def getAndSetTags(pdb,atoms,byResidue=False):
+  from ase import atoms as aseatoms
+  import mout
 
   # Parse the first model in the PDB to get the tags
   taglist=[]
@@ -109,9 +105,6 @@ def getAndSetTags(pdb,atoms,byResidue=False):
           # get the tags:
           taglist.append(tagFromLine(line,byResidue=byResidue))
 
-  # print(len(taglist))
-  # print(len(atoms))
-
   # set the tags
   if isinstance(atoms,aseatoms.Atoms):
     for index,tag in enumerate(taglist):
@@ -131,6 +124,9 @@ def tagFromLine(line,byResidue):
     return 0
 
 def parsePDB(pdb,systemName=None,index=1,fix_indices=True,fix_atomnames=True,verbosity=1,debug=False,dry=False):
+  from .system import System
+  from .chain import Chain
+  from .residue import Residue
 
   try:
     index = int(index)
@@ -144,16 +140,9 @@ def parsePDB(pdb,systemName=None,index=1,fix_indices=True,fix_atomnames=True,ver
 
     all_systems = []
 
-    # import os
-
-    # os.system("grep MODEL "+pdb+" | tail -n1 ")
-
     import subprocess
     
     last_model_line = subprocess.check_output("grep MODEL "+pdb+" | tail -n1 ", shell=True)
-    
-    # if (verbosity > 0):
-      # mout.out("") # user output
     
     for i in range(1,int(last_model_line.split()[-1])+1):
 
@@ -242,16 +231,6 @@ def parsePDB(pdb,systemName=None,index=1,fix_indices=True,fix_atomnames=True,ver
                 mout.warningOut("Terminal added to "+mcol.arg+chain.name+":"+residue.name)
               residue.atoms[-1].terminal = True
               was_terminal = True
-              # atom = residue.atoms[-1]
-              # # residue.atoms[-1].ter_line=line
-
-              # atom.terminal = True
-              # atom.ter_line =  "TER   "
-              # atom.ter_line += str(atom.index)
-              # atom.ter_line += "\n"
-
-              # residue.atoms[-1].ter_line="TER   "+x_str = '{:.3f}'.format(atom.x).rjust(8)+"\n"
-              # # TER    4060      ILE A 509  
               continue
             elif line.startswith("CONECT"):
               continue
@@ -311,6 +290,10 @@ def parsePDB(pdb,systemName=None,index=1,fix_indices=True,fix_atomnames=True,ver
     return system
 
 def parsePDBAtomLine(line,res_index,atom_index,chain_counter,debug=False):
+  from .atom import Atom
+  import mout
+  import string
+  from .atom import Atom
 
   if debug:
     mout.out("Attempting to parse atom with index: "+str(atom_index))
@@ -377,6 +360,11 @@ def parsePDBAtomLine(line,res_index,atom_index,chain_counter,debug=False):
 
 # def parseGRO(gro,systemName=None,fix_indices=True,fix_atomnames=True,verbosity=1,auto_ter=None):
 def parseGRO(gro,systemName=None,fix_indices=True,fix_atomnames=True,verbosity=1,auto_ter=["DA3","DT3","DG3","DC3"],reindex=False):
+  import mcol
+  import mout
+  from .system import System
+  from .chain import Chain
+  from .residue import Residue
 
   if (verbosity > 0):
     mout.out("parsing "+mcol.file+
@@ -385,11 +373,6 @@ def parseGRO(gro,systemName=None,fix_indices=True,fix_atomnames=True,verbosity=1
              end='') # user output
 
   import os
-
-  # file  = open(gro, 'r').read()
-  # if file.count("MODEL") == 0:
-  #   mout.errorOut("gro has no MODELs",fatal=True)
-  # file.close()
 
   residue = None
   chain = None
@@ -510,39 +493,34 @@ def parseGRO(gro,systemName=None,fix_indices=True,fix_atomnames=True,verbosity=1
 
 def parseGROAtomLine(line,res_index,atom_index,chain_counter):
 
-  # try:
-    res_number = line[0:5].strip()
-    residue = line[5:10].strip()
-    atom_name = line[11:15].strip()
-    gro_index = line[15:21].strip()
-    # print(res_number,residue,atom_name,atom_index)
+  import string
+  from .atom import Atom
 
-    # assert gro_index == atom_index
+  res_number = line[0:5].strip()
+  residue = line[5:10].strip()
+  atom_name = line[11:15].strip()
+  gro_index = line[15:21].strip()
 
-    chain = string.ascii_uppercase[chain_counter%26]
+  chain = string.ascii_uppercase[chain_counter%26]
 
-    position = []
-    position.append(10.0*float(line[21:29].strip()))
-    position.append(10.0*float(line[29:37].strip()))
-    position.append(10.0*float(line[37:45].strip()))
-    
-    velocity = []
-    try:
-      velocity.append(10.0*float(line[45:53].strip()))
-      velocity.append(10.0*float(line[53:61].strip()))
-      velocity.append(10.0*float(line[61:69].strip()))
-    except:
-      velocity = [0.0,0.0,0.0]
+  position = []
+  position.append(10.0*float(line[21:29].strip()))
+  position.append(10.0*float(line[29:37].strip()))
+  position.append(10.0*float(line[37:45].strip()))
+  
+  velocity = []
+  try:
+    velocity.append(10.0*float(line[45:53].strip()))
+    velocity.append(10.0*float(line[53:61].strip()))
+    velocity.append(10.0*float(line[61:69].strip()))
+  except:
+    velocity = [0.0,0.0,0.0]
 
-    hetatm=False
+  hetatm=False
 
-    atom = Atom(atom_name,atom_index,gro_index,position,residue,chain,res_number,velocity=velocity)
+  atom = Atom(atom_name,atom_index,gro_index,position,residue,chain,res_number,velocity=velocity)
 
-    return atom
-
-  # except:
-  #   mout.errorOut(line)
-  #   mout.errorOut("Unsupported GRO line shown above",fatal=True)
+  return atom
 
 def writeCJSON(filename,system,use_atom_types=False,gulp_names=False,noPrime=False,printScript=False,verbosity=1):
 
@@ -595,6 +573,9 @@ def writeCJSON(filename,system,use_atom_types=False,gulp_names=False,noPrime=Fal
     mout.out("Done.") # user outpu
 
 def writePDB(filename,system,verbosity=1,printScript=False,append=False,model=1):
+  import mcol
+  import mout
+  from .system import System
 
   if (verbosity > 0):
     mout.out("writing "+mcol.file+
@@ -710,10 +691,12 @@ def writePDB(filename,system,verbosity=1,printScript=False,append=False,model=1)
   out_stream.close()
 
   if (verbosity > 0):
-    mout.out("Done.") # user output
-    
+    mout.out("Done.") # user output    
 
 def writeGRO(filename,system,verbosity=1,printScript=False):
+  import mcol
+  import mout
+  from .system import System
 
   if (verbosity > 0):
     mout.out("writing "+mcol.file+

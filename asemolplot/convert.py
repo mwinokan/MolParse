@@ -1,13 +1,9 @@
 
-import mout # https://github.com/mwinokan/MPyTools
-import mcol # https://github.com/mwinokan/MPyTools
-import mplot # https://github.com/mwinokan/MPyTools
-
-from ase.io.trajectory import Trajectory
-
-from .io import read,write
-
 def pdb2traj(input,output,verbosity=1,printScript=False,tagging=True):
+  import mout
+  import mcol
+  from .io import read,write
+
   if not input.endswith(".pdb"):
     mout.errorOut("Input is not a PDB!")
     return None
@@ -32,6 +28,10 @@ def pdb2traj(input,output,verbosity=1,printScript=False,tagging=True):
     return in_traj
 
 def gro2traj(input,output,verbosity=1,printScript=False,tagging=True):
+  import mout
+  import mcol
+  from .io import read,write
+
   if not input.endswith(".gro"):
     mout.errorOut("Input is not a .gro file!")
     return None
@@ -86,6 +86,10 @@ def gro2traj(input,output,verbosity=1,printScript=False,tagging=True):
   return in_traj
 
 def xyz2traj(input,output,verbosity=1,printScript=False):
+  import mout
+  import mcol
+  from .io import read,write
+  
   if not input.endswith(".xyz"):
     mout.errorOut("Input is not a .xyz file!")
     return None

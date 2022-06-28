@@ -1,12 +1,8 @@
 
-import pandas
-import mout
-import re
-import mcol
-import os
-import math
-
 def csv_strip(filename,output=None,overwrite=False):
+	import re
+	import mout
+	import mcol
 
 	with open(filename,'r') as file:
 		lines = file.readlines()
@@ -36,13 +32,12 @@ def csv_strip(filename,output=None,overwrite=False):
 
 	file.close()
 
-def parseDat(filename,
-			 num_columns=2,
-			 header_rows=1,
-			 delimiter=' ',
-			 debug=False,
-			 pre_strip=False,
-			 clean_nan=False):
+def parseDat(filename,num_columns=2,header_rows=1,delimiter=' ',debug=False,pre_strip=False,clean_nan=False):
+	
+	import mout
+	import pandas
+	import os
+	import math
 
 	columns=list(range(num_columns))
 

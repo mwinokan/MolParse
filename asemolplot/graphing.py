@@ -1,18 +1,4 @@
 
-import mcol # https://github.com/mwinokan/MPyTools
-import mout # https://github.com/mwinokan/MPyTools
-import mplot # https://github.com/mwinokan/MPyTools
-
-import numpy as np
-
-from ase import units
-
-# from math import acos
-
-from .analysis import bondLengthStats
-from .analysis import bondAngleStats
-from .analysis import getBondLabel
-
 """
 
   To-Do's
@@ -24,6 +10,10 @@ from .analysis import getBondLabel
 """
 
 def graphEnergy(trajectory,perAtom=True,filename=None,show=True,verbosity=2,kJpermol=False,xlab=None,timestep=None,xmin=None,xmax=None,ymin=None,ymax=None):
+  import mcol
+  import mout
+  import mplot
+  from ase import units
 
   if (verbosity > 0):
     mout.out("graphing "+mcol.varName+
@@ -78,6 +68,10 @@ def graphEnergy(trajectory,perAtom=True,filename=None,show=True,verbosity=2,kJpe
     mout.out("Done.") # user output
 
 def graphForces(trajectory,filename=None,max=True,show=True,verbosity=2,xlab="Step",xmin=None,xmax=None,ymin=None,ymax=None,yLog=False):
+  import mcol
+  import mout
+  import mplot
+  import numpy as np
 
   if (verbosity > 0):
     mout.out("graphing "+mcol.varName+
@@ -124,6 +118,12 @@ def graphDisplacement(trajectory,show=True,filename=None,relative=True,verbosity
 
   """
 
+  import mcol
+  import mout
+  import mplot
+  import numpy as np
+  from ase import units
+
   if (verbosity > 0):
     mout.out("graphing "+mcol.varName+
              "RMSD"+
@@ -157,35 +157,18 @@ def graphDisplacement(trajectory,show=True,filename=None,relative=True,verbosity
   if (verbosity > 0):
     mout.out("Done.") # user output
 
-def graphBondLength(trajectory,
-                    indices,
-                    torsion_indices=None,
-                    printScript=False,
-                    show=True,
-                    filename=None,
-                    fitMin=None,
-                    fitMax=None,
-                    verbosity=2,
-                    timestep=None,
-                    title=None,
-                    fitOrder=None,
-                    yUnit="Angstroms",
-                    dataFile=None,
-                    ymin=0,
-                    ymax=None,
-                    xmin=None,
-                    xmax=None,
-                    noplot=False,
-                    write_data=False,
-                    write_ang=False,
-                    write_torsion=False,
-                    write_exang=False,
-                    debug_plot=False,
-                    return_data=False):
+def graphBondLength(trajectory,indices,torsion_indices=None,printScript=False,show=True,filename=None,fitMin=None,fitMax=None,verbosity=2,timestep=None,title=None,fitOrder=None,yUnit="Angstroms",dataFile=None,ymin=0,ymax=None,xmin=None,xmax=None,noplot=False,write_data=False,write_ang=False,write_torsion=False,write_exang=False,debug_plot=False,return_data=False):
+  from .analysis import bondLengthStats
+
   """
     Graph the bond lengths (displacement) between atoms.
 
   """
+
+  # import mcol
+  import mout
+  import mplot
+  import numpy as np
 
   many = any(isinstance(el,list) for el in indices)
 
@@ -416,6 +399,11 @@ def graphBondLength(trajectory,
     return None, None, None
 
 def graphBondVibSpec(trajectory,indices,printScript=False,show=True,filename=None,verbosity=2,timestep=None,title=None,ymin=None,ymax=None,power_spec=False,power_segment=None,wave_number=False,xlab="Frequency [Hz]",write_data=False):
+  # import mcol
+  import mout
+  import mplot
+  from .analysis import getBondLabel
+
   """
     Graph the fourier transfort of bond lengths (displacement) between atoms.
 
@@ -536,6 +524,10 @@ def showFigs(verbosity=1):
   mplot.show(verbosity=verbosity)
 
 def graphBondAngle(trajectory,indices,printScript=False,show=True,filename=None,fitMin=None,fitMax=None,verbosity=2,timestep=None,title=None,fitOrder=None,yUnit="Degrees",dataFile=None,ymin=0,ymax=180,xmin=None,xmax=None):
+  import mout
+  import mplot
+  from .analysis import bondAngleStats
+
   """
     Graph the bond angle (acute) between atoms.
 
