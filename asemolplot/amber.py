@@ -1,14 +1,11 @@
 
-import mcol
-import mout
-import os
-import mplot
-
-from . import signal
-
 from .restraint import Restraint
 
 def write_amber_restraints(restraint_list,filename_prefix,zfill=2,filename_suffix=".RST"):
+
+	import mcol
+	import mout
+	import os
 
 	os.system("mkdir -p "+os.path.dirname(filename_prefix))
 
@@ -57,7 +54,11 @@ def write_amber_restraints(restraint_list,filename_prefix,zfill=2,filename_suffi
 
 def umbrella_plotter(filenames,bins=20,subdir=None,show_level=2):
 
-	# xdata = []
+	import os
+	import mplot
+
+	from . import signal
+
 	big_ydata = []
 	labels=[]
 
@@ -82,13 +83,9 @@ def umbrella_plotter(filenames,bins=20,subdir=None,show_level=2):
 		else:
 			show=False
 
-		# mplot.graph2D(xdata,ydata)
 		mplot.hist1D(ydata,show=show,xlab="Reaction Coordinate",ylab="Frequency",bins=bins,title=label,filename=plotfile)
 
 		big_ydata.append(ydata)
-
-	# mout.varOut("x",xdata)
-	# mout.varOut("y",big_ydata)
 
 	if show_level > 0:
 		show=True
@@ -102,6 +99,11 @@ def umbrella_plotter(filenames,bins=20,subdir=None,show_level=2):
 	mplot.graph2D(xdata,big_ydata,show=show,filename=plotfile,ytitles=labels,xlab="MD Step",ylab="Reaction Coordinate")
 
 def umbrella_helper_2dist(atoms,weights,coord_range,num_windows,force_constant,harmonic_width,subdir=None,samples=1000,graph=False):
+	
+	import mcol
+	import mout
+	import os
+	import mplot
 
 	assert len(atoms) == 4
 	assert len(weights) == 2
@@ -179,8 +181,6 @@ def umbrella_helper_2dist(atoms,weights,coord_range,num_windows,force_constant,h
 		    out_rst.close()
 		    mout.out("File written to "+mcol.file+subdir+"/window_"+str(i+1).zfill(2)+".RST")
 	
-	import mplot
-
 	xdata = []
 	big_ydata = []
 
@@ -239,6 +239,11 @@ def umbrella_helper_2dist(atoms,weights,coord_range,num_windows,force_constant,h
 		out_dat.close()
 
 def umb_rst_2prot(atoms,weights,coord_range,num_windows,force_constant,harmonic_width,subdir=None,samples=1000,graph=False,adiab_windows=True,fix_angle=None,fix_third=None):
+	
+	import mcol
+	import mout
+	import os
+	import mplot
 
 	assert len(atoms) == 6
 	assert len(weights) == 2
@@ -540,8 +545,6 @@ def umb_rst_2prot(atoms,weights,coord_range,num_windows,force_constant,harmonic_
 			    out_rst.close()
 			    mout.out("File written to "+mcol.file+subdir+"/adiab_"+str(i+1).zfill(2)+".RST")
 	
-	import mplot
-
 	xdata = []
 	big_ydata = []
 
@@ -600,6 +603,10 @@ def umb_rst_2prot(atoms,weights,coord_range,num_windows,force_constant,harmonic_
 		out_dat.close()
 
 def umb_rst_2prot_new(atoms,weights,coord_range,num_windows,force_constant,harmonic_width,subdir=None,samples=1000,graph=False,adiab_windows=True,fix_angle=None,fix_third=None,add_len=None):
+
+	import mcol
+	import mout
+	import os
 
 	assert len(atoms) == 6
 	assert len(weights) == 2
@@ -890,6 +897,10 @@ def umb_rst_2prot_new(atoms,weights,coord_range,num_windows,force_constant,harmo
 
 def umb_rst_2prot_1rc(atoms,weights,coord_range,num_windows,force_constant,harmonic_width,subdir=None,samples=1000,graph=False,adiab_windows=False,fix_length=False):
 
+	import mcol
+	import mout
+	import os
+
 	assert len(atoms) == 6
 	assert len(weights) == 2
 
@@ -1061,6 +1072,10 @@ def umb_rst_2prot_1rc(atoms,weights,coord_range,num_windows,force_constant,harmo
 		mout.warningOut("Adiabatic windows not implemented")
 
 def umb_rst_2prot_asy(atoms,weights,coord_range,num_windows,force_constant,harmonic_width,subdir=None,samples=1000,graph=False,adiab_windows=True,reverse=False):
+
+	import mcol
+	import mout
+	import os
 
 	num_windows = num_windows//2+1
 
@@ -1366,6 +1381,9 @@ def par3(x,r3,rk3):
 
 def prep4amber(system):
 
+	import mcol
+	import mout
+
 	# Fix histidine residue names
 	if "HSD" in str(system.residues):
 		i = system.rename_residues("HSD","HID",verbosity=0)
@@ -1498,6 +1516,9 @@ def prep4amber(system):
 
 def amber2charmm(system):
 
+	import mcol
+	import mout
+
 	# Fix histidine residue names
 	if "HSD" in str(system.residues):
 		i = system.rename_residues("HSD","HID",verbosity=0)
@@ -1628,6 +1649,7 @@ def amber2charmm(system):
 	# 	mout.out("Fixed atom names in "+mcol.result+str(i)+mcol.clear+" instances of "+mcol.arg+"ATP")
 
 def parseRST(filename,key,convert_to_float=True):
+
 	import re
 
 	file = open(filename, "r")
