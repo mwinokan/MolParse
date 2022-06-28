@@ -3,6 +3,55 @@
 
 import numpy as np
 
+def find_barrier_stationary_points(xdata,ydata,yerr,reduction_order=2,show=False):
+
+	import scipy.signal as sps
+
+	# find the x-location of the stationary points
+
+	maxima_indices = sps.argrelextrema(np.array(ydata), np.greater)[0]
+	minima_indices = sps.argrelextrema(np.array(ydata), np.less)[0]
+
+	max_coords = []
+	for i in maxima_indices:
+		max_coords.append([xdata[i],ydata[i],yerr[i]])
+
+	min_coords = []
+	for i in minima_indices:
+		min_coords.append([xdata[i],ydata[i],yerr[i]])
+
+	# print(maxima)
+	# print(minima)
+
+	if reduction_order == 2:
+		maxima_ys = [p[1] for p in max_coords]
+		highest_maxima_index = maxima_ys.index(max(maxima_ys))
+
+		max_coords = [max_coords[highest_maxima_index]]
+
+		maxima_x = max_coords[0][0]
+
+		min_before = [p for p in min_coords if p[0] < maxima_x]
+		min_after = [p for p in min_coords if p[0] > maxima_x]
+
+		min_before = [p for p in min_before if p[1] == min([p[1] for p in min_before])]
+		min_after = [p for p in min_after if p[1] == min([p[1] for p in min_after])]
+
+		min_coords = min_before + min_after
+
+	if show:
+		import matplotlib.pyplot as plt
+		fig,ax = plt.subplots()
+
+		plt.plot(xdata,ydata)
+		
+		plt.errorbar([p[0] for p in max_coords],[p[1] for p in max_coords],yerr=[p[2] for p in max_coords],fmt="o")
+		plt.errorbar([p[0] for p in min_coords],[p[1] for p in min_coords],yerr=[p[2] for p in min_coords],fmt="o")
+
+		plt.show()
+
+	return min_coords,max_coords
+
 def eckartFit(xdata,ydata):
 
 
