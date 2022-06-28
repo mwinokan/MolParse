@@ -1,4 +1,9 @@
 
+# timekeeping
+
+# import time
+# start_time = time.time()
+
 # import functions
 
 # Custom IO
@@ -87,4 +92,5 @@ from . import dl_poly
 from . import dna
 from . import signal
 from . import tunnel
-# from . import analysis
+
+# print(f"--- amp.__init__ time: {time.time() - start_time} seconds ---")
