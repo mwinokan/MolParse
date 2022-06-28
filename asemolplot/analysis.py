@@ -1,12 +1,4 @@
 
-import mcol # https://github.com/mwinokan/MPyTools
-import mout # https://github.com/mwinokan/MPyTools
-import mplot # https://github.com/mwinokan/MPyTools
-
-import ase
-
-import numpy as np
-
 def getAtomLabel(trajectory,index,full=False):
   atom_symbols = trajectory[0].get_chemical_symbols()
   atom_tags = trajectory[0].get_tags()
@@ -39,37 +31,14 @@ def getBondLabel(trajectory,index_pair,full=False):
   else:
     return bond_title
 
-def bondLengthStats(trajectory,
-                    index_pair,
-                    printScript=False,
-                    verbosity=1,
-                    timestep=None,
-                    yUnit="Angstroms",
-                    fitMin=None,fitMax=None,
-                    returnData=False,
-                    dataFile=None):
-
-  # atom_symbols = trajectory[0].get_chemical_symbols()
-  # atom_tags = trajectory[0].get_tags()
+def bondLengthStats(trajectory,index_pair,printScript=False,verbosity=1,timestep=None,yUnit="Angstroms",fitMin=None,fitMax=None,returnData=False,dataFile=None):
+  
+  import mcol
+  import mout
+  import mplot
 
   index1 = index_pair[0]
   index2 = index_pair[1]
-
-  # atom_symbol1 = atom_symbols[index1]
-  # atom_symbol2 = atom_symbols[index2]
-  # if atom_tags[index1] != 0:
-  #   atom_tag1 = str(atom_tags[index1])
-  # else:
-  #   atom_tag1 = ""
-  # if atom_tags[index2] != 0:
-  #   atom_tag2 = str(atom_tags[index2])
-  # else:
-  #   atom_tag2 = ""
-
-  # atom_label1 = atom_symbol1+str(atom_tag1)+"["+str(index1)+"]"
-  # atom_label2 = atom_symbol2+str(atom_tag2)+"["+str(index2)+"]"
-  # # labels = [atom_label1, atom_label2]
-  # bond_title = atom_symbol1+str(atom_tag1)+"-"+atom_symbol2+str(atom_tag2)+" bond ["+str(index1)+"-"+str(index2)+"]"
 
   bond_title = getBondLabel(trajectory,index_pair)
 
@@ -91,7 +60,6 @@ def bondLengthStats(trajectory,
       if timestep is None:
         xdata.append(n)
       else:
-        # xdata.append(n*timestep/ase.units.fs)
         xdata.append(n*timestep)
 
       dist = atoms.get_distance(index1,index2)
@@ -112,8 +80,12 @@ def bondLengthStats(trajectory,
   else:
     return val, err, bond_title
 
-
 def bondAngleStats(trajectory,index_triplet,printScript=False,verbosity=1,timestep=None,fitMin=None,fitMax=None,yUnit="degrees",returnData=False,dataFile=None):
+
+  import mcol
+  import mout
+  import mplot
+  from ase.units import fs
 
   atom_symbols = trajectory[0].get_chemical_symbols()
   atom_tags = trajectory[0].get_tags()
@@ -161,7 +133,7 @@ def bondAngleStats(trajectory,index_triplet,printScript=False,verbosity=1,timest
       if timestep is None:
         xdata.append(n)
       else:
-        xdata.append(n*timestep/ase.units.fs)
+        xdata.append(n*timestep/fs)
 
       ang = atoms.get_angle(index1,index2,index3)
 
@@ -194,6 +166,8 @@ def getCentreOfMass(atoms,verbosity=1):
   return this_com
 
 def getRMSD(atoms,reference=None,verbosity=1):
+
+  import mout
 
   if reference is None:
     CoM = getCentreOfMass(atoms,verbosity=verbosity-1)
@@ -244,7 +218,9 @@ def getAngle(position1,position2,position3):
 
 def getPositions(atoms):
 
-  if isinstance(atoms,ase.Atoms):
+  from ase import Atoms
+
+  if isinstance(atoms,Atoms):
     # ASE ATOMS
     positions = atoms.get_positions()
   elif isinstance(atoms,list):
@@ -256,3 +232,4 @@ def getPositions(atoms):
     positions = atoms.positions
 
   return positions
+  
