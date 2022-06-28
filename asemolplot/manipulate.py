@@ -35,14 +35,14 @@ def interpolate(input1,input2,frames=10,verbosity=2,smooth=False,indices=None):
 			for index in indices:
 				atom = system.atoms[index]
 
-			if smooth:
-				atom.position = smooth_interpolate(input1.atoms[index].np_pos,
-												   input2.atoms[index].np_pos,
-												   frames,i)
-			else:
-				atom.position = simple_interpolate(input1.atoms[index].np_pos,
-												   input2.atoms[index].np_pos,
-												   frames,i)
+				if smooth:
+					atom.position = smooth_interpolate(input1.atoms[index].np_pos,
+													   input2.atoms[index].np_pos,
+													   frames,i)
+				else:
+					atom.position = simple_interpolate(input1.atoms[index].np_pos,
+													   input2.atoms[index].np_pos,
+													   frames,i)
 
 		else:
 			for index,atom in enumerate(system.atoms):
