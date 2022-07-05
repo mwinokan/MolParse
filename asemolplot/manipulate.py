@@ -1,7 +1,7 @@
 
-def interpolate(input1,input2,frames=10,verbosity=2,smooth=False,indices=None):
+def interpolate(input1,input2,frames=10,verbosity=2,smooth=False,indices=None,frame_padding=0):
 	import mout
-	from ase import aseatoms
+	from ase import Atoms as aseatoms
 	from .system import System
 
 	if verbosity > 0:
@@ -10,6 +10,7 @@ def interpolate(input1,input2,frames=10,verbosity=2,smooth=False,indices=None):
 		mout.varOut("input1",str(input1))
 		mout.varOut("input2",str(input2))
 		mout.varOut("frames",frames)
+		mout.varOut("frame_padding",frame_padding)
 
 	if isinstance(input1,aseatoms):
 		mout.out("Input1 = ase.Atoms")
@@ -24,7 +25,11 @@ def interpolate(input1,input2,frames=10,verbosity=2,smooth=False,indices=None):
 
 	system_array=[]
 
-	for i in range(frames): 
+	iterange = range(-frame_padding,frames+frame_padding)
+
+	print(iterange)
+
+	for i in iterange: 
 
 		system.name = "Interpolation Frame "+str(i)
 
