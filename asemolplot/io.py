@@ -127,6 +127,8 @@ def parsePDB(pdb,systemName=None,index=1,fix_indices=True,fix_atomnames=True,ver
   from .system import System
   from .chain import Chain
   from .residue import Residue
+  import mout
+  import mcol
 
   try:
     index = int(index)
@@ -225,6 +227,8 @@ def parsePDB(pdb,systemName=None,index=1,fix_indices=True,fix_atomnames=True,ver
             if line.startswith("ENDMDL") and not searching:
               break
             elif line.startswith("END") and not searching:
+              break
+            elif line.startswith("# All scores below are weighted scores, not raw scores.") and not searching:
               break
             elif line.startswith("TER"):
               if verbosity > 1:
