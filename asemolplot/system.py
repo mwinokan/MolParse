@@ -362,9 +362,16 @@ class System:
     ase_atoms.rotate(angle,vector,center=center)
     self.set_coordinates(ase_atoms)
 
-  def copy(self):
-    import copy
-    return copy.deepcopy(self)
+  def copy(self,fast=False):
+    if fast:
+      new_sys = System(self.name)
+      for chain in self.chains:
+        new_sys.add_chain(chain.copy(fast=fast))
+      new_sys.box = self.box
+      return new_sys
+    else:
+      import copy
+      return copy.deepcopy(self)
 
   def __repr__(self):
     return self.name

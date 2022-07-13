@@ -160,9 +160,15 @@ class Residue:
                       mcol.warning+" in residue "+
                       mcol.arg+self.name)
 
-  def copy(self):
-    import copy
-    return copy.deepcopy(self)
+  def copy(self,fast=False):
+    if fast:
+      new_residue = Residue(self.name,self.number,self.chain)
+      for atom in self.atoms:
+        new_residue.addAtom(atom.copy(fast=fast))
+      return new_residue
+    else:
+      import copy
+      return copy.deepcopy(self)
 
   def get_distance(self,i,j):
     if type(i) is str:

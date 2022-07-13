@@ -113,9 +113,15 @@ class Chain:
               mcol.error+" could not be found in residue"+
               mcol.arg+search_residue+" of chain "+mcol.arg+self.name,fatal=True,code="Chain.1")
 
-  def copy(self):
-    import copy
-    return copy.deepcopy(self)
+  def copy(self,fast=False):
+    if fast:
+      new_chain = Chain(self.name)
+      for residue in self.residues:
+        new_chain.add_residue(residue.copy(fast=fast))
+      return new_chain
+    else:
+      import copy
+      return copy.deepcopy(self)
 
   def __repr__(self):
     return self.name
