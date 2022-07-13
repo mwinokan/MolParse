@@ -21,7 +21,8 @@ def interpolate(input1,input2,frames=10,verbosity=2,smooth=False,indices=None,fr
 		mout.out(str(type(input1)))
 		mout.errorOut("Not supported yet",fatal=True)
 
-	system = input1.copy()
+	# these copy calls take a very long time
+	system = input1.copy(fast=False)
 
 	system_array=[]
 
@@ -58,7 +59,8 @@ def interpolate(input1,input2,frames=10,verbosity=2,smooth=False,indices=None,fr
 													   input2.atoms[index].np_pos,
 													   frames,i)
 			
-		system_array.append(system.copy())
+		# these copy calls take up a very long time
+		system_array.append(system.copy(fast=False))
 
 	return system_array
 
