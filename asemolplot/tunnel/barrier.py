@@ -2,12 +2,15 @@
 # import math
 
 
-def find_barrier_stationary_points(xdata,ydata,yerr,reduction_order=2,show=False):
+def find_barrier_stationary_points(xdata,ydata,yerr=None,reduction_order=2,show=False,tshicut=None,tslocut=None):
 	import numpy as np
 
 	import scipy.signal as sps
 
 	# find the x-location of the stationary points
+
+	if yerr is None:
+		yerr = [None for x in xdata]
 
 	maxima_indices = sps.argrelextrema(np.array(ydata), np.greater)[0]
 	minima_indices = sps.argrelextrema(np.array(ydata), np.less)[0]
@@ -20,11 +23,29 @@ def find_barrier_stationary_points(xdata,ydata,yerr,reduction_order=2,show=False
 	for i in minima_indices:
 		min_coords.append([xdata[i],ydata[i],yerr[i]])
 
-	# print(maxima)
-	# print(minima)
-
 	if reduction_order == 2:
-		maxima_ys = [p[1] for p in max_coords]
+
+		maxima_ys = []
+		for p in max_coords:
+			valid = True
+			if tshicut is not None and p[0] >= tshicut:
+				valid = False
+			elif tslocut is not None and p[0] <= tslocut:
+				valid = False
+
+			if valid:
+				maxima_ys.append(p[1])
+			else:
+				maxima_ys.append(-1)
+
+		# if tshicut is not None:
+		# 	if tslocut is not None:
+		# 		maxima_ys = [p[1] for p in max_coords if p[0] <= tshicut and p[0] >= tslocut]
+		# 	else:
+		# 		maxima_ys = [p[1] for p in max_coords if p[0] <= tshicut]
+		# 		# maxima_ys = [p[1] for p in max_coords if p[0] >= tslocut]
+		# else:
+		# 	maxima_ys = [p[1] for p in max_coords]
 		highest_maxima_index = maxima_ys.index(max(maxima_ys))
 
 		max_coords = [max_coords[highest_maxima_index]]
@@ -52,11 +73,8 @@ def find_barrier_stationary_points(xdata,ydata,yerr,reduction_order=2,show=False
 
 	return min_coords,max_coords
 
-def eckartFit(xdata,ydata):
-
-
-
-	return None
+# def eckartFit(xdata,ydata):
+# 	return None
 
 def sqrt(x):
 	import numpy as np
