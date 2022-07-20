@@ -1,4 +1,179 @@
 
+from .hijack import FakeAtoms, FakeSurfaceCalculator
+import mout
+import mcol
+
+from ase.optimize import BFGS
+
+class NDFES(object):
+
+	def __init__(self, outdir, n_coords):
+		mout.debugHeader("NDFES.__init__()")
+		self._pmf = None
+		self._meta = None
+		self._calc = None
+		self.outdir = outdir
+		self.checkpoint = f'{outdir}/checkpoint'
+		self.metafile = f'{outdir}/metafile'
+		self.n_coords = n_coords
+		super(NDFES, self).__init__()
+	
+	def run(self,method="vfep",binlength=0.2,temperature=300,script="eureka.sh"):
+		mout.debugHeader("NDFES.run()")
+
+		mout.varOut("metafile",self.metafile,valCol=mcol.file)
+		mout.varOut("checkpoint",self.checkpoint,valCol=mcol.file)
+		mout.varOut("method",f'{method}',valCol=mcol.arg)
+		mout.varOut("temperature",f'{temperature}',unit="K",valCol=mcol.arg)
+		mout.varOut("script",f'{script}',valCol=mcol.file)
+
+		import os
+		amp_path = os.environ['MWAMPPATH']
+		script = f'{amp_path}/asemolplot/ndfes/{script}'
+
+		length_str = ""
+		for i in range(self.n_coords):
+			length_str += f"-w {binlength} "
+
+		mout.headerOut("Running ndfes...")
+		os.system(f'{script} --{method} -c {self.checkpoint} {length_str} {self.metafile} -t {temperature} > {self.outdir}/ndfes.log')
+
+	@property
+	def pmf(self):
+		if self._pmf is None:
+			self.generate_pmf_object()
+		return self._pmf
+
+	@property
+	def meta(self):
+		if self._meta is None:
+			self.generate_pmf_object()
+		return self._meta
+
+	@property
+	def calc(self):
+		return self._calc
+	
+	@calc.setter
+	def calc(self,arg):
+		self._calc = arg
+
+	def generate_pmf_object(self):
+		mout.debugHeader("NDFES.generate_pmf_object()")
+		try:
+			import ndfes
+		except:
+			mout.errorOut("Missing ndfes library. Try sourcing $MWSHPATH/load_ndfes.sh",fatal=True)
+
+		meta = ndfes.Metafile(self.metafile)
+		pmf = ndfes.interpolator([self.checkpoint],meta)
+
+		self._meta = meta
+		self._pmf = pmf
+
+	def plot_2d_fes(self,dims):
+		mout.debugHeader("NDFES.plot_2d_fes()")
+		try:
+			import ndfes
+		except:
+			mout.errorOut("Missing ndfes library. Try sourcing $MWSHPATH/load_ndfes.sh",fatal=True)
+
+		mout.varOut("checkpoint",f'{self.checkpoint}',valCol=mcol.file)
+
+		ndgrid = ndfes.NDUniformRegularGrid()
+		for d in dims:
+			ndgrid.add_dim_using_delta(d[0],d[1],d[2])
+
+		pts = ndgrid.get_list_of_tuples()
+
+		vals = self.pmf(pts)
+
+		# Print the PMF to a file
+		fh = open(f'{self.outdir}/2dfes.dat',"w")
+		for pt,val in zip(pts,vals):
+		    # if pt[0] == -1.0: fh.write("\n")
+
+			# collapse onto 2d
+
+			if val > 1000:
+				continue
+
+			fh.write("%15.5f %15.5f %20.10e\n"%(pt[0]-pt[1],pt[2]-pt[3],val))
+		
+		fh.close()
+
+	def plot_window_pmf(self,i1,i2):
+		import matplotlib.pyplot as plt
+		import numpy as np
+		mout.debugHeader("NDFES.plot_window_pmf()")
+
+		try:
+			import ndfes
+		except:
+			mout.errorOut("Missing ndfes library. Try: "+mcol.file+"source $MWSHPATH/load_ndfes.sh",fatal=True)
+
+		cs = self.meta.get_centers()
+
+		# reactant free energy
+		self.reactant = cs[i1]
+		mout.varOut(f"Reactant Free Energy (window {i1})",self.pmf([self.reactant])[0],unit="kcal/mol")
+
+		# product free energy
+		self.product = cs[i2]
+		mout.varOut(f"Product Free Energy (window {i2})",self.pmf([self.product])[0],unit="kcal/mol")
+
+		cs = cs[0:5]
+
+		# reshape into 1d
+
+		vals = self.pmf(cs)
+
+		x = []
+		y = []
+
+		mout.headerOut("Window Centres & Energies:")
+
+		for c,v in zip(cs,vals):
+			x.append(c[0]-c[1]+c[2]-c[3])
+			print(c,v)
+			if v < 1000:
+				y.append(v)
+			else:
+				y.append(None)
+
+		fig,ax = plt.subplots()
+
+		plt.scatter(x,y)
+
+		plt.savefig(f"{self.outdir}/window_pmf.png")
+
+		plt.close()
+
+	def find_minima(self,start,fmax=0.01,optimizer=BFGS):
+		mout.debugHeader("NDFES.find_minima()")
+
+		# mout.varOut("start",list(start))
+
+		atoms = FakeAtoms(start)
+
+		# print("1",atoms.get_positions())
+
+		self.calc = FakeSurfaceCalculator(self.pmf)
+
+		atoms.calc = self.calc
+		
+		# print("2",atoms.get_positions())
+
+		# from ase.optimize import BFGS
+
+		dyn = optimizer(atoms)
+		
+		# print("3",atoms.get_positions())
+
+		dyn.run(fmax=fmax)
+
+		mout.varOut("Post-BFGS RC's",atoms.rcs)
+
 def pullx2rco(infile,output,n_coords):
 	"""convert a pullx to an rco file"""
 
@@ -27,7 +202,7 @@ def pullx2rco(infile,output,n_coords):
 		RCs = []
 
 		for i in range(n_coords):
-			x = float(split_line[1+8*i])
+			x = float(split_line[1+8*i])*10
 			RCs.append(x)
 			if mins[i] is None or x < mins[i]:
 				mins[i] = x
@@ -55,7 +230,7 @@ def prepare_metafile(outdir,winkeys,n_coords,force):
 	import mcol
 	import os
 	
-	mout.debugOut("prepare_metafile()")
+	mout.debugHeader("prepare_metafile()")
 
 	os.system(f'mkdir -p {outdir}')
 
@@ -85,115 +260,9 @@ def prepare_metafile(outdir,winkeys,n_coords,force):
 
 		metafile.write(f'{outdir}/{key}.rco')
 		for x in centres:
-			metafile.write(f' {x:.6f} {force:.2f}')
+			metafile.write(f' {x*10:.6f} {force:.2f}')
 		metafile.write('\n')
 
 	for i in range(n_coords):
-		mout.varOut(f"RC{i+1} range: ",f'({all_mins[i]} - {all_maxs[i]})',unit="nm")
-
-def run_ndfes(outdir,n_coords,method="vfep",binlength=0.2,temperature=300,script="eureka.sh"):
-	import os
-	import mout
-	import mcol
-
-	mout.varOut("metafile",f'{outdir}/metafile',valCol=mcol.file)
-	mout.varOut("checkpoint",f'{outdir}/checkpoint',valCol=mcol.file)
-	mout.varOut("method",f'{method}',valCol=mcol.arg)
-	mout.varOut("temperature",f'{temperature}',unit="K",valCol=mcol.arg)
-	mout.varOut("script",f'{script}',valCol=mcol.file)
-
-	amp_path = os.environ['MWAMPPATH']
-	script = f'{amp_path}/asemolplot/ndfes/{script}'
-
-	length_str = ""
-	for i in range(n_coords):
-		length_str += f"-w {binlength} "
-
-	mout.headerOut("Running ndfes...")
-	os.system(f'{script} --{method} -c {outdir}/checkpoint {length_str} {outdir}/metafile -t {temperature} > {outdir}/ndfes.log')
-
-def plot_2d_fes(outdir,dims):
-	try:
-		import ndfes
-	except:
-		mout.errorOut("Missing ndfes library. Try sourcing $MWSHPATH/load_ndfes.sh",fatal=True)
-	import mout
-	import mcol
-
-	mout.varOut("checkpoint",f'{outdir}/checkpoint',valCol=mcol.file)
-
-	ndgrid = ndfes.NDUniformRegularGrid()
-	for d in dims:
-		ndgrid.add_dim_using_delta(d[0],d[1],d[2])
-
-	pts = ndgrid.get_list_of_tuples()
-
-	meta,pmf = generate_pmf_object(f'{outdir}/checkpoint',f'{outdir}/metafile')
-
-	vals = pmf(pts)
-
-	# Print the PMF to a file
-	fh = open(f'{outdir}/2dfes.dat',"w")
-	for pt,val in zip(pts,vals):
-	    # if pt[0] == -1.0: fh.write("\n")
-
-		# collapse onto 2d
-
-		if val > 1000:
-			continue
-
-		fh.write("%15.5f %15.5f %20.10e\n"%(pt[0]-pt[1],pt[2]-pt[3],val))
-	
-	fh.close()
-
-def generate_pmf_object(checkpoint,metafile):
-	try:
-		import ndfes
-	except:
-		mout.errorOut("Missing ndfes library. Try sourcing $MWSHPATH/load_ndfes.sh",fatal=True)
-
-	meta = ndfes.Metafile(metafile)
-	pmf = ndfes.interpolator([checkpoint],meta)
-
-	return meta,pmf
-
-def plot_window_pmf(outdir,i1,i2):
-	import mout
-	import mcol
-	import matplotlib.pyplot as plt
-	import numpy as np
-
-	meta,pmf = generate_pmf_object(f'{outdir}/checkpoint',f'{outdir}/metafile')
-
-	cs = meta.get_centers()
-
-	# reactant free energy
-	print(pmf([cs[i1]]))
-
-	# product free energy
-	print(pmf([cs[i2]]))
-
-	cs = cs[0:5]
-
-	# reshape into 1d
-
-	vals = pmf(cs)
-
-	x = []
-	y = []
-
-	for c,v in zip(cs,vals):
-		x.append(c[0]-c[1]+c[2]-c[3])
-		print(c)
-		if v < 1000:
-			y.append(v)
-		else:
-			y.append(None)
-
-	fig,ax = plt.subplots()
-
-	plt.scatter(x,y)
-
-	plt.savefig(f"{outdir}/window_pmf.png")
-
-	plt.close()
+		mout.varOut(f"RC{i+1} range: ",f'({all_mins[i]} - {all_maxs[i]})',unit="Å")
+## use scipy to find minima and maxima in the 4D PMF
