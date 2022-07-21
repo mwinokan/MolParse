@@ -5,6 +5,7 @@ import mcol
 
 from ase.optimize import BFGS
 from ase.units import kcal,mol
+from ase.calculators.singlepoint import SinglePointCalculator
 
 class NDFES(object):
 
@@ -205,33 +206,41 @@ class NDFES(object):
 
 		from ase.neb import NEB
 		from ase.optimize import MDMin
+		if constrain_final:
+			from ase.constraints import FixAtoms
 
 		start = FakeAtoms(start)
 		final = FakeAtoms(final)
 
+		# final.calc = FakeSurfaceCalculator(self.pmf,suppress_warnings=suppress_warnings)
+		# final.get_potential_energy()
+		# final.calc = SinglePointCalculator(final,**final.calc.results)
+
 		if constraints: 
 			start.set_constraints(constraints[0],constraints[1],constraints[2])
-			final.set_constraints(constraints[0],constraints[1],constraints[2])
-			# del start.constraints
-			# del final.constraints
-			# start.set_constraints(constraints)
-			# final.set_constraints(constraints)
+			if constrain_final:
+				final.set_constraints(constraints[0],constraints[1],constraints[2],FixAtoms(indices=[i for i in range(self.n_coords)]))
+			else:
+				final.set_constraints(constraints[0],constraints[1],constraints[2])
+		elif constrain_final:
+			final.set_constraint(FixAtoms(indices=[i for i in range(self.n_coords)]))
 
 		images = [start]
 		images += [start.copy() for i in range(n_images-2)]
 		images += [final]
+
+		mout.headerOut("Endpoint Constraints:")
+		print(images[0].constraints)
+		print(images[-1].constraints)
 
 		neb = NEB(images)
 
 		neb.interpolate()
 
 		# for image in images[0:-1]:
+		# for image in images[1:n_images-2]:
 		for image in images[1:-1]:
 			image.calc = FakeSurfaceCalculator(self.pmf,suppress_warnings=suppress_warnings)
-
-		if constrain_final:
-			from ase.constraints import FixAtoms
-			images[-1].set_constraints(FixAtoms(indices=[i for i in range(self.n_coords)]))
 
 		dyn = optimizer(neb, trajectory=traj)
 
