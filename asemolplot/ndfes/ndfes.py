@@ -62,7 +62,11 @@ class NDFES(object):
 	def energy_along_path(self,rcs):
 		energies = []
 		for xs in rcs:
-			energies.append(self.pmf([xs]))
+			e = self.pmf([xs])
+			if e > 1000:
+				energies.append(None)
+			else:
+				energies.append(e*(kcal/mol))
 		return energies
 
 	def generate_pmf_object(self):
