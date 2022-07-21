@@ -4,6 +4,7 @@ import mout
 import mcol
 
 from ase.optimize import BFGS
+from ase.units import kcal,mol
 
 class NDFES(object):
 
@@ -57,6 +58,12 @@ class NDFES(object):
 	@calc.setter
 	def calc(self,arg):
 		self._calc = arg
+
+	def energy_along_path(self,rcs):
+		energies = []
+		for xs in rcs:
+			energies.append(self.pmf([xs]))
+		return energies
 
 	def generate_pmf_object(self):
 		mout.debugHeader("NDFES.generate_pmf_object()")
@@ -137,7 +144,7 @@ class NDFES(object):
 			x.append(c[0]-c[1]+c[2]-c[3])
 			print(c,v)
 			if v < 1000:
-				y.append(v)
+				y.append(v*(kcal/mol))
 			else:
 				y.append(None)
 
@@ -149,7 +156,7 @@ class NDFES(object):
 
 		plt.close()
 
-	def find_minima(self,start,fmax=0.01,optimizer=BFGS):
+	def find_minima(self,start,fmax=0.01,optimizer=BFGS,suppress_warnings=False):
 		mout.debugHeader("NDFES.find_minima()")
 
 		# mout.varOut("start",list(start))
@@ -158,7 +165,7 @@ class NDFES(object):
 
 		# print("1",atoms.get_positions())
 
-		self.calc = FakeSurfaceCalculator(self.pmf)
+		self.calc = FakeSurfaceCalculator(self.pmf,suppress_warnings=suppress_warnings)
 
 		atoms.calc = self.calc
 		
@@ -173,6 +180,58 @@ class NDFES(object):
 		dyn.run(fmax=fmax)
 
 		mout.varOut("Post-BFGS RC's",atoms.rcs)
+
+	def constraint_pair(self,index,locut=0.5,hicut=3.0,k=20):
+		from ase.constraints import Hookean
+		print(index,locut,hicut)
+		if locut > hicut:
+			c1 = Hookean(a1=index,a2=(1,0,0,-locut),k=k)
+			c2 = Hookean(a1=index,a2=(-1,0,0,hicut),k=k)
+		else:
+			c1 = Hookean(a1=index,a2=(1,0,0,-hicut),k=k)
+			c2 = Hookean(a1=index,a2=(-1,0,0,locut),k=k)
+		return [c1,c2]
+
+	def find_path(self,start,final,n_images=10,fmax=0.01,traj=None,optimizer=BFGS,suppress_warnings=True,constraints=None,constrain_final=False):
+
+		assert n_images > 2
+
+		if traj is None:
+			traj = f"{self.outdir}/neb_rcs.traj"
+
+		from ase.neb import NEB
+		from ase.optimize import MDMin
+
+		start = FakeAtoms(start)
+		final = FakeAtoms(final)
+
+		if constraints: 
+			start.set_constraints(constraints[0],constraints[1],constraints[2])
+			final.set_constraints(constraints[0],constraints[1],constraints[2])
+			# del start.constraints
+			# del final.constraints
+			# start.set_constraints(constraints)
+			# final.set_constraints(constraints)
+
+		images = [start]
+		images += [start.copy() for i in range(n_images-2)]
+		images += [final]
+
+		neb = NEB(images)
+
+		neb.interpolate()
+
+		# for image in images[0:-1]:
+		for image in images[1:-1]:
+			image.calc = FakeSurfaceCalculator(self.pmf,suppress_warnings=suppress_warnings)
+
+		if constrain_final:
+			from ase.constraints import FixAtoms
+			images[-1].set_constraints(FixAtoms(indices=[i for i in range(self.n_coords)]))
+
+		dyn = optimizer(neb, trajectory=traj)
+
+		dyn.run(fmax=fmax)
 
 def pullx2rco(infile,output,n_coords):
 	"""convert a pullx to an rco file"""
