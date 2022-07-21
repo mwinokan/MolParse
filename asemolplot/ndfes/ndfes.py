@@ -212,7 +212,12 @@ class NDFES(object):
 		start = FakeAtoms(start)
 		final = FakeAtoms(final)
 
-		# final.calc = FakeSurfaceCalculator(self.pmf,suppress_warnings=suppress_warnings)
+		start.calc = FakeSurfaceCalculator(self.pmf,suppress_warnings=suppress_warnings)
+		final.calc = FakeSurfaceCalculator(self.pmf,suppress_warnings=suppress_warnings)
+		
+		start.get_forces()
+		final.get_forces()
+
 		# final.get_potential_energy()
 		# final.calc = SinglePointCalculator(final,**final.calc.results)
 
