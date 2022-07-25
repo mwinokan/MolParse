@@ -25,6 +25,23 @@ class FakeAtoms(Atoms):
 			
 			Atoms.__init__(self,**kwargs)
 
+	def set_constraints(self,locut=0.5,hicut=3.0,k=20):
+
+		del self.constraints
+
+		from ase.constraints import Hookean
+
+		constraints = []
+
+		for i in range(self.__len__()):
+			constraints.append(Hookean(a1=i,a2=(1,0,0,-hicut),k=k))
+			constraints.append(Hookean(a1=i,a2=(-1,0,0,locut),k=k))
+
+			# constraints.append(Hookean(a1=i,a2=(-1,0,0,-hicut),k=k))
+			# constraints.append(Hookean(a1=i,a2=(1,0,0,locut),k=k))
+
+		self.set_constraint(constraints)
+
 	def positions_from_rcs(self,rcs):
 		positions = []
 		for r in rcs:
@@ -55,11 +72,12 @@ class FakeSurfaceCalculator(Calculator):
 
 	nolabel = True
 
-	def __init__(self, pmf, delta=0.001, **kwargs):
+	def __init__(self, pmf, delta=0.001, suppress_warnings=False, **kwargs):
 		mout.debugHeader(f"FakeSurfaceCalculator.__init__(delta={delta})")
 		self._pmf = pmf
 		self.delta = delta
 		self._history = []
+		self._warnings = not suppress_warnings
 		Calculator.__init__(self, **kwargs)
 	
 	def pmf(self,arg):
@@ -107,7 +125,7 @@ class FakeSurfaceCalculator(Calculator):
 			# print(f"xs+h: {xs+h}")
 			# print(f"pmf(xs+h): {y_h}")
 
-			if y > 40:
+			if self._warnings and y > 40:
 				mout.warningOut("Unsampled region!")
 				mout.out(f"{mcol.warning}xs: {xs}, pmf(xs): {y}")
 
