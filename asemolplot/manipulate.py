@@ -1,5 +1,13 @@
 
-def interpolate(input1,input2,frames=10,verbosity=2,smooth=False,indices=None,frame_padding=0):
+# to-do:
+
+'''
+
+	improve performance by creating a smaller subsystem just of varying atoms, interpolating those and writing them to disk. Then use SED or other bash tools to insert the modifications into the original pdb
+
+'''
+
+def interpolate(input1,input2,frames=10,verbosity=2,smooth=False,indices=None,frame_padding=0,grid=False):
 	import mout
 	from ase import Atoms as aseatoms
 	from .system import System
@@ -21,48 +29,117 @@ def interpolate(input1,input2,frames=10,verbosity=2,smooth=False,indices=None,fr
 		mout.out(str(type(input1)))
 		mout.errorOut("Not supported yet",fatal=True)
 
+	if isinstance(input2,aseatoms):
+		mout.out("Input2 = ase.Atoms")
+		mout.errorOut("Not supported yet",fatal=True)
+	elif isinstance(input2,System):
+		mout.out("Input2 = amp.system")
+	else:
+		mout.out(str(type(input2)))
+		mout.errorOut("Not supported yet",fatal=True)
+
 	# these copy calls take a very long time
 	system = input1.copy(fast=False)
 
-	system_array=[]
+	if not grid:
 
-	iterange = range(-frame_padding,frames+frame_padding)
+		system_array=[]
+		iterange = range(-frame_padding,frames+frame_padding)
 
-	print(iterange)
+		print(iterange)
 
-	for i in iterange: 
+		for i in iterange: 
 
-		system.name = "Interpolation Frame "+str(i)
+			system.name = "Interpolation Frame "+str(i)
 
-		if indices is not None:
-			for index in indices:
-				atom = system.atoms[index]
+			if indices is not None:
+				for index in indices:
+					atom = system.atoms[index]
 
-				if smooth:
-					atom.position = smooth_interpolate(input1.atoms[index].np_pos,
-													   input2.atoms[index].np_pos,
-													   frames,i)
-				else:
-					atom.position = simple_interpolate(input1.atoms[index].np_pos,
-													   input2.atoms[index].np_pos,
-													   frames,i)
+					if smooth:
+						atom.position = smooth_interpolate(input1.atoms[index].np_pos,
+														   input2.atoms[index].np_pos,
+														   frames,i)
+					else:
+						atom.position = simple_interpolate(input1.atoms[index].np_pos,
+														   input2.atoms[index].np_pos,
+														   frames,i)
 
-		else:
-			for index,atom in enumerate(system.atoms):
+			else:
+				for index,atom in enumerate(system.atoms):
 
-				if smooth:
-					atom.position = smooth_interpolate(input1.atoms[index].np_pos,
-													   input2.atoms[index].np_pos,
-													   frames,i)
-				else:
-					atom.position = simple_interpolate(input1.atoms[index].np_pos,
-													   input2.atoms[index].np_pos,
-													   frames,i)
-			
-		# these copy calls take up a very long time
-		system_array.append(system.copy(fast=False))
+					if smooth:
+						atom.position = smooth_interpolate(input1.atoms[index].np_pos,
+														   input2.atoms[index].np_pos,
+														   frames,i)
+					else:
+						atom.position = simple_interpolate(input1.atoms[index].np_pos,
+														   input2.atoms[index].np_pos,
+														   frames,i)
+				
+			# these copy calls take up a very long time
+			system_array.append(system.copy(fast=False))
 
-	return system_array
+		return system_array
+
+	else:
+
+		assert indices is not None
+		assert len(indices) == 2
+		assert frames <= 10
+		assert not smooth
+
+		'''
+
+		AA AB AC
+		BA BB BC
+		CA CB CC
+
+		'''
+
+		import numpy as np
+
+		system_array = np.empty((2*frame_padding+frames,2*frame_padding+frames),dtype=object)
+		# names_array = np.empty((2*frame_padding+frames,2*frame_padding+frames),dtype=str)
+
+		iterange = range(-frame_padding,frames+frame_padding)
+
+		system_array[frame_padding][frame_padding] = input1.copy()
+		system_array[-1-frame_padding][-1-frame_padding] = input2.copy()
+
+		corner1 = input1.copy()
+		corner2 = input1.copy()
+
+		corner1.atoms[indices[0]].position = input2.atoms[indices[0]].position
+		corner2.atoms[indices[1]].position = input2.atoms[indices[1]].position
+
+		# naming scheme
+		from string import ascii_uppercase
+
+		names = []
+		for i in range(frame_padding):
+			names.append(ascii_uppercase[-frame_padding+i])
+		for i in range(frames):
+			names.append(f'{i}')
+		for i in range(frame_padding):
+			names.append(ascii_uppercase[i])
+
+		for i in iterange:
+			for j in iterange:
+				
+				if system_array[i][j] is None:
+					system = input1.copy()
+
+					atom1 = system.atoms[indices[0]]
+					atom1.position = simple_interpolate(input1.atoms[indices[0]].np_pos,corner1.atoms[indices[0]].np_pos,frames,i)
+					atom2 = system.atoms[indices[1]]
+					atom2.position = simple_interpolate(input1.atoms[indices[1]].np_pos,corner2.atoms[indices[1]].np_pos,frames,j)
+					
+					system_array[i][j] = system
+				
+				system_array[i][j].name = f'{names[i]}{names[j]}'
+
+		return system_array
 
 def simple_interpolate(start,end,frames,i):
 	return start+i*(end-start)/(frames-1)
