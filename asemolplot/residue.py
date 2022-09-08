@@ -74,7 +74,9 @@ class Residue:
       this_type = "ION"
     elif self.name.startswith(('DPPC','POPC')):
       this_type = "LIP"
-    elif self.name.startswith(("ALA","ARG","ASN","ASP","ATP",
+    elif self.name.startswith(('ATP')):
+      this_type = "LIG"
+    elif self.name.startswith(("ALA","ARG","ASN","ASP",
                                "CYS","GLN","GLU","GLY","HSD",
                                "HSE","HIS","ILE","LEU","LYS",
                                "MET","PHE","PRO","SER","THR",
