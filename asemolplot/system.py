@@ -10,6 +10,45 @@ class System:
     self.bondlist=None
     self.box = None
 
+  def autoname_chains(self):
+    import mout
+
+    pro_count = 0
+    lig_count = 0
+    dna_count = 0
+    sol_count = 0
+
+    for i,chain in enumerate(self.chains):
+      if chain.type == 'PRO':
+        if lig_count > 4:
+          mout.warningOut("Too many protein chains!")
+          chain.name = 'P'
+        else:
+          chain.name = 'ABCDE'[pro_count]
+          pro_count += 1
+      elif chain.type == 'DNA':
+        if lig_count > 4:
+          mout.warningOut("Too many DNA chains!")
+          chain.name = 'X'
+        else:
+          chain.name = 'XYZ'[dna_count]
+          dna_count += 1
+      elif chain.type == 'LIG':
+        if lig_count > 1:
+          mout.warningOut("Multiple ligand chains!")
+        chain.name = 'L'
+        lig_count += 1
+      elif chain.type == 'SOL':
+        if sol_count > 1:
+          mout.warningOut("Multiple solvent chains!")
+        chain.name = 'W'
+        sol_count += 1
+      elif chain.type == 'ION':
+        chain.name = chain.residues[0].name[0]
+
+      if chain.name in [c.name for c in self.chains[0:i]]:
+        mout.warningOut(f"Ambiguous naming! Multiple chains named {chain.name}!")
+
   def check_indices(self):
 
     for index,atom in enumerate(self.atoms):
@@ -63,20 +102,19 @@ class System:
       charge += atom.charge
     return charge
 
-  def summary(self,res_limit=20):
+  def summary(self,res_limit=10):
     import mout
     import mcol
+    reset = mcol.clear+mcol.bold
     if self.description is not None:
-      mout.headerOut("\n"+self.description)
+      mout.headerOut(f'\n"{mcol.underline}{self.description}{reset}"')
     mout.headerOut("\nSystem "+mcol.arg+self.name+
                    mcol.clear+mcol.bold+" contains "+
                    mcol.result+str(self.num_chains)+
                    mcol.clear+mcol.bold+" chains:")
-    for chain in self.chains:
-      mout.headerOut("Chain "+mcol.result+chain.name+
-                     mcol.clear+mcol.bold+" contains "+
-                     mcol.result+str(chain.num_residues)+
-                     mcol.clear+mcol.bold+" residues:")
+    for i,chain in enumerate(self.chains):
+      mout.headerOut(f'Chain[{mcol.arg}{i}{reset}] {mcol.result}{chain.name}{reset} ({mcol.varType}{chain.type}{reset}) [#={mcol.result}{chain.num_residues}{reset}] =',end=' ')
+
       names = ""
       for name in chain.res_names[:res_limit]:
         names += name+" "
