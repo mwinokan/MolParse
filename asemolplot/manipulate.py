@@ -1,4 +1,5 @@
 
+
 # to-do:
 
 '''
@@ -7,7 +8,7 @@
 
 '''
 
-def interpolate(input1,input2,frames=10,verbosity=2,smooth=False,indices=None,frame_padding=0,grid=False):
+def interpolate(input1,input2,frames=10,verbosity=2,smooth=False,indices=None,frame_padding=0,grid=False,ratios=None):
 	import mout
 	from ase import Atoms as aseatoms
 	from .system import System
@@ -48,34 +49,33 @@ def interpolate(input1,input2,frames=10,verbosity=2,smooth=False,indices=None,fr
 
 		print(iterange)
 
+		if indices is None and ratios is not None:
+			mout.warningOut("Ratios not used as no indices passed!")
+		elif indices is not None:
+			assert len(ratios) == len(indices)
+
 		for i in iterange: 
 
 			system.name = "Interpolation Frame "+str(i)
 
 			if indices is not None:
-				for index in indices:
+				for j,index in enumerate(indices):
 					atom = system.atoms[index]
 
-					if smooth:
-						atom.position = smooth_interpolate(input1.atoms[index].np_pos,
-														   input2.atoms[index].np_pos,
-														   frames,i)
+					if ratios is not None:
+						atom.position = custom_interpolate(input1.atoms[index].np_pos,input2.atoms[index].np_pos,ratios[j][i])
+					elif smooth:
+						atom.position = smooth_interpolate(input1.atoms[index].np_pos,input2.atoms[index].np_pos,frames,i)
 					else:
-						atom.position = simple_interpolate(input1.atoms[index].np_pos,
-														   input2.atoms[index].np_pos,
-														   frames,i)
+						atom.position = simple_interpolate(input1.atoms[index].np_pos,input2.atoms[index].np_pos,frames,i)
 
 			else:
-				for index,atom in enumerate(system.atoms):
 
+				for index,atom in enumerate(system.atoms):
 					if smooth:
-						atom.position = smooth_interpolate(input1.atoms[index].np_pos,
-														   input2.atoms[index].np_pos,
-														   frames,i)
+						atom.position = smooth_interpolate(input1.atoms[index].np_pos,input2.atoms[index].np_pos,frames,i)
 					else:
-						atom.position = simple_interpolate(input1.atoms[index].np_pos,
-														   input2.atoms[index].np_pos,
-														   frames,i)
+						atom.position = simple_interpolate(input1.atoms[index].np_pos,input2.atoms[index].np_pos,frames,i)
 				
 			# these copy calls take up a very long time
 			system_array.append(system.copy(fast=False))
@@ -88,6 +88,7 @@ def interpolate(input1,input2,frames=10,verbosity=2,smooth=False,indices=None,fr
 		assert len(indices) == 2
 		assert frames <= 10
 		assert not smooth
+		assert ratios is None
 
 		'''
 
@@ -141,6 +142,9 @@ def interpolate(input1,input2,frames=10,verbosity=2,smooth=False,indices=None,fr
 
 		return system_array
 
+def custom_interpolate(start,end,ratio):
+	return start+ratio*(end-start)
+
 def simple_interpolate(start,end,frames,i):
 	return start+i*(end-start)/(frames-1)
 
@@ -150,6 +154,14 @@ def smooth_interpolate(start,end,frames,i):
 	return start + 0.5*(1-math.cos(angle))*(end-start)
 
 def auto_rotate(atoms):
+
+	from .system import System
+
+	if isinstance(atoms,System):
+		sys = atoms
+		atoms = auto_rotate(sys.ase_atoms)
+		sys.set_coordinates(atoms)
+		return sys
 
 	atoms = atoms.copy()
 
@@ -174,5 +186,18 @@ def auto_rotate(atoms):
 
 	# rotate the normal onto the Z-axis
 	atoms.rotate(normal_vector,'z')
+
+	# rotate the position vector of the first atom onto the x-axis
+	positions = atoms.get_positions()
+	index0_vector = np.array([np.dot(positions[0],[1,0,0]),np.dot(positions[0],[0,1,0]),0])
+	index1_vector = np.array([np.dot(positions[1],[1,0,0]),np.dot(positions[1],[0,1,0]),0])
+	# index0_vector = positions[0]
+	# index1_vector = positions[1]
+	
+	if index0_vector[0] < 0:
+		index0_vector = [index0_vector[0],index0_vector[1],0]
+	# print(index0_vector)
+	atoms.rotate(index1_vector-index0_vector,'x')
+	# print(atoms.get_positions()[0])
 
 	return atoms
