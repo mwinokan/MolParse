@@ -134,7 +134,8 @@ def parsePDB(pdb,systemName=None,index=1,fix_indices=True,fix_atomnames=True,ver
     index = int(index)
   except:
     if index == ":":
-      mout.warningOut("Parsing all models in "+mcol.file+pdb)
+      if verbosity > 0:
+        mout.warningOut("Parsing all models in "+mcol.file+pdb)
     else:
       mout.errorOut("Unsupported index: '"+str(index)+"'",fatal=True)
 
