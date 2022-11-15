@@ -385,10 +385,13 @@ class System:
     writeCJSON(filename,self,use_atom_types=use_atom_types,gulp_names=gulp_names)
 
   def set_coordinates(self,reference):
-
     if type(reference) is str:
       from ase.io import read
       atoms = read(reference)
+    elif isinstance(reference,list):
+      for index,atom in enumerate(self.atoms):
+        atom.position = reference[index]
+      return
     else:
       atoms = reference
 
@@ -399,6 +402,25 @@ class System:
     ase_atoms = self.ase_atoms
     ase_atoms.rotate(angle,vector,center=center)
     self.set_coordinates(ase_atoms)
+
+  def view(self):
+    from .gui import view
+    view(self)
+
+  def auto_rotate(self):
+    from .manipulate import auto_rotate
+    ase_atoms = self.ase_atoms
+    ase_atoms = auto_rotate(ase_atoms)
+    self.set_coordinates(ase_atoms)
+
+  def align_to(self,target):
+    from ase.build import minimize_rotation_and_translation
+    if isinstance(target,System):
+      target = target.ase_atoms
+    atoms = self.ase_atoms
+    minimize_rotation_and_translation(target,atoms)
+    self.set_coordinates(atoms)
+    return atoms
 
   def copy(self,fast=False):
     if fast:
