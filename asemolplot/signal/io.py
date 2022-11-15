@@ -93,9 +93,12 @@ def parseDat(filename,num_columns=2,header_rows=1,delimiter=' ',debug=False,pre_
 				new_ys = []
 				for x,ys in zip(x,big_y):
 
-					print("DEBUG",x,ys)
+					# print("DEBUG",x,ys)
 
-					if math.isnan(float(x)):
+					try:
+						if math.isnan(float(x)):
+							continue
+					except ValueError:
 						continue
 					new_x.append(x)
 					new_ys.append(ys)
