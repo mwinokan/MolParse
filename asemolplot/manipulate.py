@@ -40,7 +40,7 @@ def interpolate(input1,input2,frames=10,verbosity=2,smooth=False,indices=None,fr
 		mout.errorOut("Not supported yet",fatal=True)
 
 	# these copy calls take a very long time
-	system = input1.copy(fast=False)
+	system = input1.copy(alt=True)
 
 	if not grid:
 
@@ -53,6 +53,8 @@ def interpolate(input1,input2,frames=10,verbosity=2,smooth=False,indices=None,fr
 			mout.warningOut("Ratios not used as no indices passed!")
 		elif indices is not None:
 			assert len(ratios) == len(indices)
+		
+		# mout.progress(0,frames+2*frame_padding)
 
 		for i in iterange: 
 
@@ -78,8 +80,10 @@ def interpolate(input1,input2,frames=10,verbosity=2,smooth=False,indices=None,fr
 						atom.position = simple_interpolate(input1.atoms[index].np_pos,input2.atoms[index].np_pos,frames,i)
 				
 			# these copy calls take up a very long time
-			system_array.append(system.copy(fast=False))
+			system_array.append(system.copy(alt=True))
+			mout.progress(i+frame_padding,frames+2*frame_padding)
 
+		mout.progress(frames+2*frame_padding,frames+2*frame_padding)
 		return system_array
 
 	else:
@@ -105,11 +109,11 @@ def interpolate(input1,input2,frames=10,verbosity=2,smooth=False,indices=None,fr
 
 		iterange = range(-frame_padding,frames+frame_padding)
 
-		system_array[frame_padding][frame_padding] = input1.copy()
-		system_array[-1-frame_padding][-1-frame_padding] = input2.copy()
+		system_array[frame_padding][frame_padding] = input1.copy(alt=True)
+		system_array[-1-frame_padding][-1-frame_padding] = input2.copy(alt=True)
 
-		corner1 = input1.copy()
-		corner2 = input1.copy()
+		corner1 = input1.copy(alt=True)
+		corner2 = input1.copy(alt=True)
 
 		corner1.atoms[indices[0]].position = input2.atoms[indices[0]].position
 		corner2.atoms[indices[1]].position = input2.atoms[indices[1]].position
