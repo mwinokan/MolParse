@@ -4,7 +4,6 @@
 
 def find_barrier_stationary_points(xdata,ydata,yerr=None,reduction_order=2,show=False,tshicut=None,tslocut=None):
 	import numpy as np
-
 	import scipy.signal as sps
 
 	# find the x-location of the stationary points
@@ -46,6 +45,18 @@ def find_barrier_stationary_points(xdata,ydata,yerr=None,reduction_order=2,show=
 		# 		# maxima_ys = [p[1] for p in max_coords if p[0] >= tslocut]
 		# else:
 		# 	maxima_ys = [p[1] for p in max_coords]
+
+		if not maxima_ys:
+			import mout
+			mout.warningOut("No maximas found!")
+			# import matplotlib.pyplot as plt
+			# print(min_coords)
+			# plt.plot(xdata,ydata)
+			# plt.scatter([c[0] for c in min_coords],[c[1] for c in min_coords])
+			# plt.show()
+			assert len(min_coords) == 1
+			return min_coords, []
+
 		highest_maxima_index = maxima_ys.index(max(maxima_ys))
 
 		max_coords = [max_coords[highest_maxima_index]]

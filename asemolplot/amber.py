@@ -1,4 +1,6 @@
 
+"""Experimental and undocumented. Speak to Max."""
+
 from .restraint import Restraint
 
 def write_amber_restraints(restraint_list,filename_prefix,zfill=2,filename_suffix=".RST"):

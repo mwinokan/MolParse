@@ -1,14 +1,19 @@
 
 class Chain:
+  """Class containing covalently bonded Residue objects
+
+  These objects should not be created by the user, 
+  but constructed automatically when parsing a 
+  coordinate file via amp.parsePDB or otherwise"""
 
   def __init__(self,name):
-
     self._name = name
     self.residues = []
     self.fix_names()
 
   @property
   def name(self):
+    """Name (str) property"""
     return self._name
 
   @name.setter
@@ -17,6 +22,7 @@ class Chain:
     self.fix_names()
 
   def fix_names(self):
+    """Ensure child-classes have correct parent name"""
     for residue in self.residues:
       residue.chain = self._name
     for atom in self.atoms:
@@ -24,9 +30,11 @@ class Chain:
 
   @property
   def num_residues(self):
+    """Number of child residues (int)"""
     return len(self.residues)
 
   def add_residue(self,residue):
+    """Add a Residue to the chain"""
     import mcol
     import mout
     from .residue import Residue
@@ -37,6 +45,7 @@ class Chain:
 
   @property
   def num_atoms(self):
+    """Number of child Atoms (int)"""
     num_atoms = 0
     for residue in self.residues:
       num_atoms += residue.num_atoms
@@ -44,13 +53,16 @@ class Chain:
 
   @property
   def type(self):
+    """Classification of Residues in this Chain"""
     return self.residues[0].type
 
   @property
   def res_names(self):
+    """All child Residue names (list)"""
     return [res.name for res in self.residues]
 
   def atom_names(self,wRes=False,noPrime=False):
+    """All child Atom names (list)"""
     names_list = []
     for residue in self.residues:
       names_list.append(residue.atom_names(wRes=wRes,noPrime=noPrime))
@@ -58,6 +70,7 @@ class Chain:
 
   @property
   def atomic_numbers(self):
+    """All child atomic numbers (list)"""
     number_list = []
     for residue in self.residues:
       number_list.append(residue.atomic_numbers)
@@ -65,6 +78,7 @@ class Chain:
 
   @property
   def positions(self):
+    """All child Atom positions (list)"""
     positions_list = []
     for residue in self.residues:
       positions_list += residue.positions
@@ -72,6 +86,7 @@ class Chain:
 
   @property
   def charges(self):
+    """All child Atom charges (list)"""
     charges = []
     for residue in self.residues:
       charges += residue.charges
@@ -79,6 +94,7 @@ class Chain:
 
   @property
   def masses(self):
+    """All child Atom masses (list)"""
     masses = []
     for residue in self.residues:
       masses += residue.masses
@@ -86,6 +102,7 @@ class Chain:
 
   @property
   def atoms(self):
+    """All child Atom objects (list)"""
     atoms = []
     for residue in self.residues:
       atoms += residue.atoms
@@ -93,12 +110,15 @@ class Chain:
 
   @property
   def FF_atomtypes(self):
+    """All child Atom atomtypes (list)"""
     atomtype_list = []
     for residue in self.residues:
       atomtype_list += residue.FF_atomtypes
     return atomtype_list
 
   def index_from_name(self,namestring):
+    """Find the index of an atom by its name.
+    Assumes formatting resname_atomname"""
     import mcol
     import mout
 
@@ -114,6 +134,7 @@ class Chain:
               mcol.arg+search_residue+" of chain "+mcol.arg+self.name,fatal=True,code="Chain.1")
 
   def copy(self,fast=False):
+    """return a deepcopy of the Chain"""
     if fast:
       new_chain = Chain(self.name)
       for residue in self.residues:
@@ -122,10 +143,13 @@ class Chain:
     else:
       import copy
       return copy.deepcopy(self)
-
+  @property
   def __repr__(self):
     return self.name
+  @property
   def __str__(self):
     return self.name
+  @property
   def __len__(self):
     return len(self.residues)
+    

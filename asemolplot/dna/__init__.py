@@ -1,3 +1,8 @@
+"""
+
+amp.dna
+
+"""
 
 from .dna import get_hbond_pairs
 from .dna import make_5ter

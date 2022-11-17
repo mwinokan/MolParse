@@ -1,7 +1,13 @@
 
 class System:
 
-  def __init__(self,name):
+  """Top-level object for molecular systems
+
+  These objects should not be created by the user, 
+  but constructed automatically when parsing a 
+  coordinate file via amp.parsePDB or otherwise"""
+
+  def __init__(self,name: str):
 
     self.name = name
     self.description = None
@@ -11,6 +17,7 @@ class System:
     self.box = None
 
   def autoname_chains(self):
+    """Automatically name chains"""
     import mout
 
     pro_count = 0
@@ -27,7 +34,7 @@ class System:
           chain.name = 'ABCDE'[pro_count]
           pro_count += 1
       elif chain.type == 'DNA':
-        if lig_count > 4:
+        if lig_count > 3:
           mout.warningOut("Too many DNA chains!")
           chain.name = 'X'
         else:
@@ -50,12 +57,14 @@ class System:
         mout.warningOut(f"Ambiguous naming! Multiple chains named {chain.name}!")
 
   def check_indices(self):
+    """Print all child Atoms who's indices are incorrect"""
 
     for index,atom in enumerate(self.atoms):
       if index != atom.index:
         print(index,atom.index,atom.name,atom.residue)
 
   def fix_indices(self):
+    """Fix all child Atoms' indices"""
     for index,atom in enumerate(self.atoms):
       atom.index = index
 
@@ -63,6 +72,7 @@ class System:
       residue.number = index
 
   def fix_atomnames(self,verbosity=1):
+    """Attempt to fix all child Atom names"""
     import mout
     count=0
     for index,atom in enumerate(self.atoms):
@@ -77,11 +87,13 @@ class System:
       mout.warningOut("Fixed "+str(count)+" atom names which appeared to have cycled.")
 
   def add_chain(self,chain):
+    """Add a child Chain"""
     from .chain import Chain
     assert isinstance(chain,Chain)
     self.chains.append(chain)
 
   def add_system(self,system):
+    """Merge another system to this one"""
 
     for chain in system.chains:
       self.add_chain(chain)
@@ -90,6 +102,7 @@ class System:
 
   @property
   def num_atoms(self):
+    """Number of child Atoms (int)"""
     num_atoms = 0
     for chain in self.chains:
       num_atoms += chain.num_atoms
@@ -97,12 +110,14 @@ class System:
 
   @property
   def charge(self):
+    """Total charge (float)"""
     charge = 0
     for atom in self.atoms:
       charge += atom.charge
     return charge
 
   def summary(self,res_limit=10):
+    """Print a summary of the System"""
     import mout
     import mcol
     reset = mcol.clear+mcol.bold
@@ -125,16 +140,19 @@ class System:
 
   @property
   def num_chains(self):
+    """Number of child Chains (int)"""
     return len(self.chains)
 
   @property
   def chain_names(self):
+    """Get all Chain names (list)"""
     names = []
     for chain in self.chains:
       names.append(chain.name)
     return names
 
-  def rename_atoms(self,old,new,res_filter=None,verbosity=2):
+  def rename_atoms(self,old:str,new:str,res_filter:str=None,verbosity:int=2):
+    """Rename all matching atoms"""
     import mcol
     import mout
     count=0
@@ -154,7 +172,8 @@ class System:
                         mcol.warning+" to "+mcol.arg+new+mcol.warning+" with res_filter "+mcol.arg+res_filter)
     return count
 
-  def rename_residues(self,old,new,verbosity=2):
+  def rename_residues(self,old:str,new:str,verbosity=2):
+    """Rename all matching residues"""
     import mcol
     import mout
     count=0
@@ -168,7 +187,8 @@ class System:
                       mcol.warning+" to "+mcol.arg+new)
     return count
 
-  def get_chain(self,name):
+  def get_chain(self,name:str):
+    """Get Chain by name"""
     import mout
     import mcol
     for chain in self.chains:
@@ -177,6 +197,7 @@ class System:
     mout.errorOut("Chain with name "+mcol.arg+name+mcol.error+" not found.",fatal=True)
 
   def remove_chain(self,name,verbosity=1):
+    """Delete Chain by name"""
     import mcol
     import mout
     for index,chain in enumerate(self.chains):
@@ -187,7 +208,8 @@ class System:
         return chain
     mout.errorOut("Chain with name "+mcol.arg+name+mcol.error+" not found.",fatal=True)
     
-  def remove_heterogens(self,verbosity=1):
+  def remove_heterogens(self,verbosity:int=1):
+    """Remove HETATM entries"""
     import mcol
     import mout
     del_list = []
@@ -199,7 +221,8 @@ class System:
     if verbosity > 0:
       mout.warningOut("Removed "+mcol.result+str(number_deleted)+mcol.warning+" heterogens")
 
-  def remove_atoms_by_index(self,del_list,verbosity=1):
+  def remove_atoms_by_index(self,del_list:list,verbosity:int=1):
+    """Remove Atoms by their index"""
     import mcol
     import mout
 
@@ -218,7 +241,8 @@ class System:
                               mcol.arg+residue.name+str([residue.number]))
     return number_deleted
 
-  def get_atom_by_index(self,index,pdb=True):
+  def get_atom_by_index(self,index:int,pdb:bool=True):
+    """Get Atom by its index"""
     for atom in self.atoms:
       if pdb:
         if atom.pdb_index == index:
@@ -227,7 +251,8 @@ class System:
         if atom.index == index:
           return atom
 
-  def remove_atoms(self,name,res_filter=None,verbosity=2):
+  def remove_atoms(self,name:str,res_filter:str=None,verbosity:int=2):
+    """Remove Atoms by their name"""
     import mcol
     import mout
 
@@ -254,6 +279,7 @@ class System:
     return number_deleted
 
   def atom_names(self,wRes=False,noPrime=False):
+    """Get all child Atom names (list)"""
     names_list = []
     for chain in self.chains:
       names_list.append(chain.atom_names(wRes=wRes,noPrime=noPrime))
@@ -261,6 +287,7 @@ class System:
 
   @property
   def atomic_numbers(self):
+    """Get all child Atom atomic numbers (list)"""
     number_list = []
     for chain in self.chains:
       number_list.append(chain.atomic_numbers)
@@ -268,6 +295,7 @@ class System:
 
   @property
   def positions(self):
+    """Get all child Atom positions (list)"""
     positions_list = []
     for chain in self.chains:
       positions_list += chain.positions
@@ -275,6 +303,7 @@ class System:
 
   @property
   def charges(self):
+    """Get all child Atom charges (list)"""
     charges = []
     for chain in self.chains:
       charges += chain.charges
@@ -282,6 +311,7 @@ class System:
 
   @property
   def masses(self):
+    """Get all child Atom masses (list)"""
     masses = []
     for chain in self.chains:
       masses += chain.masses
@@ -289,15 +319,23 @@ class System:
 
   @property
   def atoms(self):
+    """Get all child Atoms (list)"""
     atoms = []
     for chain in self.chains:
       atoms += chain.atoms
     return atoms
 
   def centre_of_mass(self,set=None,shift=None):
+    """Calculate centre of mass"""
     return CoM(set=set,shift=shift)
 
   def CoM(self,set=None,shift=None):
+    """Calculate or manipulate the system's centre of mass. 
+
+    if not set and not shift: return CoM
+    if set: move the System to the CoM
+    if shift: move the System by the specified vector"""
+
     import mout
     import numpy as np
 
@@ -346,6 +384,7 @@ class System:
 
   @property
   def QM_indices(self):
+    """Return list of Atom indices with the QM flag"""
     index_list = []
     for index,atom in enumerate(self.atoms):
       if atom.QM:
@@ -354,6 +393,7 @@ class System:
 
   @property
   def residues(self):
+    """Get all child Residues (list)"""
     residues = []
     for chain in self.chains:
       residues += chain.residues
@@ -361,14 +401,17 @@ class System:
 
   @property
   def res_names(self):
+    """Get all child Residue names (list)"""
     return [res.name for res in self.residues]
 
   @property
   def num_residues(self):
+    """Get number of child Residue (int)"""
     return len(self.residues)
 
   @property
   def FF_atomtypes(self):
+    """Get all child Atom atomtypes (list)"""
     atomtype_list = []
     for chain in self.chains:
       atomtype_list += chain.FF_atomtypes
@@ -376,15 +419,18 @@ class System:
 
   @property
   def ase_atoms(self):
+    """Construct an equivalent ase.Atoms object"""
     from .io import write, read
     write("__temp__.pdb",self,verbosity=0)
     return read("__temp__.pdb",verbosity=0)
 
   def write_CJSON(self,filename,use_atom_types=False,gulp_names=False):
+    """Export a CJSON"""
     from .io import writeCJSON
     writeCJSON(filename,self,use_atom_types=use_atom_types,gulp_names=gulp_names)
 
   def set_coordinates(self,reference):
+    """Set all coordinates according to a reference ase.Atoms object"""
     if type(reference) is str:
       from ase.io import read
       atoms = read(reference)
@@ -399,21 +445,25 @@ class System:
       atom.position = atoms[index].position
 
   def rotate(self,angle,vector,center=(0,0,0)):
+    """Rotate the system (see ase.Atoms.rotate)"""
     ase_atoms = self.ase_atoms
     ase_atoms.rotate(angle,vector,center=center)
     self.set_coordinates(ase_atoms)
 
   def view(self):
+    """View the system with ASE"""
     from .gui import view
     view(self)
 
   def auto_rotate(self):
+    """Rotate the system into the XY plane"""
     from .manipulate import auto_rotate
     ase_atoms = self.ase_atoms
     ase_atoms = auto_rotate(ase_atoms)
     self.set_coordinates(ase_atoms)
 
   def align_to(self,target):
+    """Minimise rotation w.r.t. a target"""
     from ase.build import minimize_rotation_and_translation
     if isinstance(target,System):
       target = target.ase_atoms
@@ -423,6 +473,7 @@ class System:
     return atoms
 
   def copy(self,fast=False):
+    """Return a deepcopy of the System"""
     if fast:
       new_sys = System(self.name)
       for chain in self.chains:
@@ -433,7 +484,9 @@ class System:
       import copy
       return copy.deepcopy(self)
 
+  @property
   def __repr__(self):
     return self.name
+  @property
   def __str__(self):
     return self.name

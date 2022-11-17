@@ -1,10 +1,77 @@
+"""
 
-# timekeeping
+ASE Molecular Plotting
 
-# import time
-# start_time = time.time()
 
-# import functions
+Extensions to ASE for tasks involving molecular simulations
+
+It is recommended to import as the acronym:
+
+	import asemolplot as amp
+
+Key features:
+
+* Parsing coordinate files into System objects:
+
+	system = amp.parsePDB(filestr)
+	system = amp.parseGRO(filestr)
+
+* Parsing of delimited text files:
+
+	see help(amp.signal.parseDat)
+
+* Writing System or ase.Atoms objects or lists thereof:
+
+	amp.write(filestr,object)
+
+* An object oriented approach to molecular system hierarchies:
+
+	amp.System
+	    |__ amp.Chain
+	            |__ amp.Residue
+	                    |__ amp.Atom
+
+	See also:
+
+	help(amp.System), help(amp.Chain), etc.
+
+* Wrappers for common ASE methods (with AMP class support):
+
+	amp.read --> ase.io.read
+	amp.write --> ase.io.write
+	amp.view --> ase.visualize.view
+
+* Functions to render images and animations of ASE Atoms:
+
+	with matplotlib:
+		amp.makeImage, 
+		amp.makeImages, 
+		amp.makeAnimation
+
+	with PoVRay:
+		amp.makePovImage, 
+		amp.makePovImages, 
+		amp.makePovAnimation
+
+* Methods relating to DNA:
+
+	see help(amp.dna)
+
+* Finding the stationary points of a double well potential
+
+	see help(amp.tunnel.find_barrier_stationary_points)
+
+* Graphing of common molecular properties:
+
+	see help(amp.graphing)
+
+* Analysis of common molecular properties:
+
+	see help(amp.analysis)
+
+* Tunnel
+
+"""
 
 # Custom IO
 from .io import read
@@ -94,5 +161,3 @@ from . import signal
 from . import tunnel
 
 # from . import ndfes
-
-# print(f"--- amp.__init__ time: {time.time() - start_time} seconds ---")

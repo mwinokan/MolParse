@@ -1,4 +1,6 @@
 
+"""Undocumented. Speak to Max"""
+
 def getAtomLabel(trajectory,index,full=False):
   atom_symbols = trajectory[0].get_chemical_symbols()
   atom_tags = trajectory[0].get_tags()
@@ -232,4 +234,5 @@ def getPositions(atoms):
     positions = atoms.positions
 
   return positions
+  
   

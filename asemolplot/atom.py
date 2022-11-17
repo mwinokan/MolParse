@@ -1,5 +1,10 @@
 
 class Atom:
+  """Fundamental unit for molecular systems.
+
+  These objects should not be created by the user, 
+  but constructed automatically when parsing a 
+  coordinate file via amp.parsePDB or otherwise"""
 
   def __init__(self,name,index,pdb_index,position,residue,chain=None,res_number=None,charge=0.0,FF_atomtype=None,mass=None,LJ_sigma=None,LJ_epsilon=None,QM=False,occupancy=None,temp_factor=None,heterogen=None,charge_str=None,velocity=None):
 
@@ -27,6 +32,7 @@ class Atom:
     self._velocity = velocity
 
   def print(self):
+    """Verbose output of the atom's properties"""
     import mout
     mout.varOut("Atom Name",self._name)
     mout.varOut("Atom Species",self.species)
@@ -37,7 +43,12 @@ class Atom:
     mout.varOut("Atom Chain",self.chain)
     mout.varOut("Atom Residue Number",self.res_number)
 
+  def summary(self):
+    """Summarised output of the atom's properties"""
+    print(f'Atom {self.name}, index={self.index}, pdb_index={self.pdb_index}, res={self.residue}')
+
   def get_name(self,wRes=False,noPrime=False):
+    """Returns a string of resname_atomname"""
     if wRes:
       namestring = self.residue+"_"+self._name
     else:
@@ -48,6 +59,7 @@ class Atom:
       return namestring
 
   def set_name(self,name,verbosity=1):
+    """Rename the atom"""
     if verbosity > 0:
       import mout
       import mcol
@@ -60,6 +72,7 @@ class Atom:
 
   @property
   def name(self):
+    """Name (str) property"""
     return self.get_name()
 
   @name.setter
@@ -68,11 +81,13 @@ class Atom:
 
   @property
   def atomic_number(self):
+    """Atomic number (int) property"""
     from ase.data import atomic_numbers as ase_atomic_numbers # Atom only
     return ase_atomic_numbers[self.species]
 
   @property
   def mass(self):
+    """Atomic mass (float) property"""
     if self._mass is None:
       from ase.data import atomic_masses as ase_atomic_masses # Atom only
       return ase_atomic_masses[self.atomic_number]
@@ -81,32 +96,39 @@ class Atom:
   
   @property
   def position(self):
+    """Cartesian position (list)"""
     return self._position
 
   @property
   def velocity(self):
+    """Cartesian velocity (list)"""
     return self._velocity
 
   @property
   def np_pos(self):
+    """Cartesian position (numpy array)"""
     import numpy as np
     return np.array((self._position[0] ,self._position[1], self._position[2]))
 
   @property
   def np_vel(self):
+    """Cartesian velocity (numpy array)"""
     import numpy as np
     return np.array((self._velocity[0] ,self._velocity[1], self._velocity[2]))
 
   @property
   def x(self):
+    """X-coordinate"""
     return self._position[0]
 
   @property
   def y(self):
+    """Y-coordinate"""
     return self._position[1]
 
   @property
   def z(self):
+    """Z-coordinate"""
     return self._position[2]
 
   @position.setter
@@ -118,13 +140,14 @@ class Atom:
     self._velocity = vel
 
   def copy(self):
+    """Returns a deepcopy of the Atom object"""
     import copy
     return copy.deepcopy(self)
 
-  def summary(self):
-    print(f'Atom {self.name}, index={self.index}, pdb_index={self.pdb_index}, res={self.residue}')
-
+  @property
   def __repr__(self):
     return self.name
+
+  @property
   def __str__(self):
     return self.name

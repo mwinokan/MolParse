@@ -1,15 +1,19 @@
 
-# from importlib import reload
-
 class Residue:
-  def __init__(self,name,number=None,chain=None):
+  """Class for chemical Residue
 
+  These objects should not be created by the user, 
+  but constructed automatically when parsing a 
+  coordinate file via amp.parsePDB or otherwise"""
+
+  def __init__(self,name: str,number: int=None,chain: str=None):
     self._name = name
     self.chain = chain
     self.number = number
     self._atoms = []
 
-  def rename(self,new,verbosity=1):
+  def rename(self,new: str,verbosity: int=1):
+    """Rename the residue"""
     if verbosity > 0:
       import mcol
       import mout
@@ -22,6 +26,7 @@ class Residue:
 
   @property
   def num_atoms(self):
+    """Number of child atoms (int)"""
     return len(self._atoms)
 
   @property
@@ -29,15 +34,17 @@ class Residue:
     return self._name
 
   @name.setter
-  def name(self,name):
+  def name(self,name: str):
     self._name = name
     self.fix_names()
 
   def fix_names(self):
+    """Ensure child Atoms have correct parent name"""
     for atom in self.atoms:
       atom.residue = self._name
 
-  def atom_names(self,wRes=False,noPrime=False):
+  def atom_names(self,wRes: bool=False,noPrime: bool=False):
+    """Returns names of all child Atoms (list)"""
     names_list = []
     for atom in self._atoms:
       names_list.append(atom.get_name(wRes=wRes,noPrime=noPrime))
@@ -45,6 +52,7 @@ class Residue:
 
   @property
   def positions(self):
+    """Returns positions of all child Atoms (list)"""
     positions_list = []
     for atom in self._atoms:
       positions_list.append(atom.position)
@@ -52,6 +60,7 @@ class Residue:
 
   @property
   def atomic_numbers(self):
+    """Returns atomic numbers of all child Atoms (list)"""
     number_list = []
     for atom in self._atoms:
       number_list.append(atom.atomic_number)
@@ -59,6 +68,7 @@ class Residue:
 
   @property
   def FF_atomtypes(self):
+    """Returns atomtypes of all child Atoms (list)"""
     atomtype_list = []
     for atom in self._atoms:
       atomtype_list.append(atom.FF_atomtype)
@@ -66,6 +76,7 @@ class Residue:
 
   @property
   def type(self):
+    """Guess type from residue name"""
     if self.name.startswith(('DA','DT','DC','DG')):
       this_type = "DNA"
     elif self.name.startswith(('SOL','WAT','TIP','T3P')):
@@ -90,15 +101,18 @@ class Residue:
     return this_type
 
   def addAtom(self,atom):
+    """add an Atom"""
     from .atom import Atom
     assert isinstance(atom,Atom)
     self._atoms.append(atom)
 
   def translate(self,vector):
+    """Adjust the position of all atoms in the residue"""
     for atom in self._atoms:
       atom.position = atom.np_pos + vector
 
   def print(self):
+    """Verbose output of the Residue's properties"""
     import mout
     mout.varOut("Residue Name",self.name)
     mout.varOut("Residue Chain",self.chain)
@@ -107,6 +121,7 @@ class Residue:
 
   @property
   def species(self):
+    """Returns species of all child Atoms (list)"""
     species_list = []
     for atom in self._atoms:
       species_list.append(atom.species)
@@ -114,6 +129,7 @@ class Residue:
   
   @property
   def charges(self):
+    """Returns charges of all child Atoms (list)"""
     charges = []
     for atom in self._atoms:
       charges.append(atom.charge)
@@ -121,6 +137,7 @@ class Residue:
 
   @property
   def masses(self):
+    """Returns masses of all child Atoms (list)"""
     masses = []
     for atom in self._atoms:
       masses.append(atom.mass)
@@ -128,9 +145,11 @@ class Residue:
 
   @property
   def atoms(self):
+    """Returns all child Atoms (list)"""
     return self._atoms
 
   def get_atom(self,name):
+    """Get a child Atom by name"""
     for atom in self._atoms:
       if atom.name == name: return atom
 
@@ -142,7 +161,8 @@ class Residue:
                   mcol.arg+self.name+str([self.number]),fatal=False,code="Residue.1")
     return None
 
-  def delete_atom(self,name,verbosity=1):
+  def delete_atom(self,name: str,verbosity: int=1):
+    """Delete a child Atom by name"""
     import mcol
     import mout
     for index,atom in enumerate(self._atoms):
@@ -162,7 +182,8 @@ class Residue:
                       mcol.warning+" in residue "+
                       mcol.arg+self.name)
 
-  def copy(self,fast=False):
+  def copy(self,fast: bool=False):
+    """Return a deepcopy of the Residue"""
     if fast:
       new_residue = Residue(self.name,self.number,self.chain)
       for atom in self.atoms:
@@ -172,7 +193,8 @@ class Residue:
       import copy
       return copy.deepcopy(self)
 
-  def get_distance(self,i,j):
+  def get_distance(self,i: str,j: str):
+    """Get distance between two named atoms"""
     if type(i) is str:
       i = self.get_atom(name=i)
     elif type(i) is int:
@@ -184,7 +206,8 @@ class Residue:
 
     return displacement(i.position,j.position)
 
-  def get_angle(self,i,j,k):
+  def get_angle(self,i: str,j: str,k: str):
+    """Get angle between three named atoms"""
     if type(i) is str:
       i = self.get_atom(name=i)
     elif type(i) is int:
@@ -200,17 +223,20 @@ class Residue:
 
     return angle(i.position,j.position,k.position)
 
-  def centre_of_mass(self,verbosity=1):
+  def centre_of_mass(self,verbosity: int=1):
+    """Calculate the centre of mass of the Residue"""
     return self.CoM(verbosity=verbosity)
 
   def summary(self):
+    """Summarised output of the Residue"""
     import mout
     mout.headerOut(f'\nResidue {self.name}, index={self.number}, #atoms={self.num_atoms}')
 
     for atom in self.atoms:
       print(atom.name,atom.index,atom.pdb_index)
     
-  def CoM(self,verbosity=1):
+  def CoM(self,verbosity: int=1):
+    """Centre of mass of the Residue"""
     import numpy as np
 
     position_list = self.positions
@@ -226,9 +252,12 @@ class Residue:
 
     return centre_of_mass
 
+  @property
   def __repr__(self):
     return self.name
+  @property
   def __str__(self):
     return self.name
+  @property
   def __len__(self):
     return len(self.atoms)
