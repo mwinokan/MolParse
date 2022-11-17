@@ -8,17 +8,28 @@ class Atom:
 
   def __init__(self,name,index,pdb_index,position,residue,chain=None,res_number=None,charge=0.0,FF_atomtype=None,mass=None,LJ_sigma=None,LJ_epsilon=None,QM=False,occupancy=None,temp_factor=None,heterogen=None,charge_str=None,velocity=None):
 
+    # necessary upon init
     self._name = name
-    self._atomic_number = None
-    self.species = name[0]
     self.index = index
-    self.pdb_index = pdb_index
+    self.pdb_index = int(pdb_index)
     self._position = position
     self.residue = residue
+
+    # autodetermined
+    self.species = name[0]
+
     self.chain=chain
-    self.res_number = int(res_number)
-    self.charge = charge
+    self.chain_number = None
+    self._atomic_number = None
+    if res_number:
+      self.res_number = int(res_number)
+    else:
+      self.res_number = None
+    
+    # optional
     self.FF_atomtype = FF_atomtype
+    
+    self.charge = charge
     self._mass = mass
     self.LJ_sigma = LJ_sigma
     self.LJ_epsilon = LJ_epsilon
@@ -30,6 +41,21 @@ class Atom:
     self.ter_line = None
     self.terminal = None
     self._velocity = velocity
+
+  def __deepcopy__(self, memodict={}):
+    copy_object = Atom(self.name, self.index, self.pdb_index, self.position, self.residue)
+    copy_object.chain = self.chain
+    copy_object.res_number = self.res_number
+    copy_object.QM = self.QM
+    copy_object.occupancy = self.occupancy
+    copy_object.temp_factor = self.temp_factor
+    copy_object.heterogen = self.heterogen
+    copy_object.charge_str = self.charge_str
+    copy_object.charge = self.charge
+    copy_object.velocity = self.velocity
+    copy_object.chain_number = self.chain_number
+
+    return copy_object
 
   def print(self):
     """Verbose output of the atom's properties"""
@@ -45,7 +71,7 @@ class Atom:
 
   def summary(self):
     """Summarised output of the atom's properties"""
-    print(f'Atom {self.name}, index={self.index}, pdb_index={self.pdb_index}, res={self.residue}')
+    print(f'Atom {self.name}, index={self.index}, pdb_index={self.pdb_index}, res={self.residue}, res_number={self.res_number}, chain={self.chain}, chain_number={self.chain_number}')
 
   def get_name(self,wRes=False,noPrime=False):
     """Returns a string of resname_atomname"""
@@ -143,6 +169,21 @@ class Atom:
     """Returns a deepcopy of the Atom object"""
     import copy
     return copy.deepcopy(self)
+
+  def is_in_residue(self,residue):
+    from .residue import Residue
+    assert isinstance(residue, Residue)
+
+    # print(f"self: {self.residue}, {self.res_number}, {self.chain}")
+    # print(f"other: {residue.name}, {residue.number}, {residue.chain}")
+
+    if self.residue != residue.name:
+      return False
+    if self.res_number != residue.number:
+      return False
+    if self.chain != residue.chain:
+      return False
+    return True
 
   def __repr__(self):
     return self.name

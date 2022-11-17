@@ -9,6 +9,7 @@ class Chain:
   def __init__(self,name):
     self._name = name
     self.residues = []
+    self.index = None
     self.fix_names()
 
   @property
@@ -39,6 +40,7 @@ class Chain:
     import mout
     from .residue import Residue
     assert isinstance(residue,Residue)
+    residue.set_chain_number(self.index)
     self.residues.append(residue)
     if self.num_residues > 1 and self.residues[-1].type != self.type:
       mout.errorOut(f'Differing residue types in same chain {self.residues[-1]} ({self.residues[-1].type}), {self.residues[0]} ({self.type})')
@@ -143,7 +145,22 @@ class Chain:
     else:
       import copy
       return copy.deepcopy(self)
-  
+
+  def add_atom(self,atom):
+    """add an atom to the chain"""
+    from .residue import Residue
+
+    if self.residues and atom.is_in_residue(self.residues[-1]): 
+      self.residues[-1].add_atom(atom)
+    else:
+      # print(f'adding atom {atom} to new residue {atom.residue}')
+      residue = Residue(atom.residue)
+      residue.index = atom.res_number
+      residue.number = atom.res_number
+      residue.chain = atom.chain
+      residue.add_atom(atom)
+      self.add_residue(residue)
+
   def __repr__(self):
     return self.name
   def __str__(self):

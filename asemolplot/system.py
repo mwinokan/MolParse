@@ -90,6 +90,7 @@ class System:
     """Add a child Chain"""
     from .chain import Chain
     assert isinstance(chain,Chain)
+    chain.index = len(self.chains)
     self.chains.append(chain)
 
   def add_system(self,system):
@@ -472,17 +473,55 @@ class System:
     self.set_coordinates(atoms)
     return atoms
 
-  def copy(self,fast=False):
+  def copy(self,disk=False,alt=False):
     """Return a deepcopy of the System"""
-    if fast:
-      new_sys = System(self.name)
-      for chain in self.chains:
-        new_sys.add_chain(chain.copy(fast=fast))
-      new_sys.box = self.box
-      return new_sys
+    if disk:
+      from .io import write, parseGRO
+      write(f"__temp__.gro",self,verbosity=0)
+      system = parseGRO(f"__temp__.gro",verbosity=0)
+      system.name = self.name
+      return system
+    elif alt:
+      if self.num_chains != len(set([str(c) for c in self.chains])):
+        import mout
+        mout.errorOut("System has duplicate chain names so this copying method will have incorrect chains!")
+      copy_system = System(self.name + " (copy)")
+      for atom in self.atoms:
+        copy_system.add_atom(atom)
+      return copy_system
     else:
       import copy
       return copy.deepcopy(self)
+
+  def subsystem(self,indices,use_pdb_index=True):
+    """Extract a subset of the system by the atom indices"""
+
+    new_system = System(self.name+" (filtered)")
+    new_system.box = self.box
+
+    for index in indices:
+
+      atom = self.get_atom_by_index(index,use_pdb_index=pdb)
+
+      # print(index,atom)
+      if atom is None:
+        continue
+
+      new_system.add_atom(atom)
+
+    return new_system
+
+  def add_atom(self,atom):
+    """add an atom to the system"""
+    from .chain import Chain
+    from .residue import Residue, res_type
+
+    if self.chains and atom.chain == self.chains[-1].name and res_type(atom.residue) == self.chains[-1].residues[-1].type:
+      self.chains[-1].add_atom(atom)
+    else:
+      chain = Chain(atom.chain)
+      chain.add_atom(atom)
+      self.add_chain(chain)
 
   def __repr__(self):
     return self.name

@@ -77,28 +77,11 @@ class Residue:
   @property
   def type(self):
     """Guess type from residue name"""
-    if self.name.startswith(('DA','DT','DC','DG')):
-      this_type = "DNA"
-    elif self.name.startswith(('SOL','WAT','TIP','T3P')):
-      this_type = "SOL"
-    elif self.name.startswith(('ION','MG','CL','NA','SOD','POT','CAL','LIT')):
-      this_type = "ION"
-    elif self.name.startswith(('DPPC','POPC')):
-      this_type = "LIP"
-    elif self.name.startswith(('ATP')):
-      this_type = "LIG"
-    elif self.name.startswith(("ALA","ARG","ASN","ASP",
-                               "CYS","GLN","GLU","GLY","HSD",
-                               "HSE","HIS","ILE","LEU","LYS",
-                               "MET","PHE","PRO","SER","THR",
-                               "TRP","TYR","VAL","HID")):
-      this_type = "PRO"
-    else:
-      import mcol
-      import mout
-      mout.warningOut("Unknown residue type for "+mcol.arg+self.name)
-      this_type = None
-    return this_type
+    return res_type(self.name)
+
+  def add_atom(self,atom):
+    """add an Atom"""
+    self.addAtom(atom)
 
   def addAtom(self,atom):
     """add an Atom"""
@@ -142,6 +125,14 @@ class Residue:
     for atom in self._atoms:
       masses.append(atom.mass)
     return masses
+
+  @property
+  def indices(self):
+    """Returns indices of all child Atoms (list)"""
+    indices = []
+    for atom in self._atoms:
+      indices.append(atom.index)
+    return indices
 
   @property
   def atoms(self):
@@ -252,9 +243,49 @@ class Residue:
 
     return centre_of_mass
 
+  def is_same_as(self,residue):
+    assert isinstance(residue, Residue)
+
+    if self.name != residue.name:
+      return False
+    if self.index != residue.index:
+      return False
+    if self.chain != residue.chain:
+      return False
+    return True
+
+  def set_chain_number(self,index):
+    for atom in self.atoms:
+      atom.chain_number = index
+
   def __repr__(self):
     return self.name
   def __str__(self):
     return self.name
   def __len__(self):
     return len(self.atoms)
+
+def res_type(resname):
+  """Guess type from residue name"""
+  if resname.startswith(('DA','DT','DC','DG')):
+    this_type = "DNA"
+  elif resname.startswith(('SOL','WAT','TIP','T3P')):
+    this_type = "SOL"
+  elif resname.startswith(('ION','MG','CL','NA','SOD','POT','CAL','LIT')):
+    this_type = "ION"
+  elif resname.startswith(('DPPC','POPC')):
+    this_type = "LIP"
+  elif resname.startswith(('ATP')):
+    this_type = "LIG"
+  elif resname.startswith(("ALA","ARG","ASN","ASP",
+                             "CYS","GLN","GLU","GLY","HSD",
+                             "HSE","HIS","ILE","LEU","LYS",
+                             "MET","PHE","PRO","SER","THR",
+                             "TRP","TYR","VAL","HID")):
+    this_type = "PRO"
+  else:
+    import mcol
+    import mout
+    mout.warningOut("Unknown residue type for "+mcol.arg+resname)
+    this_type = None
+  return this_type
