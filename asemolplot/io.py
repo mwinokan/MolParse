@@ -123,7 +123,7 @@ def tagFromLine(line,byResidue):
   except:
     return 0
 
-def parsePDB(pdb,systemName=None,index=1,fix_indices=True,fix_atomnames=True,verbosity=1,debug=False,dry=False):
+def parsePDB(pdb,systemName=None,index=1,fix_indices=True,fix_atomnames=True,autoname_chains=False,verbosity=1,debug=False,dry=False):
   from .system import System
   from .chain import Chain
   from .residue import Residue
@@ -265,7 +265,7 @@ def parsePDB(pdb,systemName=None,index=1,fix_indices=True,fix_atomnames=True,ver
                 if make_new_chain:
                   if chain is not None:
                     system.add_chain(chain)
-                    chain_counter = chain_counter+1
+                    chain_counter += 1
                   chain = Chain(atom.chain)
 
               residue.addAtom(atom)
@@ -288,6 +288,9 @@ def parsePDB(pdb,systemName=None,index=1,fix_indices=True,fix_atomnames=True,ver
 
     if fix_atomnames:
       system.fix_atomnames()
+
+    if autoname_chains:
+      system.autoname_chains()
 
     if (verbosity > 0):
       mout.out("Done.") # user output
@@ -364,7 +367,7 @@ def parsePDBAtomLine(line,res_index,atom_index,chain_counter,debug=False):
     mout.errorOut("Unsupported PDB line shown above",fatal=True)
 
 # def parseGRO(gro,systemName=None,fix_indices=True,fix_atomnames=True,verbosity=1,auto_ter=None):
-def parseGRO(gro,systemName=None,fix_indices=True,fix_atomnames=True,verbosity=1,auto_ter=["DA3","DT3","DG3","DC3"],reindex=False):
+def parseGRO(gro,systemName=None,fix_indices=True,fix_atomnames=True,autoname_chains=True,verbosity=1,auto_ter=["DA3","DT3","DG3","DC3"],reindex=False):
   import mcol
   import mout
   from .system import System
@@ -490,6 +493,9 @@ def parseGRO(gro,systemName=None,fix_indices=True,fix_atomnames=True,verbosity=1
 
   if fix_atomnames:
     system.fix_atomnames()
+
+  if autoname_chains:
+    system.autoname_chains()
 
   if (verbosity > 0):
     mout.out("Done.") # user output
