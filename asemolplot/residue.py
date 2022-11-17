@@ -252,12 +252,9 @@ class Residue:
 
     return centre_of_mass
 
-  @property
   def __repr__(self):
     return self.name
-  @property
   def __str__(self):
     return self.name
-  @property
   def __len__(self):
     return len(self.atoms)

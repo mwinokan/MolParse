@@ -144,10 +144,7 @@ class Atom:
     import copy
     return copy.deepcopy(self)
 
-  @property
   def __repr__(self):
     return self.name
-
-  @property
   def __str__(self):
     return self.name
