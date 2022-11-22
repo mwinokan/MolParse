@@ -756,9 +756,14 @@ def writeGRO(filename,system,verbosity=1,printScript=False):
         z_str = '{:.3f}'.format(atom.z/10.0).rjust(8)
         strbuff += x_str+y_str+z_str
         
-        x_str = '{:.4f}'.format(atom.velocity[0]/10.0).rjust(8)
-        y_str = '{:.4f}'.format(atom.velocity[1]/10.0).rjust(8)
-        z_str = '{:.4f}'.format(atom.velocity[2]/10.0).rjust(8)
+        if atom.velocity is None:
+          x_str = '{:.4f}'.format(0.0).rjust(8)
+          y_str = '{:.4f}'.format(0.0).rjust(8)
+          z_str = '{:.4f}'.format(0.0).rjust(8)
+        else:
+          x_str = '{:.4f}'.format(atom.velocity[0]/10.0).rjust(8)
+          y_str = '{:.4f}'.format(atom.velocity[1]/10.0).rjust(8)
+          z_str = '{:.4f}'.format(atom.velocity[2]/10.0).rjust(8)
         strbuff += x_str+y_str+z_str
 
         strbuff += end
@@ -767,14 +772,17 @@ def writeGRO(filename,system,verbosity=1,printScript=False):
 
       residue_serial += 1
 
-  try:
+  if system.box is None:
+    mout.warningOut("System has no box information")
+    x_str = '{:.5f}'.format(0.0).rjust(10)
+    y_str = '{:.5f}'.format(0.0).rjust(10)
+    z_str = '{:.5f}'.format(0.0).rjust(10)
+  else:
     x_str = '{:.5f}'.format(system.box[0]).rjust(10)
     y_str = '{:.5f}'.format(system.box[1]).rjust(10)
     z_str = '{:.5f}'.format(system.box[2]).rjust(10)
-    strbuff += x_str+y_str+z_str
-    strbuff += end
-  except TypeError:
-    mout.errorOut("System has no box information")
+  strbuff += x_str+y_str+z_str
+  strbuff += end
 
   out_stream = open(filename,"w")
 
