@@ -6,12 +6,12 @@ class Atom:
   but constructed automatically when parsing a 
   coordinate file via amp.parsePDB or otherwise"""
 
-  def __init__(self,name,index,pdb_index,position,residue,chain=None,res_number=None,charge=0.0,FF_atomtype=None,mass=None,LJ_sigma=None,LJ_epsilon=None,QM=False,occupancy=None,temp_factor=None,heterogen=None,charge_str=None,velocity=None):
+  def __init__(self,name,index=None,pdb_index=None,position=None,residue=None,chain=None,res_number=None,charge=0.0,FF_atomtype=None,mass=None,LJ_sigma=None,LJ_epsilon=None,QM=False,occupancy=None,temp_factor=None,heterogen=None,charge_str=None,velocity=None):
 
     # necessary upon init
     self._name = name
     self.index = index
-    self.pdb_index = int(pdb_index)
+    self.pdb_index = pdb_index
     self._position = position
     self.residue = residue
 
