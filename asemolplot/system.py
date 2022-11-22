@@ -242,10 +242,10 @@ class System:
                               mcol.arg+residue.name+str([residue.number]))
     return number_deleted
 
-  def get_atom_by_index(self,index:int,pdb:bool=True):
+  def get_atom_by_index(self,index:int,use_pdb_index:bool=True):
     """Get Atom by its index"""
     for atom in self.atoms:
-      if pdb:
+      if use_pdb_index:
         if atom.pdb_index == index:
           return atom
       else:
@@ -486,6 +486,7 @@ class System:
         import mout
         mout.errorOut("System has duplicate chain names so this copying method will have incorrect chains!")
       copy_system = System(self.name + " (copy)")
+      copy_system.box = self.box
       for atom in self.atoms:
         copy_system.add_atom(atom)
       return copy_system
@@ -501,7 +502,7 @@ class System:
 
     for index in indices:
 
-      atom = self.get_atom_by_index(index,use_pdb_index=pdb)
+      atom = self.get_atom_by_index(index,use_pdb_index=use_pdb_index)
 
       # print(index,atom)
       if atom is None:
