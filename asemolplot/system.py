@@ -107,6 +107,7 @@ class System:
     self.fix_indices()
 
   def check_intersection(self,system,radius=1,by_residue=True,boolean=False,chain=None):
+    """Return a list of indices that are intersecting within a given radius between this system and another."""
 
     import numpy as np
 
