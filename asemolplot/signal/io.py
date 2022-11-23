@@ -1,5 +1,5 @@
 
-def csv_strip(filename,output=None,overwrite=False):
+def csv_strip(filename,output=None,overwrite=False,comment_chars='#@!'):
 	import re
 	import mout
 	import mcol
@@ -23,6 +23,10 @@ def csv_strip(filename,output=None,overwrite=False):
 
 	if test_line != lines[0]:
 		for line in lines:
+
+			if line[0] in comment_chars:
+				continue
+
 			line = re.sub(r'\t', ' ', line)
 			line = re.sub(' +',' ',line)
 			line = line.strip()
@@ -32,7 +36,7 @@ def csv_strip(filename,output=None,overwrite=False):
 
 	file.close()
 
-def parseDat(filename,num_columns=2,header_rows=1,delimiter=' ',debug=False,pre_strip=False,clean_nan=False):
+def parseDat(filename,num_columns=2,header_rows=1,delimiter=' ',debug=False,pre_strip=False,clean_nan=False,comment_chars='#@!'):
 	
 	import mout
 	import pandas
@@ -52,7 +56,7 @@ def parseDat(filename,num_columns=2,header_rows=1,delimiter=' ',debug=False,pre_
 
 	if pre_strip:
 		# csv_strip(filename,overwrite=True)
-		csv_strip(filename,output="__temp__",overwrite=False)
+		csv_strip(filename,output="__temp__",overwrite=False,comment_chars=comment_chars)
 		
 		dataframe = pandas.read_csv("__temp__",
 									skiprows=header_rows,
@@ -68,7 +72,7 @@ def parseDat(filename,num_columns=2,header_rows=1,delimiter=' ',debug=False,pre_
 									skiprows=header_rows,
 									delimiter=delimiter,
 									usecols=columns,
-									names=labels,comment='@')
+									names=labels,comment='#')
 
 	if debug: print(dataframe)
 
@@ -100,6 +104,13 @@ def parseDat(filename,num_columns=2,header_rows=1,delimiter=' ',debug=False,pre_
 							continue
 					except ValueError:
 						continue
+					for y in ys:
+						try:
+							if math.isnan(float(y)):
+								continue
+						except ValueError:
+							continue
+							
 					new_x.append(x)
 					new_ys.append(ys)
 				x = new_x
