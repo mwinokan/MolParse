@@ -64,10 +64,11 @@ class NDFES(object):
 		energies = []
 		for xs in rcs:
 			e = self.pmf([xs])
-			if e > 1000:
-				energies.append(None)
-			else:
-				energies.append(e*(kcal/mol))
+			# if e > 1000:
+			# 	energies.append(None)
+			# else:
+			# 	energies.append(e*(kcal/mol))
+			energies.append(e*(kcal/mol))
 		return energies
 
 	def generate_pmf_object(self):
@@ -212,46 +213,35 @@ class NDFES(object):
 		start = FakeAtoms(start)
 		final = FakeAtoms(final)
 
-		start.calc = FakeSurfaceCalculator(self.pmf,suppress_warnings=suppress_warnings)
-		final.calc = FakeSurfaceCalculator(self.pmf,suppress_warnings=suppress_warnings)
-		
-		start.get_forces()
-		final.get_forces()
-
-		# final.get_potential_energy()
-		# final.calc = SinglePointCalculator(final,**final.calc.results)
-
-		if constraints: 
-			start.set_constraints(constraints[0],constraints[1],constraints[2])
-			if constrain_final:
-				final.set_constraints(constraints[0],constraints[1],constraints[2],FixAtoms(indices=[i for i in range(self.n_coords)]))
-			else:
-				final.set_constraints(constraints[0],constraints[1],constraints[2])
-		elif constrain_final:
-			final.set_constraint(FixAtoms(indices=[i for i in range(self.n_coords)]))
+		mout.varOut("NEB Start",start.rcs)
+		mout.varOut("NEB Final",final.rcs)
 
 		images = [start]
-		images += [start.copy() for i in range(n_images-2)]
-		images += [final]
-
-		mout.headerOut("Endpoint Constraints:")
-		print(images[0].constraints)
-		print(images[-1].constraints)
+		for i in range(n_images-2):
+			image = start.copy()
+			image.calc = FakeSurfaceCalculator(self.pmf,suppress_warnings=suppress_warnings)
+			image.set_constraints(constraints[0],constraints[1],constraints[2])
+			images.append(image)
+		images.append(final)
 
 		neb = NEB(images)
-
 		neb.interpolate()
 
-		# for image in images[0:-1]:
-		# for image in images[1:n_images-2]:
-		for image in images[1:-1]:
-			image.calc = FakeSurfaceCalculator(self.pmf,suppress_warnings=suppress_warnings)
+		import matplotlib.pyplot as plt
+
+		fig,ax = plt.subplots()
+
+		interpolated_rcs = [[p[0] for p in a.get_positions()] for a in images]
+
+		fig,ax = plt.subplots()
+		plt.plot(self.energy_along_path(interpolated_rcs))
+		plt.savefig(f"{self.outdir}/neb_interpolated.png")
+		plt.close()
 
 		dyn = optimizer(neb, trajectory=traj)
-
 		dyn.run(fmax=fmax)
 
-def pullx2rco(infile,output,n_coords):
+def pullx2rco(infile,output,n_coords,skip=1):
 	"""convert a pullx to an rco file"""
 
 	import mout
@@ -268,6 +258,11 @@ def pullx2rco(infile,output,n_coords):
 	for line in f_input:
 
 		if line[0] in ["#","@"]:
+			count = 0
+			continue
+
+		if count%skip != 0:
+			count += 1
 			continue
 
 		# the new RCO should contain
@@ -292,6 +287,8 @@ def pullx2rco(infile,output,n_coords):
 
 		f_output.write("\n")
 
+		count += 1
+
 	# return reference information
 	window_centres = []
 	for i in range(n_coords):
@@ -302,7 +299,7 @@ def pullx2rco(infile,output,n_coords):
 
 	return window_centres, mins, maxs
 
-def prepare_metafile(outdir,winkeys,n_coords,force):
+def prepare_metafile(outdir,winkeys,n_coords,force,skip=1):
 	import mout
 	import mcol
 	import os
@@ -323,7 +320,7 @@ def prepare_metafile(outdir,winkeys,n_coords,force):
 	for key in winkeys:
 
 		# create the 'amber-style' RCO's
-		centres, mins, maxs = pullx2rco(f'{key}/pullx.xvg',f'{outdir}/{key}.rco',n_coords)
+		centres, mins, maxs = pullx2rco(f'{key}/pullx.xvg',f'{outdir}/{key}.rco',n_coords,skip=skip)
 
 		for i,(this_min,this_max) in enumerate(zip(mins,maxs)):
 			if all_mins[i] is None or this_min < all_mins[i]:

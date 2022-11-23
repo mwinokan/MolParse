@@ -271,17 +271,17 @@ def res_type(resname):
     this_type = "DNA"
   elif resname.startswith(('SOL','WAT','TIP','T3P')):
     this_type = "SOL"
-  elif resname.startswith(('ION','MG','CL','NA','SOD','POT','CAL','LIT')):
+  elif resname.startswith(('ION','MG','CL','NA','SOD','POT','CAL','LIT','Na+','Cl-')):
     this_type = "ION"
   elif resname.startswith(('DPPC','POPC')):
     this_type = "LIP"
-  elif resname.startswith(('ATP')):
+  elif resname.startswith(('ATP','GTP')):
     this_type = "LIG"
   elif resname.startswith(("ALA","ARG","ASN","ASP",
                              "CYS","GLN","GLU","GLY","HSD",
                              "HSE","HIS","ILE","LEU","LYS",
                              "MET","PHE","PRO","SER","THR",
-                             "TRP","TYR","VAL","HID")):
+                             "TRP","TYR","VAL","HID","HIE","HIP")):
     this_type = "PRO"
   else:
     import mcol

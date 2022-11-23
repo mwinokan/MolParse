@@ -25,7 +25,7 @@ class FakeAtoms(Atoms):
 			
 			Atoms.__init__(self,**kwargs)
 
-	def set_constraints(self,locut=0.5,hicut=3.0,k=20):
+	def set_constraints(self,locut=0.5,hicut=3.0,k=20,additional=None):
 
 		del self.constraints
 
@@ -39,6 +39,9 @@ class FakeAtoms(Atoms):
 
 			# constraints.append(Hookean(a1=i,a2=(-1,0,0,-hicut),k=k))
 			# constraints.append(Hookean(a1=i,a2=(1,0,0,locut),k=k))
+
+		if additional is not None:
+			constraints.append(additional)
 
 		self.set_constraint(constraints)
 
@@ -72,11 +75,13 @@ class FakeSurfaceCalculator(Calculator):
 
 	nolabel = True
 
-	def __init__(self, pmf, delta=0.001, suppress_warnings=False, **kwargs):
+	def __init__(self, pmf, delta=0.001, suppress_warnings=False, restoring_force = 10, **kwargs):
 		mout.debugHeader(f"FakeSurfaceCalculator.__init__(delta={delta})")
 		self._pmf = pmf
 		self.delta = delta
 		self._history = []
+		self._last_ok = None
+		self._restoring_force = restoring_force
 		self._warnings = not suppress_warnings
 		Calculator.__init__(self, **kwargs)
 	
@@ -114,24 +119,48 @@ class FakeSurfaceCalculator(Calculator):
 
 		forces = []
 
-		# partial derivatives
-		for i in range(len(self.atoms)):
+		y = self.pmf([xs])
+		if y < 40:
 
-			h = np.array([0.0 for i in range(len(self.atoms))])
-			h[i] = self.delta
-			y_h = self.pmf([xs+h])
-			y = self.pmf([xs])
+			# starting point within bounds of surface
 
-			# print(f"xs+h: {xs+h}")
-			# print(f"pmf(xs+h): {y_h}")
+			self._last_ok = [x for x in xs]
+		
+			# partial derivatives
+			for i in range(len(self.atoms)):
 
-			if self._warnings and y > 40:
-				mout.warningOut("Unsampled region!")
-				mout.out(f"{mcol.warning}xs: {xs}, pmf(xs): {y}")
+				h = np.array([0.0 for i in range(len(self.atoms))])
+				h[i] = self.delta
+				y_h = self.pmf([xs+h])
 
-			dx = (y_h - y)/self.delta
-			# print(dx)
-			forces.append(-dx[0])
+				# print(f"xs+h: {xs+h}")
+				# print(f"pmf(xs+h): {y_h}")
+
+				if self._warnings and y_h > 40:
+					mout.warningOut("Unsampled region!")
+					mout.out(f"{mcol.warning}xs: {xs+h}, pmf(xs): {y}")
+
+				dx = (y_h - y)/self.delta
+				if y_h > 40:
+					forces.append(-dx[0]*10)
+				else:
+					forces.append(-dx[0])
+
+		else:
+
+			if self._last_ok is None:
+				self._last_ok = [1.0044464, 1.7583452, 1.0085109, 2.2021041]
+
+			# starting point outside of surface
+			# try to set a restoring force
+			print(self._last_ok)
+
+			# direction to last known 'OK' position
+			dx = np.array(self._last_ok) - np.array(xs)
+
+			# force will be some constant multiplied by direction to the latest point
+			# forces = dx*self._restoring_force/np.linalg.norm(dx)
+			forces = dx*self._restoring_force
 
 		mout.debugOut(f"forces: {forces}")
 
