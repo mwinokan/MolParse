@@ -16,7 +16,7 @@ class System:
     self.bondlist=None
     self.box = None
 
-  def autoname_chains(self):
+  def autoname_chains(self,verbosity=1):
     """Automatically name chains"""
     import mout
 
@@ -53,7 +53,7 @@ class System:
       elif chain.type == 'ION':
         chain.name = chain.residues[0].name[0]
 
-      if chain.name in [c.name for c in self.chains[0:i]]:
+      if verbosity > 0 and chain.name in [c.name for c in self.chains[0:i]]:
         mout.warningOut(f"Ambiguous naming! Multiple chains named {chain.name}!")
 
   def check_indices(self):
@@ -93,13 +93,60 @@ class System:
     chain.index = len(self.chains)
     self.chains.append(chain)
 
-  def add_system(self,system):
+  def add_system(self,system,same_chain=False):
     """Merge another system to this one"""
 
-    for chain in system.chains:
-      self.add_chain(chain)
+    if same_chain:
+      for residue in system.residues:
+        self.chains[-1].add_residue(residue)
+
+    else:
+      for chain in system.chains:
+        self.add_chain(chain)
 
     self.fix_indices()
+
+  def check_intersection(self,system,radius=1,by_residue=True,boolean=False,chain=None):
+    """Return a list of indices that are intersecting within a given radius between this system and another."""
+
+    import numpy as np
+
+    indices = []
+
+    if by_residue:
+
+      if chain:
+        residues = self.get_chain(chain).residues
+      else:
+        residues = self.residues
+
+      for res in residues:
+        for atom1 in res.atoms:
+          for atom2 in system.atoms:
+            if np.linalg.norm(atom1.np_pos - atom2.np_pos) <= radius:
+              if boolean:
+                return True
+              else:
+                indices.append(res.number)
+    else:
+
+      if chain:
+        atoms = self.get_chain(chain).atoms
+      else:
+        atoms = self.atoms
+
+      for atom1 in self.atoms:
+        for atom2 in system.atoms:
+          if np.linalg.norm(atom1.np_pos - atom2.np_pos) <= radius:
+            if boolean:
+              return True
+            else:
+              indices.append(atom1.index)
+
+    if boolean:
+      return False
+    else:
+      return indices
 
   @property
   def num_atoms(self):
@@ -129,7 +176,7 @@ class System:
                    mcol.result+str(self.num_chains)+
                    mcol.clear+mcol.bold+" chains:")
     for i,chain in enumerate(self.chains):
-      mout.headerOut(f'Chain[{mcol.arg}{i}{reset}] {mcol.result}{chain.name}{reset} ({mcol.varType}{chain.type}{reset}) [#={mcol.result}{chain.num_residues}{reset}] =',end=' ')
+      mout.headerOut(f'Chain[{mcol.arg}{i}{reset}] {mcol.result}{chain.name}{reset} ({mcol.varType}{chain.type}{reset}) [#={mcol.result}{chain.num_atoms}{reset}] =',end=' ')
 
       names = ""
       for name in chain.res_names[:res_limit]:
@@ -242,6 +289,25 @@ class System:
                               mcol.arg+residue.name+str([residue.number]))
     return number_deleted
 
+  def remove_residues_by_index(self,del_list:list,verbosity:int=1):
+    """Remove Atoms by their index"""
+    import mcol
+    import mout
+
+    number_deleted=0
+    self.fix_indices()
+    for chain in self.chains:
+      for index,residue in reversed(list(enumerate(chain.residues))):
+          if residue.number in del_list:
+            del chain.residues[index]
+            number_deleted += 1
+            if verbosity > 1:
+              mout.warningOut("Removed residue "+
+                              mcol.arg+residue.name+str([residue.number])+
+                              mcol.warning+" in chain "+
+                              mcol.arg+chain.name)
+    return number_deleted
+
   def get_atom_by_index(self,index:int,use_pdb_index:bool=True):
     """Get Atom by its index"""
     for atom in self.atoms:
@@ -330,7 +396,11 @@ class System:
     """Calculate centre of mass"""
     return CoM(set=set,shift=shift)
 
-  def CoM(self,set=None,shift=None):
+  def center(self):
+    """Move the system's CoM to the origin"""
+    return self.CoM(set=[0,0,0])
+
+  def CoM(self,set=None,shift=None,verbosity=1):
     """Calculate or manipulate the system's centre of mass. 
 
     if not set and not shift: return CoM
@@ -346,9 +416,10 @@ class System:
                                sum([pos[1] for pos in position_list])/len(position_list),
                                sum([pos[2] for pos in position_list])/len(position_list)])
 
-    mout.varOut("CoM of "+self.name,
-                centre_of_mass,
-                unit="Angstroms",precision=4)
+    if verbosity > 0: 
+      mout.varOut("CoM of "+self.name,
+                  centre_of_mass,
+                  unit="Angstroms",precision=4)
 
     if set is not None:
 

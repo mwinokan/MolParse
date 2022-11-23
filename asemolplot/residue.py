@@ -6,11 +6,22 @@ class Residue:
   but constructed automatically when parsing a 
   coordinate file via amp.parsePDB or otherwise"""
 
-  def __init__(self,name: str,number: int=None,chain: str=None):
+  def __init__(self,name: str,number: int=None,chain: str=None,atoms=None):
     self._name = name
     self.chain = chain
     self.number = number
     self._atoms = []
+    
+    if atoms:
+
+      from .atom import Atom
+
+      # import from ASE atoms object:
+
+      for atom in atoms:
+        self.add_atom(Atom(name=atom.symbol,position=atom.position,residue=self.name))
+
+        # print(atom)
 
   def rename(self,new: str,verbosity: int=1):
     """Rename the residue"""
@@ -229,6 +240,7 @@ class Residue:
   def CoM(self,verbosity: int=1):
     """Centre of mass of the Residue"""
     import numpy as np
+    import mout
 
     position_list = self.positions
 
@@ -281,7 +293,7 @@ def res_type(resname):
                              "CYS","GLN","GLU","GLY","HSD",
                              "HSE","HIS","ILE","LEU","LYS",
                              "MET","PHE","PRO","SER","THR",
-                             "TRP","TYR","VAL","HID","HIE","HIP")):
+                             "TRP","TYR","VAL","HID","HIE","HIP","HSP")):
     this_type = "PRO"
   else:
     import mcol
