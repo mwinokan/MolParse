@@ -16,7 +16,7 @@ class System:
     self.bondlist=None
     self.box = None
 
-  def autoname_chains(self):
+  def autoname_chains(self,verbosity=1):
     """Automatically name chains"""
     import mout
 
@@ -53,7 +53,7 @@ class System:
       elif chain.type == 'ION':
         chain.name = chain.residues[0].name[0]
 
-      if chain.name in [c.name for c in self.chains[0:i]]:
+      if verbosity > 0 and chain.name in [c.name for c in self.chains[0:i]]:
         mout.warningOut(f"Ambiguous naming! Multiple chains named {chain.name}!")
 
   def check_indices(self):
