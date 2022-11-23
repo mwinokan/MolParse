@@ -84,14 +84,18 @@ def fix_termini(chain):
 	make_3ter(chain.residues[-1])
 
 def make_5ter(residue):
-	assert residue.name in ["DA","DC","DG","DT"]
+	from ..residue import res_type
+	print(residue.name,res_type(residue.name))
+	assert res_type(residue.name) == 'DNA'
 
 	# Append 5 to residue name
-	residue.name += "5"
+	if not residue.name.endswith("5"):
+		residue.name += "5"
 
 	# Remove HTER/H5T
 	residue.delete_atom("HTER")
 	residue.delete_atom("H5T")
+	residue.delete_atom("HO5'")
 	residue.delete_atom("OXT")
 	residue.delete_atom("O5T")
 	residue.delete_atom("O1P")
@@ -100,19 +104,25 @@ def make_5ter(residue):
 	residue.delete_atom("OP2")
 
 	# Rename P->H5T
-	residue.get_atom("P").name = "H5T"
+	try:
+		residue.get_atom("P").name = "H5T"
+	except AttributeError:
+		pass
 
 def make_3ter(residue):
-	assert residue.name in ["DA","DC","DG","DT"]
+	from ..residue import res_type
+	assert res_type(residue.name) == 'DNA'
 
 	# Append 3 to residue name
-	residue.name += "3"
+	if not residue.name.endswith("3"):
+		residue.name += "3"
 
 	# Remove HTER/H3T
 	residue.delete_atom("O1P3")
 	residue.delete_atom("O2P3")
 	residue.delete_atom("O3T")
 	residue.delete_atom("H3T")
+	residue.delete_atom("HO3'")
 	residue.delete_atom("HCAP")
 
 	# Rename P3->H3T
@@ -138,7 +148,8 @@ def prep4gmx(system,verbosity=1):
 
 	# Deal with DNA termini
 	for chain in system.chains:
-		fix_termini(chain)
+		if chain.type == 'DNA':
+			fix_termini(chain)
 
 def get_dna_basepairs(chain1,chain2):
 
