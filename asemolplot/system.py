@@ -71,6 +71,14 @@ class System:
     for index,residue in enumerate(self.residues):
       residue.number = index
 
+      residue.fix_names()
+      residue.fix_indices()
+
+  def clear_pdbindices(self):
+    """Clear all pdb indices from the system"""
+    for atom in self.atoms:
+      atom.pdb_index = None
+
   def fix_atomnames(self,verbosity=1):
     """Attempt to fix all child Atom names"""
     import mout
@@ -98,11 +106,11 @@ class System:
 
     if same_chain:
       for residue in system.residues:
-        self.chains[-1].add_residue(residue)
+        self.chains[-1].add_residue(residue.copy())
 
     else:
       for chain in system.chains:
-        self.add_chain(chain)
+        self.add_chain(chain.copy())
 
     self.fix_indices()
 
