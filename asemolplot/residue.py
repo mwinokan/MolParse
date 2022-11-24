@@ -52,7 +52,12 @@ class Residue:
   def fix_names(self):
     """Ensure child Atoms have correct parent name"""
     for atom in self.atoms:
-      atom.residue = self._name
+      atom.residue = self.name
+
+  def fix_indices(self):
+    """Ensure child Atoms have correct res_number"""
+    for atom in self.atoms:
+      atom.res_number = self.number
 
   def atom_names(self,wRes: bool=False,noPrime: bool=False):
     """Returns names of all child Atoms (list)"""
