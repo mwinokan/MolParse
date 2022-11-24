@@ -773,10 +773,11 @@ def writeGRO(filename,system,verbosity=1,printScript=False):
       residue_serial += 1
 
   if system.box is None:
-    mout.warningOut("System has no box information")
-    x_str = '{:.5f}'.format(0.0).rjust(10)
-    y_str = '{:.5f}'.format(0.0).rjust(10)
-    z_str = '{:.5f}'.format(0.0).rjust(10)
+    mout.warningOut("System has no box information. Using bbox")
+    bbox = system.bbox
+    x_str = '{:.5f}'.format(bbox[0][1]-bbox[0][0]).rjust(10)
+    y_str = '{:.5f}'.format(bbox[1][1]-bbox[1][0]).rjust(10)
+    z_str = '{:.5f}'.format(bbox[2][1]-bbox[2][0]).rjust(10)
   else:
     x_str = '{:.5f}'.format(system.box[0]).rjust(10)
     y_str = '{:.5f}'.format(system.box[1]).rjust(10)
