@@ -106,9 +106,25 @@ class System:
 
     self.fix_indices()
 
+  @property
+  def bbox(self):
+    """Bounding box of the system"""
+    import numpy as np
+    x = [min([a.np_pos[0] for a in self.atoms]),max([a.np_pos[0] for a in self.atoms])]
+    y = [min([a.np_pos[1] for a in self.atoms]),max([a.np_pos[1] for a in self.atoms])]
+    z = [min([a.np_pos[2] for a in self.atoms]),max([a.np_pos[2] for a in self.atoms])]
+    return [x,y,z]
+
+  @property
+  def bbox_norm(self):
+    """Length of bounding box diagonal"""
+    import numpy as np
+    return np.linalg.norm([x[1]-x[0] for x in self.bbox])
+
   def check_intersection(self,system,radius=1,by_residue=True,boolean=False,chain=None):
     """Return a list of indices that are intersecting within a given radius between this system and another."""
 
+    import mout
     import numpy as np
 
     indices = []
@@ -120,14 +136,39 @@ class System:
       else:
         residues = self.residues
 
-      for res in residues:
-        for atom1 in res.atoms:
-          for atom2 in system.atoms:
+      system_CoM = system.CoM(verbosity=0)
+      r_system = system.bbox_norm
+      num_residues = len(residues)
+
+      # for each residue
+      for i,res in enumerate(residues):
+        if num_residues > 5000 and i%100==0:
+          mout.progress(i,num_residues,prepend="Calculating intersection",append=" of residues checked")
+
+        residue_CoM = res.CoM(verbosity=0)
+        d = np.linalg.norm(residue_CoM-system_CoM)
+        r_residue = res.bbox_norm
+        
+        if d > r_system + r_residue:
+          continue
+
+        for atom2 in system.atoms:
+          
+          if r_system > np.linalg.norm(residue_CoM-atom2.np_pos):
+            continue
+
+          for atom1 in res.atoms:
+
             if np.linalg.norm(atom1.np_pos - atom2.np_pos) <= radius:
               if boolean:
                 return True
               else:
                 indices.append(res.number)
+                break
+
+      if num_residues > 5000:
+        mout.progress(num_residues,num_residues,prepend="Calculating intersection",append=" of residues checked. Done.")
+
     else:
 
       if chain:

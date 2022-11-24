@@ -277,6 +277,21 @@ class Residue:
   def __len__(self):
     return len(self.atoms)
 
+  @property
+  def bbox(self):
+    """Bounding box of the residue"""
+    import numpy as np
+    x = [min([a.np_pos[0] for a in self.atoms]),max([a.np_pos[0] for a in self.atoms])]
+    y = [min([a.np_pos[1] for a in self.atoms]),max([a.np_pos[1] for a in self.atoms])]
+    z = [min([a.np_pos[2] for a in self.atoms]),max([a.np_pos[2] for a in self.atoms])]
+    return [x,y,z]
+
+  @property
+  def bbox_norm(self):
+    """Length of bounding box diagonal"""
+    import numpy as np
+    return np.linalg.norm([x[1]-x[0] for x in self.bbox])
+
 def res_type(resname):
   """Guess type from residue name"""
   if resname.startswith(('DA','DT','DC','DG')):
@@ -285,7 +300,7 @@ def res_type(resname):
     this_type = "SOL"
   elif resname.startswith(('ION','MG','CL','NA','SOD','POT','CAL','LIT','Na+','Cl-')):
     this_type = "ION"
-  elif resname.startswith(('DPPC','POPC')):
+  elif resname.startswith(('DPPC','POPC','DAG','TAG')):
     this_type = "LIP"
   elif resname.startswith(('ATP','GTP')):
     this_type = "LIG"
