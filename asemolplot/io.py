@@ -731,18 +731,14 @@ def writeGRO(filename,system,verbosity=1,printScript=False):
     for residue in chain.residues:
       for atom in residue.atoms:
 
-        # strbuff += "ATOM  "
-
         residue_serial_str = str(atom.res_number).rjust(5)
         if len(residue_serial_str) > 5: 
-          # residue_serial_str = "XXXX"
-          # residue_serial_str = "    "
           residue_serial_str = residue_serial_str[-5:]
 
-        atom_serial_str = str(atom.pdb_index).rjust(4)
+        index = atom.pdb_index or atom.index
+        atom_serial_str = str(index).rjust(4)
         if len(atom_serial_str) > 4: 
           atom_serial_str = atom_serial_str[-4:]
-          # atom_serial_str = "XXXXX"
 
         strbuff += residue_serial_str
         strbuff += str(atom.residue).ljust(4)
