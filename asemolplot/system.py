@@ -3,8 +3,8 @@ class System:
 
   """Top-level object for molecular systems
 
-  These objects should not be created by the user, 
-  but constructed automatically when parsing a 
+  These objects are rarely created by the user, 
+  instead constructed automatically when parsing a 
   coordinate file via amp.parsePDB or otherwise"""
 
   def __init__(self,name: str):
@@ -592,6 +592,89 @@ class System:
     minimize_rotation_and_translation(target,atoms)
     self.set_coordinates(atoms)
     return atoms
+
+  def align_by_pairs(self,target,index_pairs):
+    """Align the system (i) to the target (j) by consider the vectors:
+
+        a --> b
+        a --> c
+
+        where index pairs contains the indices for the three atoms: 
+        a,b,c in the respective systems:
+
+        index_pairs = [[i_a,j_a],[i_b,j_b],[i_c,j_c]]"""
+
+    assert len(index_pairs) == 3
+    import numpy as np
+
+    vec = target.atoms[index_pairs[0][1]].np_pos - self.atoms[index_pairs[0][0]].np_pos
+    self.CoM(shift=vec,verbosity=0)
+
+    a = self.atoms[index_pairs[1][0]].np_pos - self.atoms[index_pairs[0][0]].np_pos
+    b = target.atoms[index_pairs[1][1]].np_pos - target.atoms[index_pairs[0][1]].np_pos
+    self.rotate(a,b,self.atoms[index_pairs[0][0]].np_pos)
+
+    a = self.atoms[index_pairs[1][0]].np_pos - self.atoms[index_pairs[0][0]].np_pos
+    a_hat = a/np.linalg.norm(a)
+
+    b = self.atoms[index_pairs[2][0]].np_pos - self.atoms[index_pairs[0][0]].np_pos
+    c = target.atoms[index_pairs[2][1]].np_pos - target.atoms[index_pairs[0][1]].np_pos
+    d = b - np.dot(a,b)*a_hat
+    e = c - np.dot(a,c)*a_hat
+
+    d_hat = d/np.linalg.norm(d)
+    e_hat = e/np.linalg.norm(e)
+    ang = np.arccos(np.clip(np.dot(d_hat, e_hat), -1.0, 1.0))
+
+    self.rotate(-(90-ang/np.pi*180),a,self.atoms[index_pairs[0][0]].np_pos)
+
+  def guess_names(self,target):
+    """Try and set the atom names of the system by looking for 
+    the closest atom of the same species in the target system"""
+
+    import numpy as np
+
+    positions = [b.np_pos for b in target.atoms]
+    species = [b.species for b in target.atoms]
+
+    for a in self.atoms:
+      a_pos = a.np_pos
+      distances = [np.linalg.norm(a_pos - p) if s == a.species else 999 for s,p in zip(species,positions)]
+      index = np.argmin(distances)
+      b = target.atoms[index]
+      a.set_name(b.name,verbosity=0)
+
+  def rmsd(self,reference):
+    """Calculate the RMS displacement between this system and a reference"""
+    
+    import numpy as np
+    assert len(self.atoms) == len(reference.atoms)
+    displacements = np.array([np.linalg.norm(a.np_pos-b.np_pos) for a,b in zip(self.atoms,reference.atoms)])
+    return np.sqrt(np.mean(displacements**2))
+
+  def reorder_atoms(self,reference,map:dict=None):
+    new_sys = self.copy()
+    for atom in reference.atoms:
+      res = self.get_residue(atom.residue,map=map)
+      new_sys.add_atom(res.get_atom(atom.name).copy())
+    new_sys.fix_indices()
+    self = new_sys
+
+  def get_residue(self,name:str,map:dict=None):
+    """ return residues with matching name"""
+    import mout
+    if map is not None:
+      if name in map.keys():
+        name = map[name]
+    matches = [r for r in self.residues if r.name == name]
+    if len(matches) == 0:
+      mout.errorOut(f"No residue found with name {name}")
+      return []
+    elif len(matches) == 1:
+      return matches[0]
+    else:
+      mout.warning(f"Multiple residues found with name {name}")
+      return matches
 
   def copy(self,disk=False,alt=False):
     """Return a deepcopy of the System"""
