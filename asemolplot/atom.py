@@ -185,6 +185,15 @@ class Atom:
       return False
     return True
 
+  def __sub__(self,other):
+    assert isinstance(other,Atom)
+    return self.np_pos - other.np_pos
+
+  def __add__(self,other):
+    import numpy as np
+    assert isinstance(other,np.ndarray)
+    return self.np_pos + other
+
   def __repr__(self):
     return self.name
   def __str__(self):
