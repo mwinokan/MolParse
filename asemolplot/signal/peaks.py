@@ -165,14 +165,61 @@ def gaus(x,a,x0,sigma):
 	from scipy import asarray as exp
 	return a*exp(-(x-x0)**2/(2*sigma**2))+___BASELINE
 
-def closest_index(value,xdata):
+# def closest_index(value,xdata):
+# 	"""Return the index of the nearest data point in the array"""
+# 	if isinstance(value,list):
+# 		result = []
+# 		for v in value:
+# 			result.append(closest_index(v, xdata))
+# 		return result
+# 	else:
+# 		for i,x in enumerate(xdata):
+# 			if x > value:
+# 				if abs(xdata[i-1]-value) < abs(xdata[i]-value):
+# 					return i
+# 				else:
+# 					return i-1
 
-	for i,x in enumerate(xdata):
+def closest_index(value,xdata,comparison=None,numpy=False):
+	"""Return the index of the nearest data point in the array"""
+	if numpy:
+		if comparison:
+			import mout
+			mout.warningOut("numpy argument overrides comparison",code='amp.signal.peaks.closest_index[1]')
+		import numpy as np
+		array = np.asarray(xdata)
+		return (np.abs(array - value)).argmin()
+	elif isinstance(value,list):
+		result = []
+		for v in value:
+			result.append(closest_index(v, xdata,comparison=comparison))
+		return result
+	else:
+		for i,x in enumerate(xdata):
+			if (i > 0 and x < xdata[i-1]) or (i == 0 and x > xdata[i+1]):
+				import mout
+				mout.errorOut("Array does not appear to be sorted!")
+				return -1
+			elif x > value:
+				if comparison is not None:
+					if comparison == "<":
+						return i-i
+					else:
+						return i
+				else:
+					if abs(xdata[i-1]-value) < abs(xdata[i]-value):
+						return i
+					else:
+						return i-1
 
-		if x > value:
-
-			if abs(xdata[i-1]-value) < abs(xdata[i]-value):
-				return i
-			else:
-				return i-1
-
+def closest_value(xvalue,xdata,ydata=None,comparison=None,numpy=False):
+	"""Return the yvalue of the data point nearest the given xvalue"""
+	if ydata is None:
+		ydata = xdata
+	if isinstance(xvalue,list):
+		result = []
+		for x in xvalue:
+			result.append(closest_value(x, xdata, ydata,comparison=comparison,numpy=numpy))
+		return result
+	else:
+		return ydata[closest_index(xvalue, xdata,comparison=comparison,numpy=numpy)]
