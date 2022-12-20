@@ -124,6 +124,15 @@ class System:
     return [x,y,z]
 
   @property
+  def bbox_sides(self):
+    """Bounding box of the system"""
+    import numpy as np
+    x = max([a.np_pos[0] for a in self.atoms])-min([a.np_pos[0] for a in self.atoms])
+    y = max([a.np_pos[1] for a in self.atoms])-min([a.np_pos[1] for a in self.atoms])
+    z = max([a.np_pos[2] for a in self.atoms])-min([a.np_pos[2] for a in self.atoms])
+    return [x,y,z]
+
+  @property
   def bbox_norm(self):
     """Length of bounding box diagonal"""
     import numpy as np
@@ -227,12 +236,20 @@ class System:
     for i,chain in enumerate(self.chains):
       mout.headerOut(f'Chain[{mcol.arg}{i}{reset}] {mcol.result}{chain.name}{reset} ({mcol.varType}{chain.type}{reset}) [#={mcol.result}{chain.num_atoms}{reset}] =',end=' ')
 
-      names = ""
-      for name in chain.res_names[:res_limit]:
-        names += name+" "
-      if chain.num_residues > res_limit:
-        names += "..."
-      mout.out(names)
+      if chain.type == "PRO":
+        names = ""
+        for r in chain.residues[:res_limit]:
+            names += r.letter + " "
+        if chain.num_residues > res_limit:
+          names += "..."
+        mout.out(names)
+      else:
+        names = ""
+        for name in chain.res_names[:res_limit]:
+          names += name+" "
+        if chain.num_residues > res_limit:
+          names += "..."
+        mout.out(names)
     # mout.varOut("Total Charge",self.charge)
 
   @property
@@ -398,7 +415,7 @@ class System:
     """Get all child Atom names (list)"""
     names_list = []
     for chain in self.chains:
-      names_list.append(chain.atom_names(wRes=wRes,noPrime=noPrime))
+      names_list += chain.atom_names(wRes=wRes,noPrime=noPrime)
     return names_list
 
   @property
@@ -443,7 +460,7 @@ class System:
 
   def centre_of_mass(self,set=None,shift=None):
     """Calculate centre of mass"""
-    return CoM(set=set,shift=shift)
+    return self.CoM(set=set,shift=shift)
 
   def center(self):
     """Move the system's CoM to the origin"""
@@ -576,6 +593,64 @@ class System:
     from .gui import view
     view(self)
 
+  def plot(self,ax=None,color=None,center_index=0,show=False,offset=None,padding=1,zeroaxis=None,frame=False,labels=True,textdict={"horizontalalignment":"center","verticalalignment":"center"}):
+    """Render the system with matplotlib"""
+    
+    import numpy as np
+    from ase.visualize.plot import plot_atoms
+
+    # copy the system so as not to alter it
+    copy = self.copy()
+
+    # create new axes if none provided
+    if ax is None:
+      import matplotlib.pyplot as plt
+      fig,ax = plt.subplots()
+
+    # create colours list
+    if color is not None:
+      color = [color for a in copy.atoms]
+
+    # create the canvas unit size from bounding box
+    canvas = np.array(self.bbox_sides)*1.5
+
+    # center the render if needed
+    if offset is None:
+      offset=[0,0]
+      if center_index is not None:
+        vec = - copy.atoms[center_index].np_pos + canvas
+        copy.CoM(shift=vec,verbosity=0)
+
+    # use ASE to render the atoms
+    plot_atoms(copy.ase_atoms,ax,colors=color,offset=offset,bbox=[0,0,canvas[0]*2,canvas[1]*2])
+
+    # do the labels
+    if labels:
+      for atom in copy.atoms:
+        if atom.species != 'H':
+          ax.text(atom.position[0],atom.position[1],atom.name,**textdict)
+
+    # crop the plot
+    xmax = copy.bbox[0][1] + padding
+    xmin = copy.bbox[0][0] - padding
+    ymax = copy.bbox[1][1] + padding
+    ymin = copy.bbox[1][0] - padding
+    ax.set_xlim(xmin,xmax)
+    ax.set_ylim(ymin,ymax)
+
+    # render the centering axes
+    if zeroaxis is not None:
+      ax.axvline(canvas[0],color=zeroaxis)
+      ax.axhline(canvas[1],color=zeroaxis)
+
+    if not frame:
+      ax.axis('off')
+
+    if show:
+      plt.show()
+
+    return ax, copy
+
   def auto_rotate(self):
     """Rotate the system into the XY plane"""
     from .manipulate import auto_rotate
@@ -593,7 +668,7 @@ class System:
     self.set_coordinates(atoms)
     return atoms
 
-  def align_by_pairs(self,target,index_pairs):
+  def align_by_pairs(self,target,index_pairs,alt=False):
     """Align the system (i) to the target (j) by consider the vectors:
 
         a --> b
@@ -606,6 +681,9 @@ class System:
 
     assert len(index_pairs) == 3
     import numpy as np
+
+    for pair in index_pairs:
+      assert self.atoms[pair[0]].name == target.atoms[pair[1]].name
 
     vec = target.atoms[index_pairs[0][1]].np_pos - self.atoms[index_pairs[0][0]].np_pos
     self.CoM(shift=vec,verbosity=0)
@@ -626,7 +704,10 @@ class System:
     e_hat = e/np.linalg.norm(e)
     ang = np.arccos(np.clip(np.dot(d_hat, e_hat), -1.0, 1.0))
 
-    self.rotate(-(90-ang/np.pi*180),a,self.atoms[index_pairs[0][0]].np_pos)
+    if alt:
+      self.rotate((ang/np.pi*180),a,self.atoms[index_pairs[0][0]].np_pos)
+    else:
+      self.rotate(-(90-ang/np.pi*180),a,self.atoms[index_pairs[0][0]].np_pos)
 
   def guess_names(self,target):
     """Try and set the atom names of the system by looking for 
