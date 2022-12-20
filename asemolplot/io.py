@@ -219,7 +219,7 @@ def parsePDB(pdb,systemName=None,index=1,fix_indices=True,fix_atomnames=True,aut
               #### PARSELINE
               atom = parsePDBAtomLine(line,res_counter,atom_counter,chain_counter,debug=debug)
               chain = Chain(atom.chain)
-              residue = Residue(atom.residue,res_counter,atom.chain)
+              residue = new_residue(atom.residue,res_counter,atom.chain)
               residue.addAtom(atom)
               last_residue_name = atom.residue
               last_residue_number = atom.res_number
@@ -261,7 +261,7 @@ def parsePDB(pdb,systemName=None,index=1,fix_indices=True,fix_atomnames=True,aut
                 if residue is not None: 
                   chain.add_residue(residue)
                   res_counter = res_counter+1
-                residue = Residue(atom.residue,res_counter,atom.chain)
+                residue = new_residue(atom.residue,res_counter,atom.chain)
                 if make_new_chain:
                   if chain is not None:
                     system.add_chain(chain)
@@ -375,7 +375,6 @@ def parseGRO(gro,systemName=None,fix_indices=True,fix_atomnames=True,autoname_ch
   import mout
   from .system import System
   from .chain import Chain
-  from .residue import Residue
 
   if (verbosity > 0):
     mout.out("parsing "+mcol.file+
@@ -429,9 +428,10 @@ def parseGRO(gro,systemName=None,fix_indices=True,fix_atomnames=True,autoname_ch
           if line_counter == 3:
             chain = Chain(atom.chain)
             if reindex:
-              residue = Residue(atom.residue,res_counter,atom.chain)
+              index = res_counter
             else:
-              residue = Residue(atom.residue,atom.res_number,atom.chain)
+              index = atom.res_number
+            residue = new_residue(atom.residue,index,atom.chain)
             # residue.addAtom(atom)
             last_residue_name = atom.residue
             last_residue_number = atom.res_number
@@ -449,9 +449,10 @@ def parseGRO(gro,systemName=None,fix_indices=True,fix_atomnames=True,autoname_ch
               chain.add_residue(residue)
               res_counter += 1
             if reindex:
-              residue = Residue(atom.residue,res_counter,atom.chain)
+              index = res_counter
             else:
-              residue = Residue(atom.residue,atom.res_number,atom.chain)
+              index = atom.res_number
+            residue = new_residue(atom.residue,index,atom.chain)
 
           # add the atom to the residue
           residue.addAtom(atom)
@@ -504,6 +505,15 @@ def parseGRO(gro,systemName=None,fix_indices=True,fix_atomnames=True,autoname_ch
     mout.out("Done.") # user output
 
   return system
+
+def new_residue(name,index,chain):
+  from .residue import Residue, res_type
+  from .amino import AminoAcid
+
+  if res_type(name) == "PRO":
+    return AminoAcid(name,index,chain)
+  else:
+    return Residue(name,index,chain)
 
 def parseGROAtomLine(line,res_index,atom_index,chain_counter):
 
