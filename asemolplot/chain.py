@@ -67,7 +67,7 @@ class Chain:
     """All child Atom names (list)"""
     names_list = []
     for residue in self.residues:
-      names_list.append(residue.atom_names(wRes=wRes,noPrime=noPrime))
+      names_list += residue.atom_names(wRes=wRes,noPrime=noPrime)
     return names_list
 
   @property
