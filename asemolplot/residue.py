@@ -157,6 +157,9 @@ class Residue:
 
   def get_atom(self,name):
     """Get a child Atom by name"""
+    if isinstance(name,list):
+      return [self.get_atom(n) for n in name]
+
     for atom in self._atoms:
       if atom.name == name: return atom
 
@@ -172,6 +175,10 @@ class Residue:
     """Delete a child Atom by name"""
     import mcol
     import mout
+    if isinstance(name,list):
+      for n in name:
+        self.delete_atom(n,verbosity=verbosity-1)
+      return
     for index,atom in enumerate(self._atoms):
       if atom.name == name:
         del self._atoms[index]
