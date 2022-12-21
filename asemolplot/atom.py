@@ -185,6 +185,11 @@ class Atom:
       return False
     return True
 
+  @property
+  def type(self):
+    from .residue import res_type
+    return res_type(self.residue)
+
   def __sub__(self,other):
     assert isinstance(other,Atom)
     return self.np_pos - other.np_pos
