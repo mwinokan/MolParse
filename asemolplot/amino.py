@@ -123,6 +123,11 @@ class AminoAcid(Residue):
 		return self.get_atom("CA")
 
 	@property
+	def CB(self):
+		"""Get Carbon-Alpha Atom"""
+		return self.get_atom("CB")
+
+	@property
 	def HA(self):
 		"""Get Carbon-Alpha Hydrogen Atom"""
 		return self.get_atom("HA")
