@@ -123,12 +123,25 @@ def tagFromLine(line,byResidue):
   except:
     return 0
 
+def parse(file,verbosity=1):
+  match file.split(".")[-1]:
+    case "pdb":
+      return parsePDB(file,verbosity=verbosity)
+    case "gro":
+      return parseGRO(file,verbosity=verbosity)
+    case other:
+      import mout
+      mout.errorOut("Unsupported file type for AMP parsing, using ASE.io.read")
+      return read(file,verbosity=verbosity)
+
 def parsePDB(pdb,systemName=None,index=1,fix_indices=True,fix_atomnames=True,autoname_chains=False,verbosity=1,debug=False,dry=False):
   from .system import System
   from .chain import Chain
   from .residue import Residue
   import mout
   import mcol
+
+  assert pdb.endswith(".pdb")
 
   try:
     index = int(index)
@@ -376,6 +389,8 @@ def parseGRO(gro,systemName=None,fix_indices=True,fix_atomnames=True,autoname_ch
   from .system import System
   from .chain import Chain
 
+  assert gro.endswith(".gro")
+
   if (verbosity > 0):
     mout.out("parsing "+mcol.file+
              gro+
@@ -507,13 +522,18 @@ def parseGRO(gro,systemName=None,fix_indices=True,fix_atomnames=True,autoname_ch
   return system
 
 def new_residue(name,index,chain):
-  from .residue import Residue, res_type
-  from .amino import AminoAcid
+  from .residue import res_type
 
-  if res_type(name) == "PRO":
-    return AminoAcid(name,index,chain)
-  else:
-    return Residue(name,index,chain)
+  match res_type(name):
+    case "PRO":
+      from .amino import AminoAcid
+      return AminoAcid(name,index,chain)
+    case "DNA":
+      from .nucleic import NucleicAcid
+      return NucleicAcid(name,index,chain)
+    case other:
+      from .residue import Residue
+      return Residue(name,index,chain)
 
 def parseGROAtomLine(line,res_index,atom_index,chain_counter):
 

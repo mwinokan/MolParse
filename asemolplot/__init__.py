@@ -76,6 +76,7 @@ Key features:
 # Custom IO
 from .io import read
 from .io import write
+from .io import parse
 from .io import parsePDB
 from .io import parseGRO
 
