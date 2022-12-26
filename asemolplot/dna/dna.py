@@ -80,10 +80,14 @@ def check_legality(residue1,residue2):
 	return False
 
 def fix_termini(chain):
-	make_5ter(chain.residues[0])
-	make_3ter(chain.residues[-1])
+	chain.residues[0].make_5ter()
+	chain.residues[-1].make_3ter()
 
 def make_5ter(residue):
+
+	import mout
+	mout.warningOut("amp.dna.make_5ter is deprecated. Use NucleicAcid.make_5ter instead")
+
 	from ..residue import res_type
 	print(residue.name,res_type(residue.name))
 	assert res_type(residue.name) == 'DNA'
@@ -110,6 +114,10 @@ def make_5ter(residue):
 		pass
 
 def make_3ter(residue):
+
+	import mout
+	mout.warningOut("amp.dna.make_3ter is deprecated. Use NucleicAcid.make_5ter instead")
+
 	from ..residue import res_type
 	assert res_type(residue.name) == 'DNA'
 
