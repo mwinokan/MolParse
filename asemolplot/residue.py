@@ -306,7 +306,7 @@ class Residue:
 
 def res_type(resname):
   """Guess type from residue name"""
-  if resname.startswith(('DA','DT','DC','DG')):
+  if resname.startswith(('DA','DT','DC','DG','ADE9','THMN','GUA9','CTSN')):
     this_type = "DNA"
   elif resname.startswith(('SOL','WAT','TIP','T3P')):
     this_type = "SOL"
