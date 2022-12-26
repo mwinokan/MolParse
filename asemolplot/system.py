@@ -63,12 +63,23 @@ class System:
       if index != atom.index:
         print(index,atom.index,atom.name,atom.residue)
 
-  def fix_indices(self):
+  def fix_indices(self,verbosity=0):
     """Fix all child Atoms' indices"""
+    if verbosity:
+      import mout
+      exclude = ['SOL','ION']
     for index,atom in enumerate(self.atoms):
+      if verbosity == 2 and atom.index != index:
+        mout.warningOut(f"Re-indexing atom {atom} (#{atom.index} --> #{index})")
+      elif verbosity == 1 and atom.type not in exclude and atom.index != index:
+        mout.warningOut(f"Re-indexing atom {atom} (#{atom.index} --> #{index})")
       atom.index = index
 
     for index,residue in enumerate(self.residues):
+      if verbosity == 2 and residue.number != index:
+        mout.warningOut(f"Re-indexing residue {residue} (#{residue.number} --> #{index})")
+      elif verbosity == 2 and residue.type not in exclude and residue.number != index:
+        mout.warningOut(f"Re-indexing residue {residue} (#{residue.number} --> #{index})")
       residue.number = index
 
       residue.fix_names()
@@ -677,26 +688,49 @@ class System:
         where index pairs contains the indices for the three atoms: 
         a,b,c in the respective systems:
 
-        index_pairs = [[i_a,j_a],[i_b,j_b],[i_c,j_c]]"""
+        index_pairs = [[i_a,j_a],[i_b,j_b],[i_c,j_c]]
+
+        Alternatively you can pass the positions j_a, j_b, j_c as target,
+        and index_pairs can be i_a, i_b, i_c.
+        """
 
     assert len(index_pairs) == 3
     import numpy as np
 
-    for pair in index_pairs:
-      assert self.atoms[pair[0]].name == target.atoms[pair[1]].name
+    if isinstance(target,System):
+      for pair in index_pairs:
+        assert self.atoms[pair[0]].name == target.atoms[pair[1]].name
 
-    vec = target.atoms[index_pairs[0][1]].np_pos - self.atoms[index_pairs[0][0]].np_pos
+      pos_0_0 = self.atoms[index_pairs[0][0]].np_pos
+      pos_1_0 = self.atoms[index_pairs[1][0]].np_pos
+      pos_2_0 = self.atoms[index_pairs[2][0]].np_pos
+
+      pos_0_1 = target.atoms[index_pairs[0][1]].np_pos
+      pos_1_1 = target.atoms[index_pairs[1][1]].np_pos
+      pos_2_1 = target.atoms[index_pairs[2][1]].np_pos
+
+    else:
+      
+      pos_0_0 = self.atoms[index_pairs[0]].np_pos
+      pos_1_0 = self.atoms[index_pairs[1]].np_pos
+      pos_2_0 = self.atoms[index_pairs[2]].np_pos
+
+      pos_0_1 = target[0]
+      pos_1_1 = target[1]
+      pos_2_1 = target[2]
+
+    vec = pos_0_1 - pos_0_0
     self.CoM(shift=vec,verbosity=0)
 
-    a = self.atoms[index_pairs[1][0]].np_pos - self.atoms[index_pairs[0][0]].np_pos
-    b = target.atoms[index_pairs[1][1]].np_pos - target.atoms[index_pairs[0][1]].np_pos
-    self.rotate(a,b,self.atoms[index_pairs[0][0]].np_pos)
+    a = pos_1_0 - pos_0_0
+    b = pos_1_1 - pos_0_1
+    self.rotate(a,b,pos_0_1)
 
-    a = self.atoms[index_pairs[1][0]].np_pos - self.atoms[index_pairs[0][0]].np_pos
+    a = pos_1_0 - pos_0_0
     a_hat = a/np.linalg.norm(a)
 
-    b = self.atoms[index_pairs[2][0]].np_pos - self.atoms[index_pairs[0][0]].np_pos
-    c = target.atoms[index_pairs[2][1]].np_pos - target.atoms[index_pairs[0][1]].np_pos
+    b = pos_2_0 - pos_0_0
+    c = pos_2_1 - pos_0_1
     d = b - np.dot(a,b)*a_hat
     e = c - np.dot(a,c)*a_hat
 
@@ -705,9 +739,9 @@ class System:
     ang = np.arccos(np.clip(np.dot(d_hat, e_hat), -1.0, 1.0))
 
     if alt:
-      self.rotate((ang/np.pi*180),a,self.atoms[index_pairs[0][0]].np_pos)
+      self.rotate((ang/np.pi*180),a,pos_0_1)
     else:
-      self.rotate(-(90-ang/np.pi*180),a,self.atoms[index_pairs[0][0]].np_pos)
+      self.rotate(-(90-ang/np.pi*180),a,pos_0_1)
 
   def guess_names(self,target):
     """Try and set the atom names of the system by looking for 
