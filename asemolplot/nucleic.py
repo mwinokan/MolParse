@@ -78,41 +78,29 @@ class NucleicAcid(Residue):
 
 	@property
 	def backbone(self):
-		"""Get backbone atoms
-			
-			 Y
-			 |
-		  O==C   HN
-		     |   |
-	      R--CA--N--X
-		     |
-		     HA
-	
-		"""
-
-
+		"""Get backbone atoms"""
 		if not self._backbone:
-			names = ["H5T", "O5'", "C5'",  "H5'", "H5''", 
-					 "C4'", "H4'", "O4'",  "C1'", "H1'", 
-					 "C2'", "H2'", "H2''", "C3'", "H3'", 
-					 "O3'", "P",   "O1P",  "O2P", "H3T"]
-			self._backbone = self.get_atom(names)
-
+			self._backbone = self.get_atom(self.bb_names)
 		return self._backbone
 
 	@property
 	def nucleobase(self):
 		"""Get nucleobase atoms"""
-
 		if not self._nucleobase:
-			bb_names = ["H5T", "O5'", "C5'",  "H5'", "H5''", 
-					    "C4'", "H4'", "O4'",  "C1'", "H1'", 
-					    "C2'", "H2'", "H2''", "C3'", "H3'", 
-					    "O3'", "P",   "O1P",  "O2P", "H3T"]
-			names = [n for n in self.atom_names() if n not in bb_names]
-			self._nucleobase = self.get_atom(names)
-
+			self._nucleobase = self.get_atom(self.nonbb_names)
 		return self._nucleobase
+
+	@property
+	def bb_names(self):
+		return ["H5T", "O5'", "C5'",  "H5'", "H5''", 
+				"C4'", "H4'", "O4'",  "C1'", "H1'", 
+				"C2'", "H2'", "H2''", "C3'", "H3'", 
+				"O3'", "P",   "O1P",  "O2P", "H3T"]
+
+	@property
+	def nonbb_names(self):
+		"""Get nucleobase atoms"""
+		return [n for n in self.atom_names() if n not in self.bb_names]
 
 	def make_5ter(self):
 		"""Create a 5-Terminus"""
@@ -157,7 +145,7 @@ class NucleicAcid(Residue):
 		if atom is not None:
 			atom.name = "H3T"
 
-	def mutate(self,newname):
+	def mutate(self,newname,show=False):
 		""" Mutate this nucleic acid to another"""
 
 		import mout
@@ -182,29 +170,81 @@ class NucleicAcid(Residue):
 
 		rem = [c for c in ref_sys.chain_names if c not in newname[-1]][0]
 		ref_sys.remove_chain(rem,verbosity=0)
+		ref_sys.fix_indices()
 		ref_res = ref_sys.residues[0]
 
 		if self.is_purine and ref_res.is_purine:
-			print("Purine --> Purine")
+			mout.warningOut("Purine --> Purine")
 
-			# view_sys = ref_sys.copy()
-			# for atom in self.atoms:
-			# 	view_sys.add_atom(atom)
-			# view_sys.view()
+			# get atoms to align by
+			names = ["N9","C6","C2"]
+			start = ref_res.get_atom(names)
+			target = self.get_atom(names)
 
-			targets = [self.get_atom(n).np_pos for n in ["N9","C6","C2"]]
-			indices = [ref_res.get_atom(n).index for n in ["N9","C6","C2"]]
-			ref_sys.align_by_pairs(targets,indices,alt=False)
+			# align the system
+			extra = ref_sys.align_by_posmap([start,target])
 
+			# delete intersecting atoms
+			ref_res.delete_atom("H9",verbosity=0)
+
+		elif self.is_pyrimidine and ref_res.is_pyrimidine:
+			mout.warningOut("Pyrimidine --> Pyrimidine")
+			
+			# get atoms to align by
+			names = ["C6","C4","C2"]
+			start = ref_res.get_atom(names)
+			target = self.get_atom(names)
+
+			# align the system
+			extra = ref_sys.align_by_posmap([start,target])
+
+			# shift to connect to the backbone
+			ref_res.translate(self.get_atom("N1")-ref_res.get_atom("N1"))
+
+			# delete intersecting atoms
+			ref_res.delete_atom("H1",verbosity=0)
+
+		elif self.is_purine and ref_res.is_pyrimidine:
+			mout.warningOut("Purine --> Pyrimidine")
+
+			# get atoms to align by
+			start = ref_res.get_atom(["C6","C4","C2"])
+			target = self.get_atom(["C4","C6","C2"])
+
+			# align the system
+			extra = ref_sys.align_by_posmap([start,target])
+
+			# shift to connect to the backbone
+			ref_res.translate(self.get_atom("N9")-ref_res.get_atom("N1"))
+
+			# delete intersecting atoms
+			ref_res.delete_atom("H1",verbosity=0)
+
+		elif self.is_pyrimidine and ref_res.is_purine:
+			mout.warningOut("Pyrimidine --> Purine")
+
+			# get atoms to align by
+			start = ref_res.get_atom(["C4","C6","C2"])
+			target = self.get_atom(["C6","C4","C2"])
+
+			# align the system
+			extra = ref_sys.align_by_posmap([start,target])
+
+			# shift to connect to the backbone
+			ref_res.translate(self.get_atom("N1")-ref_res.get_atom("N9"))
+
+			# delete intersecting atoms
+			ref_res.delete_atom("H9",verbosity=0)
+		
+		if show:
 			view_sys = ref_sys.copy()
 			for atom in self.atoms:
 				view_sys.add_atom(atom)
-			view_sys.view()
+			view_sys.plot3d(extra,1.0)
 
-		elif self.is_pyrimidine and ref_res.is_pyrimidine:
-			print("Pyrimidine --> Pyrimidine")
-		elif self.is_purine and ref_res.is_pyrimidine:
-			print("Purine --> Pyrimidine")
-		elif self.is_pyrimidine and ref_res.is_purine:
-			print("Pyrimidine --> Purine")
+		# delete intersecting atoms
+		self.delete_atom(self.nonbb_names,verbosity=0)
 
+		# add the reference nucleobase
+		for atom in ref_res.atoms:
+			self.add_atom(atom)
