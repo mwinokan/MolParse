@@ -11,5 +11,5 @@ def view(atoms,**kwargs):
 				except ValueError:
 					continue
 	from ase import visualize
-	visualize.view(atoms,**kwargs)
+	return visualize.view(atoms,**kwargs)
 	
