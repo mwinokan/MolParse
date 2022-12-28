@@ -36,6 +36,19 @@ class Residue:
     self.fix_names()
 
   @property
+  def ase_atoms(self):
+    from ase import Atoms
+    atoms = self.atoms
+    symbols = [a.symbol for a in atoms]
+    positions = [a.position for a in atoms]
+    return Atoms(symbols=symbols,cell=None, pbc=None,positions=positions)
+
+  def view(self):
+    """View the system with ASE"""
+    from .gui import view
+    view(self.ase_atoms)
+
+  @property
   def num_atoms(self):
     """Number of child atoms (int)"""
     return len(self._atoms)
@@ -170,6 +183,49 @@ class Residue:
                   mcol.error+" in residue "+
                   mcol.arg+self.name+str([self.number]),fatal=False,code="Residue.1")
     return None
+
+  def set_positions(self,positions):
+    """Set positions for all child atoms"""
+    for atom,pos in zip(self.atoms,positions):
+      atom.position = pos
+
+  def align_to(self,target,names):
+    """Minimise rotation w.r.t. a target"""
+
+    import numpy as np
+    from ase.build.rotate import rotation_matrix_from_points
+
+    assert isinstance(target,Residue)
+
+    # get subset of the residue to align
+    self_copy = self.copy()
+    self_copy.delete_atom([n for n in self_copy.atom_names() if n not in names])
+    
+    # get subset of the target
+    target_copy = target.copy()
+    target_copy.delete_atom([n for n in target_copy.atom_names() if n not in names])
+
+    # position lists
+    p = self_copy.ase_atoms.get_positions()
+    p0 = target_copy.ase_atoms.get_positions()
+
+    # centeroids
+    c = np.mean(p, axis=0)
+    c0 = np.mean(p0, axis=0)
+        
+    # subtract centroids
+    p -= c
+    p0 -= c0
+
+    # Compute rotation matrix
+    R = rotation_matrix_from_points(p.T, p0.T)
+
+    # compute displacement
+    p_new = np.dot(self_copy.ase_atoms.get_positions(), R.T) + c0
+    d = p0[0] + c0 - p_new[0]
+
+    # set the new positions
+    self.set_positions(np.dot(self.ase_atoms.get_positions(), R.T) + c0 + d)
 
   def delete_atom(self,name: str,verbosity: int=1):
     """Delete a child Atom by name"""
