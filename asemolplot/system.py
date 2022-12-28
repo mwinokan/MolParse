@@ -454,6 +454,14 @@ class System:
     return charges
 
   @property
+  def symbols(self):
+    """Get all child Atom symbols (list)"""
+    symbols = []
+    for atom in self.atoms:
+      symbols.append(atom.symbol)  
+    return symbols
+
+  @property
   def masses(self):
     """Get all child Atom masses (list)"""
     masses = []
@@ -569,9 +577,12 @@ class System:
   @property
   def ase_atoms(self):
     """Construct an equivalent ase.Atoms object"""
-    from .io import write, read
-    write("__temp__.pdb",self,verbosity=0)
-    return read("__temp__.pdb",verbosity=0)
+    
+    # from .io import write, read
+    # write("__temp__.pdb",self,verbosity=0)
+    # return read("__temp__.pdb",verbosity=0)
+    from ase import Atoms
+    return Atoms(symbols=self.symbols,cell=None, pbc=None,positions=self.positions)
 
   def write_CJSON(self,filename,use_atom_types=False,gulp_names=False):
     """Export a CJSON"""
@@ -599,10 +610,10 @@ class System:
     ase_atoms.rotate(angle,vector,center=center)
     self.set_coordinates(ase_atoms)
 
-  def view(self):
+  def view(self,**kwargs):
     """View the system with ASE"""
     from .gui import view
-    view(self)
+    view(self,**kwargs)
 
   def plot(self,ax=None,color=None,center_index=0,show=False,offset=None,padding=1,zeroaxis=None,frame=False,labels=True,textdict={"horizontalalignment":"center","verticalalignment":"center"}):
     """Render the system with matplotlib"""
@@ -662,6 +673,49 @@ class System:
 
     return ax, copy
 
+  def plot3d(self,extra=[],alpha=1.0):
+
+    import plotly.graph_objects as go
+
+    all_atoms = self.atoms
+
+    species = list(set(list(self.symbols)))
+
+    from ase.data import vdw_radii, atomic_numbers
+    from ase.data.colors import jmol_colors
+
+    fig = go.Figure()
+
+    for s in species:
+
+      positions = [a.np_pos for a in self.atoms if a.symbol == s]
+      x = [p[0] for p in positions]
+      y = [p[1] for p in positions]
+      z = [p[2] for p in positions]
+
+      atomic_number = atomic_numbers[s]
+      size = vdw_radii[atomic_number] * 15
+      color = jmol_colors[atomic_number]
+      color = (color[0]*256,color[1]*256,color[2]*256,alpha)
+
+      trace = go.Scatter3d(x=x,y=y,z=z,mode='markers',name=s,marker=dict(size=size,color=f'rgba{color}',line=dict(color='black',width=2)))
+
+      fig.add_trace(trace)
+
+    print(extra)
+
+    for i,(a,b) in enumerate(extra):
+
+      print(i,a,b)
+
+      trace = go.Scatter3d(x=[a[0],b[0]],y=[a[1],b[1]],z=[a[2],b[2]],name=f'extra[{i}]')
+
+      fig.add_trace(trace)
+
+    fig.show()
+
+    return fig
+
   def auto_rotate(self):
     """Rotate the system into the XY plane"""
     from .manipulate import auto_rotate
@@ -678,6 +732,71 @@ class System:
     minimize_rotation_and_translation(target,atoms)
     self.set_coordinates(atoms)
     return atoms
+
+  def translate(self,displacement):
+    """Translate the system"""
+    self.CoM(shift=displacement,verbosity=0)
+
+  def align_by_posmap(self,map):
+
+    """Align the system to a target by superimposing three shared atoms:
+
+      a --> A
+      b --> B
+      c --> C
+
+      (a,b,c) are atoms from this system
+      (A,B,C) are atoms from the target system
+
+      map should contain Atoms: [[a,b,c],[A,B,C]]
+
+    """
+
+    import numpy as np
+
+    a = map[0][0]
+    b = map[0][1]
+    c = map[0][2]
+
+    A = map[1][0]
+    B = map[1][1]
+    C = map[1][2]
+
+    # TRANSLATION
+
+    displacement = A - a
+    self.translate(displacement)
+
+    # ROTATION 1
+
+    d = (b+c)/2
+    D = (B+C)/2
+    self.rotate(d-A.np_pos,D-A.np_pos,center=A.np_pos)
+
+    # ROTATION 2
+
+    d = (b+c)/2
+    D = (B+C)/2
+
+    v_bc = c - b
+    v_BC = C - B
+
+    def unit_vector(a):
+      return a/np.linalg.norm(a)
+
+    def remove_parallel_component(vector,reference):
+      unit_reference = unit_vector(reference)
+      projection = np.dot(vector,unit_reference)
+      return vector - projection
+
+    v_ad = d - a.np_pos
+    v_bc_normal_to_ad = remove_parallel_component(v_bc, v_ad)
+    v_BC_normal_to_ad = remove_parallel_component(v_BC, v_ad)
+    self.rotate(v_bc_normal_to_ad, v_BC_normal_to_ad,center=A.np_pos)
+
+    # extra stuff for plotly
+    extra = [[A.np_pos,A.np_pos+v_ad]]
+    return extra
 
   def align_by_pairs(self,target,index_pairs,alt=False):
     """Align the system (i) to the target (j) by consider the vectors:
@@ -710,7 +829,7 @@ class System:
       pos_2_1 = target.atoms[index_pairs[2][1]].np_pos
 
     else:
-      
+
       pos_0_0 = self.atoms[index_pairs[0]].np_pos
       pos_1_0 = self.atoms[index_pairs[1]].np_pos
       pos_2_0 = self.atoms[index_pairs[2]].np_pos
