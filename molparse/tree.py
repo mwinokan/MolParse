@@ -31,6 +31,12 @@ class TreeViewer(CursesApp):
 
 			obj._expand = True
 
+			if obj.num_chains == 1:
+				obj.chains[0]._expand = True
+
+				if obj.chains[0].num_residues == 1:
+					obj.chains[0].residues[0]._expand = True
+
 		else:
 			mout.errorOut(f"TreeViewer not supported with {self._obj_type}")
 
@@ -68,19 +74,21 @@ class TreeViewer(CursesApp):
 		return self._obj
 
 	def drawtree(self):
-		self.recursive_tree(self.obj,0,0)
+		max_index = self.obj.children[-1].index
+		self.recursive_tree(self.obj,0,max_index,0)
 			
-	def recursive_tree(self,parent,line,depth=0):
+	def recursive_tree(self,parent,line,max_index,depth=0):
 
-		line = self.object_line(parent, line, depth)
+		line = self.object_line(parent, line, max_index, depth)
 		
 		if parent.children and parent._expand:
+			max_index = parent.children[-1].index
 			for child in parent.children:
-				line = self.recursive_tree(child,line,depth+1)
+				line = self.recursive_tree(child,line,max_index,depth+1,)
 
 		return line
 
-	def object_line(self,obj,line,depth):
+	def object_line(self,obj,line,max_index,depth):
 
 		col = 4*depth
 
@@ -106,11 +114,8 @@ class TreeViewer(CursesApp):
 		self.add_text(text)
 
 		if not isinstance(obj,System):
-			text = Text(f'[',line,text.endcol,bold=True)
-			self.add_text(text)
-			text = Text(f'{obj.index}',line,text.endcol,color_pair=self.GREEN,bold=True)
-			self.add_text(text)
-			text = Text(f'] ',line,text.endcol,bold=True)
+			width = len(str(max_index))
+			text = Text(f'{str(obj.index).rjust(width)} ',line,text.endcol,color_pair=self.GREEN,bold=True)
 			self.add_text(text)
 
 		if self.type_str(obj) not in ['Atom']:
@@ -130,7 +135,7 @@ class TreeViewer(CursesApp):
 
 		if self.type_str(obj) in ['Atom']:
 
-			text = Text(f'[{obj.x:.3f}, {obj.y:.3f}, {obj.z:.3f}]',line,text.endcol,bold=True)
+			text = Text(f'[{obj.x:7.3f}, {obj.y:7.3f}, {obj.z:7.3f}]',line,text.endcol)
 			self.add_text(text)
 
 			text = Text(f' {obj.name}',line,text.endcol,color_pair=self.MAGENTA,bold=True)
