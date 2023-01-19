@@ -1,0 +1,11 @@
+#!/usr/bin/env python3
+
+import sys
+
+assert len(sys.argv) > 1, "Pass a file name"
+
+import molparse as mp
+
+sys = mp.parse(sys.argv[1])
+
+sys.tree()
