@@ -2,60 +2,58 @@
 from .residue import Residue, res_type
 
 def alphabet(name):
-	match name:
-		case "ALA": return "A" 
-		case "ARG": return "R" 
-		case "ASN":	return "N" 
-		case "ASP": return "D" 
-		case "CYS": return "C" 
-		case "GLN": return "Q" 
-		case "GLU": return "E" 
-		case "GLY": return "G" 
-		case "HIS": return "H" 
-		case "HSD": return "H" 
-		case "ILE": return "I" 
-		case "LEU": return "L" 
-		case "LYS": return "K" 
-		case "MET": return "M" 
-		case "PHE": return "F" 
-		case "PRO": return "P" 
-		case "SER": return "S" 
-		case "THR": return "T" 
-		case "TRP": return "W" 
-		case "TYR": return "Y" 
-		case "VAL": return "V" 
-		case other:
-			import mout
-			mout.errorOut(f"Unsupported amino acid residue name: {name}")
-			return None
+	if "ALA": return "A" 
+	elif name == "ARG": return "R" 
+	elif name == "ASN":	return "N" 
+	elif name == "ASP": return "D" 
+	elif name == "CYS": return "C" 
+	elif name == "GLN": return "Q" 
+	elif name == "GLU": return "E" 
+	elif name == "GLY": return "G" 
+	elif name == "HIS": return "H" 
+	elif name == "HSD": return "H" 
+	elif name == "ILE": return "I" 
+	elif name == "LEU": return "L" 
+	elif name == "LYS": return "K" 
+	elif name == "MET": return "M" 
+	elif name == "PHE": return "F" 
+	elif name == "PRO": return "P" 
+	elif name == "SER": return "S" 
+	elif name == "THR": return "T" 
+	elif name == "TRP": return "W" 
+	elif name == "TYR": return "Y" 
+	elif name == "VAL": return "V" 
+	else:
+		import mout
+		mout.errorOut(f"Unsupported amino acid residue name: {name}")
+		return None
 
 def longname(name):
-	match name:
-		case "ALA": return "Alanine" 
-		case "ARG": return "Arginine" 
-		case "ASN":	return "Asparagine" 
-		case "ASP": return "Aspartic Acid" 
-		case "CYS": return "Cysteine" 
-		case "GLN": return "Glutamine" 
-		case "GLU": return "Glutamic Acid" 
-		case "GLY": return "Glycine" 
-		case "HIS": return "Histidine" 
-		case "HSD": return "Histidine" 
-		case "ILE": return "Isoleucine" 
-		case "LEU": return "Leucine" 
-		case "LYS": return "Lysine" 
-		case "MET": return "Methionine" 
-		case "PHE": return "Phenylalanine" 
-		case "PRO": return "Proline" 
-		case "SER": return "Serine" 
-		case "THR": return "Threonine" 
-		case "TRP": return "Tryptophan" 
-		case "TYR": return "Tyrosine" 
-		case "VAL": return "Valine" 
-		case other:
-			import mout
-			mout.errorOut(f"Unsupported amino acid residue name: {name}")
-			return None
+	if name == "ALA": return "Alanine" 
+	elif name == "ARG": return "Arginine" 
+	elif name == "ASN":	return "Asparagine" 
+	elif name == "ASP": return "Aspartic Acid" 
+	elif name == "CYS": return "Cysteine" 
+	elif name == "GLN": return "Glutamine" 
+	elif name == "GLU": return "Glutamic Acid" 
+	elif name == "GLY": return "Glycine" 
+	elif name == "HIS": return "Histidine" 
+	elif name == "HSD": return "Histidine" 
+	elif name == "ILE": return "Isoleucine" 
+	elif name == "LEU": return "Leucine" 
+	elif name == "LYS": return "Lysine" 
+	elif name == "MET": return "Methionine" 
+	elif name == "PHE": return "Phenylalanine" 
+	elif name == "PRO": return "Proline" 
+	elif name == "SER": return "Serine" 
+	elif name == "THR": return "Threonine" 
+	elif name == "TRP": return "Tryptophan" 
+	elif name == "TYR": return "Tyrosine" 
+	elif name == "VAL": return "Valine" 
+	else:
+		import mout
+		mout.errorOut(f"Unsupported amino acid residue name: {name}")
+		return None
 
 class AminoAcid(Residue):
 	"""Class for Amino Acid Residue

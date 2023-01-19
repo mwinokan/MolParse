@@ -2,42 +2,40 @@
 from .residue import Residue, res_type
 
 def alphabet(name):
-	match name:
-		case "DA": return "A" 
-		case "DT": return "T" 
-		case "DG": return "G" 
-		case "DC": return "C" 
-		case "DA3": return "A" 
-		case "DT3": return "T" 
-		case "DG3": return "G" 
-		case "DC3": return "C" 
-		case "DA5": return "A" 
-		case "DT5": return "T" 
-		case "DG5": return "G" 
-		case "DC5": return "C" 
-		case other:
-			import mout
-			mout.errorOut(f"Unsupported nucleic acid residue name: {name}")
-			return None
+	if name == "DA": return "A" 
+	elif name == "DT": return "T" 
+	elif name == "DG": return "G" 
+	elif name == "DC": return "C" 
+	elif name == "DA3": return "A" 
+	elif name == "DT3": return "T" 
+	elif name == "DG3": return "G" 
+	elif name == "DC3": return "C" 
+	elif name == "DA5": return "A" 
+	elif name == "DT5": return "T" 
+	elif name == "DG5": return "G" 
+	elif name == "DC5": return "C" 
+	else:
+		import mout
+		mout.errorOut(f"Unsupported nucleic acid residue name: {name}")
+		return None
 
 def longname(name):
-	match name:
-		case "DA": return "Adenine" 
-		case "DT": return "Thymine" 
-		case "DG": return "Guanine" 
-		case "DC": return "Cytosine" 
-		case "DA3": return "Adenine 3-Terminus" 
-		case "DT3": return "Thymine 3-Terminus" 
-		case "DG3": return "Guanine 3-Terminus" 
-		case "DC3": return "Cytosine 3-Terminus" 
-		case "DA5": return "Adenine 5-Terminus" 
-		case "DT5": return "Thymine 5-Terminus" 
-		case "DG5": return "Guanine 5-Terminus" 
-		case "DC5": return "Cytosine 5-Terminus" 
-		case other:
-			import mout
-			mout.errorOut(f"Unsupported nucleic acid residue name: {name}")
-			return None
+	if name == "DA": return "Adenine" 
+	elif name == "DT": return "Thymine" 
+	elif name == "DG": return "Guanine" 
+	elif name == "DC": return "Cytosine" 
+	elif name == "DA3": return "Adenine 3-Terminus" 
+	elif name == "DT3": return "Thymine 3-Terminus" 
+	elif name == "DG3": return "Guanine 3-Terminus" 
+	elif name == "DC3": return "Cytosine 3-Terminus" 
+	elif name == "DA5": return "Adenine 5-Terminus" 
+	elif name == "DT5": return "Thymine 5-Terminus" 
+	elif name == "DG5": return "Guanine 5-Terminus" 
+	elif name == "DC5": return "Cytosine 5-Terminus" 
+	else:
+		import mout
+		mout.errorOut(f"Unsupported nucleic acid residue name: {name}")
+		return None
 
 class NucleicAcid(Residue):
 	"""Class for Nucleic Acid Residue
