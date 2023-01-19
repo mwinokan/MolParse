@@ -7,6 +7,7 @@ class Residue:
   coordinate file via amp.parsePDB or otherwise"""
 
   def __init__(self,name: str,number: int=None,chain: str=None,atoms=None):
+    self._expand = False
     self._name = name
     self.chain = chain
     self.number = number
@@ -34,6 +35,25 @@ class Residue:
                mcol.clear+" to "+mcol.arg+new)
     self._name = new
     self.fix_names()
+
+  @property
+  def ase_atoms(self):
+    from ase import Atoms
+    atoms = self.atoms
+    symbols = [a.symbol for a in atoms]
+    positions = [a.position for a in atoms]
+    return Atoms(symbols=symbols,cell=None, pbc=None,positions=positions)
+
+  def view(self):
+    """View the system with ASE"""
+    from .gui import view
+    view(self.ase_atoms)
+
+  def plot3d(self,extra=[],alpha=1.0):
+    """Render the system with plotly graph objects. 
+    extra can contain pairs of coordinates to be shown as vectors."""
+    from .go import plot3d
+    return plot3d(self.atoms,extra,alpha)
 
   @property
   def num_atoms(self):
@@ -157,6 +177,9 @@ class Residue:
 
   def get_atom(self,name):
     """Get a child Atom by name"""
+    if isinstance(name,list):
+      return [self.get_atom(n) for n in name]
+
     for atom in self._atoms:
       if atom.name == name: return atom
 
@@ -168,10 +191,57 @@ class Residue:
                   mcol.arg+self.name+str([self.number]),fatal=False,code="Residue.1")
     return None
 
+  def set_positions(self,positions):
+    """Set positions for all child atoms"""
+    for atom,pos in zip(self.atoms,positions):
+      atom.position = pos
+
+  def align_to(self,target,names):
+    """Minimise rotation w.r.t. a target"""
+
+    import numpy as np
+    from ase.build.rotate import rotation_matrix_from_points
+
+    assert isinstance(target,Residue)
+
+    # get subset of the residue to align
+    self_copy = self.copy()
+    self_copy.delete_atom([n for n in self_copy.atom_names() if n not in names])
+    
+    # get subset of the target
+    target_copy = target.copy()
+    target_copy.delete_atom([n for n in target_copy.atom_names() if n not in names])
+
+    # position lists
+    p = self_copy.ase_atoms.get_positions()
+    p0 = target_copy.ase_atoms.get_positions()
+
+    # centeroids
+    c = np.mean(p, axis=0)
+    c0 = np.mean(p0, axis=0)
+        
+    # subtract centroids
+    p -= c
+    p0 -= c0
+
+    # Compute rotation matrix
+    R = rotation_matrix_from_points(p.T, p0.T)
+
+    # compute displacement
+    p_new = np.dot(self_copy.ase_atoms.get_positions(), R.T) + c0
+    d = p0[0] + c0 - p_new[0]
+
+    # set the new positions
+    self.set_positions(np.dot(self.ase_atoms.get_positions(), R.T) + c0 + d)
+
   def delete_atom(self,name: str,verbosity: int=1):
     """Delete a child Atom by name"""
     import mcol
     import mout
+    if isinstance(name,list):
+      for n in name:
+        self.delete_atom(n,verbosity=verbosity-1)
+      return
     for index,atom in enumerate(self._atoms):
       if atom.name == name:
         del self._atoms[index]
@@ -297,9 +367,18 @@ class Residue:
     import numpy as np
     return np.linalg.norm([x[1]-x[0] for x in self.bbox])
 
+  def expand(self):
+    self._expand = True
+  def collapse(self):
+    self._expand = False
+
+  @property
+  def children(self):
+    return self.atoms
+
 def res_type(resname):
   """Guess type from residue name"""
-  if resname.startswith(('DA','DT','DC','DG')):
+  if resname.startswith(('DA','DT','DC','DG','ADE9','THMN','GUA9','CTSN')):
     this_type = "DNA"
   elif resname.startswith(('SOL','WAT','TIP','T3P','HOH')):
     this_type = "SOL"

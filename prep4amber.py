@@ -2,7 +2,7 @@
 
 import mout
 import argparse
-import asemolplot as amp
+import molparse as amp
 
 argparser = argparse.ArgumentParser(description='Prepare a PDB file for an Amber pipeline')
 argparser.add_argument("-i","--input",help="Input filename")

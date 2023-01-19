@@ -3,11 +3,13 @@ class System:
 
   """Top-level object for molecular systems
 
-  These objects should not be created by the user, 
-  but constructed automatically when parsing a 
+  These objects are rarely created by the user, 
+  instead constructed automatically when parsing a 
   coordinate file via amp.parsePDB or otherwise"""
 
   def __init__(self,name: str):
+
+    self._expand = False
 
     self.name = name
     self.description = None
@@ -63,12 +65,23 @@ class System:
       if index != atom.index:
         print(index,atom.index,atom.name,atom.residue)
 
-  def fix_indices(self):
+  def fix_indices(self,verbosity=0):
     """Fix all child Atoms' indices"""
+    if verbosity:
+      import mout
+      exclude = ['SOL','ION']
     for index,atom in enumerate(self.atoms):
+      if verbosity == 2 and atom.index != index:
+        mout.warningOut(f"Re-indexing atom {atom} (#{atom.index} --> #{index})")
+      elif verbosity == 1 and atom.type not in exclude and atom.index != index:
+        mout.warningOut(f"Re-indexing atom {atom} (#{atom.index} --> #{index})")
       atom.index = index
 
     for index,residue in enumerate(self.residues):
+      if verbosity == 2 and residue.number != index:
+        mout.warningOut(f"Re-indexing residue {residue} (#{residue.number} --> #{index})")
+      elif verbosity == 2 and residue.type not in exclude and residue.number != index:
+        mout.warningOut(f"Re-indexing residue {residue} (#{residue.number} --> #{index})")
       residue.number = index
 
       residue.fix_names()
@@ -121,6 +134,15 @@ class System:
     x = [min([a.np_pos[0] for a in self.atoms]),max([a.np_pos[0] for a in self.atoms])]
     y = [min([a.np_pos[1] for a in self.atoms]),max([a.np_pos[1] for a in self.atoms])]
     z = [min([a.np_pos[2] for a in self.atoms]),max([a.np_pos[2] for a in self.atoms])]
+    return [x,y,z]
+
+  @property
+  def bbox_sides(self):
+    """Bounding box of the system"""
+    import numpy as np
+    x = max([a.np_pos[0] for a in self.atoms])-min([a.np_pos[0] for a in self.atoms])
+    y = max([a.np_pos[1] for a in self.atoms])-min([a.np_pos[1] for a in self.atoms])
+    z = max([a.np_pos[2] for a in self.atoms])-min([a.np_pos[2] for a in self.atoms])
     return [x,y,z]
 
   @property
@@ -233,12 +255,20 @@ class System:
     for i,chain in enumerate(self.chains):
       mout.headerOut(f'Chain[{mcol.arg}{i}{reset}] {mcol.result}{chain.name}{reset} ({mcol.varType}{chain.type}{reset}) [#={mcol.result}{chain.num_atoms}{reset}] =',end=' ')
 
-      names = ""
-      for name in chain.res_names[:res_limit]:
-        names += name+" "
-      if chain.num_residues > res_limit:
-        names += "..."
-      mout.out(names)
+      if chain.type == "PRO":
+        names = ""
+        for r in chain.residues[:res_limit]:
+            names += r.letter + " "
+        if chain.num_residues > res_limit:
+          names += "..."
+        mout.out(names)
+      else:
+        names = ""
+        for name in chain.res_names[:res_limit]:
+          names += name+" "
+        if chain.num_residues > res_limit:
+          names += "..."
+        mout.out(names)
     # mout.varOut("Total Charge",self.charge)
 
   @property
@@ -404,7 +434,7 @@ class System:
     """Get all child Atom names (list)"""
     names_list = []
     for chain in self.chains:
-      names_list.append(chain.atom_names(wRes=wRes,noPrime=noPrime))
+      names_list += chain.atom_names(wRes=wRes,noPrime=noPrime)
     return names_list
 
   @property
@@ -432,6 +462,14 @@ class System:
     return charges
 
   @property
+  def symbols(self):
+    """Get all child Atom symbols (list)"""
+    symbols = []
+    for atom in self.atoms:
+      symbols.append(atom.symbol)  
+    return symbols
+
+  @property
   def masses(self):
     """Get all child Atom masses (list)"""
     masses = []
@@ -449,7 +487,7 @@ class System:
 
   def centre_of_mass(self,set=None,shift=None):
     """Calculate centre of mass"""
-    return CoM(set=set,shift=shift)
+    return self.CoM(set=set,shift=shift)
 
   def center(self):
     """Move the system's CoM to the origin"""
@@ -547,9 +585,12 @@ class System:
   @property
   def ase_atoms(self):
     """Construct an equivalent ase.Atoms object"""
-    from .io import write, read
-    write("__temp__.pdb",self,verbosity=0)
-    return read("__temp__.pdb",verbosity=0)
+    
+    # from .io import write, read
+    # write("__temp__.pdb",self,verbosity=0)
+    # return read("__temp__.pdb",verbosity=0)
+    from ase import Atoms
+    return Atoms(symbols=self.symbols,cell=None, pbc=None,positions=self.positions)
 
   def write_CJSON(self,filename,use_atom_types=False,gulp_names=False):
     """Export a CJSON"""
@@ -577,10 +618,74 @@ class System:
     ase_atoms.rotate(angle,vector,center=center)
     self.set_coordinates(ase_atoms)
 
-  def view(self):
+  def view(self,**kwargs):
     """View the system with ASE"""
     from .gui import view
-    view(self)
+    view(self,**kwargs)
+
+  def plot(self,ax=None,color=None,center_index=0,show=False,offset=None,padding=1,zeroaxis=None,frame=False,labels=True,textdict={"horizontalalignment":"center","verticalalignment":"center"}):
+    """Render the system with matplotlib"""
+    
+    import numpy as np
+    from ase.visualize.plot import plot_atoms
+
+    # copy the system so as not to alter it
+    copy = self.copy()
+
+    # create new axes if none provided
+    if ax is None:
+      import matplotlib.pyplot as plt
+      fig,ax = plt.subplots()
+
+    # create colours list
+    if color is not None:
+      color = [color for a in copy.atoms]
+
+    # create the canvas unit size from bounding box
+    canvas = np.array(self.bbox_sides)*1.5
+
+    # center the render if needed
+    if offset is None:
+      offset=[0,0]
+      if center_index is not None:
+        vec = - copy.atoms[center_index].np_pos + canvas
+        copy.CoM(shift=vec,verbosity=0)
+
+    # use ASE to render the atoms
+    plot_atoms(copy.ase_atoms,ax,colors=color,offset=offset,bbox=[0,0,canvas[0]*2,canvas[1]*2])
+
+    # do the labels
+    if labels:
+      for atom in copy.atoms:
+        if atom.species != 'H':
+          ax.text(atom.position[0],atom.position[1],atom.name,**textdict)
+
+    # crop the plot
+    xmax = copy.bbox[0][1] + padding
+    xmin = copy.bbox[0][0] - padding
+    ymax = copy.bbox[1][1] + padding
+    ymin = copy.bbox[1][0] - padding
+    ax.set_xlim(xmin,xmax)
+    ax.set_ylim(ymin,ymax)
+
+    # render the centering axes
+    if zeroaxis is not None:
+      ax.axvline(canvas[0],color=zeroaxis)
+      ax.axhline(canvas[1],color=zeroaxis)
+
+    if not frame:
+      ax.axis('off')
+
+    if show:
+      plt.show()
+
+    return ax, copy
+
+  def plot3d(self,extra=[],alpha=1.0):
+    """Render the system with plotly graph objects. 
+    extra can contain pairs of coordinates to be shown as vectors."""
+    from .go import plot3d
+    return plot3d(self.atoms,extra,alpha)
 
   def auto_rotate(self):
     """Rotate the system into the XY plane"""
@@ -598,6 +703,183 @@ class System:
     minimize_rotation_and_translation(target,atoms)
     self.set_coordinates(atoms)
     return atoms
+
+  def translate(self,displacement):
+    """Translate the system"""
+    self.CoM(shift=displacement,verbosity=0)
+
+  def align_by_posmap(self,map):
+
+    """Align the system to a target by superimposing three shared atoms:
+
+      a --> A
+      b --> B
+      c --> C
+
+      (a,b,c) are atoms from this system
+      (A,B,C) are atoms from the target system
+
+      map should contain Atoms: [[a,b,c],[A,B,C]]
+
+    """
+
+    import numpy as np
+
+    a = map[0][0]
+    b = map[0][1]
+    c = map[0][2]
+
+    A = map[1][0]
+    B = map[1][1]
+    C = map[1][2]
+
+    # TRANSLATION
+
+    displacement = A - a
+    self.translate(displacement)
+
+    # ROTATION 1
+
+    d = (b+c)/2
+    D = (B+C)/2
+    self.rotate(d-A.np_pos,D-A.np_pos,center=A.np_pos)
+
+    # ROTATION 2
+
+    d = (b+c)/2
+    D = (B+C)/2
+
+    v_bc = c - b
+    v_BC = C - B
+
+    def unit_vector(a):
+      return a/np.linalg.norm(a)
+
+    def remove_parallel_component(vector,reference):
+      unit_reference = unit_vector(reference)
+      projection = np.dot(vector,unit_reference)
+      return vector - projection
+
+    v_ad = d - a.np_pos
+    v_bc_normal_to_ad = remove_parallel_component(v_bc, v_ad)
+    v_BC_normal_to_ad = remove_parallel_component(v_BC, v_ad)
+    self.rotate(v_bc_normal_to_ad, v_BC_normal_to_ad,center=A.np_pos)
+
+    # extra stuff for plotly
+    extra = [[A.np_pos,A.np_pos+v_ad]]
+    return extra
+
+  def align_by_pairs(self,target,index_pairs,alt=False):
+    """Align the system (i) to the target (j) by consider the vectors:
+
+        a --> b
+        a --> c
+
+        where index pairs contains the indices for the three atoms: 
+        a,b,c in the respective systems:
+
+        index_pairs = [[i_a,j_a],[i_b,j_b],[i_c,j_c]]
+
+        Alternatively you can pass the positions j_a, j_b, j_c as target,
+        and index_pairs can be i_a, i_b, i_c.
+        """
+
+    assert len(index_pairs) == 3
+    import numpy as np
+
+    if isinstance(target,System):
+      for pair in index_pairs:
+        assert self.atoms[pair[0]].name == target.atoms[pair[1]].name
+
+      pos_0_0 = self.atoms[index_pairs[0][0]].np_pos
+      pos_1_0 = self.atoms[index_pairs[1][0]].np_pos
+      pos_2_0 = self.atoms[index_pairs[2][0]].np_pos
+
+      pos_0_1 = target.atoms[index_pairs[0][1]].np_pos
+      pos_1_1 = target.atoms[index_pairs[1][1]].np_pos
+      pos_2_1 = target.atoms[index_pairs[2][1]].np_pos
+
+    else:
+
+      pos_0_0 = self.atoms[index_pairs[0]].np_pos
+      pos_1_0 = self.atoms[index_pairs[1]].np_pos
+      pos_2_0 = self.atoms[index_pairs[2]].np_pos
+
+      pos_0_1 = target[0]
+      pos_1_1 = target[1]
+      pos_2_1 = target[2]
+
+    vec = pos_0_1 - pos_0_0
+    self.CoM(shift=vec,verbosity=0)
+
+    a = pos_1_0 - pos_0_0
+    b = pos_1_1 - pos_0_1
+    self.rotate(a,b,pos_0_1)
+
+    a = pos_1_0 - pos_0_0
+    a_hat = a/np.linalg.norm(a)
+
+    b = pos_2_0 - pos_0_0
+    c = pos_2_1 - pos_0_1
+    d = b - np.dot(a,b)*a_hat
+    e = c - np.dot(a,c)*a_hat
+
+    d_hat = d/np.linalg.norm(d)
+    e_hat = e/np.linalg.norm(e)
+    ang = np.arccos(np.clip(np.dot(d_hat, e_hat), -1.0, 1.0))
+
+    if alt:
+      self.rotate((ang/np.pi*180),a,pos_0_1)
+    else:
+      self.rotate(-(90-ang/np.pi*180),a,pos_0_1)
+
+  def guess_names(self,target):
+    """Try and set the atom names of the system by looking for 
+    the closest atom of the same species in the target system"""
+
+    import numpy as np
+
+    positions = [b.np_pos for b in target.atoms]
+    species = [b.species for b in target.atoms]
+
+    for a in self.atoms:
+      a_pos = a.np_pos
+      distances = [np.linalg.norm(a_pos - p) if s == a.species else 999 for s,p in zip(species,positions)]
+      index = np.argmin(distances)
+      b = target.atoms[index]
+      a.set_name(b.name,verbosity=0)
+
+  def rmsd(self,reference):
+    """Calculate the RMS displacement between this system and a reference"""
+    
+    import numpy as np
+    assert len(self.atoms) == len(reference.atoms)
+    displacements = np.array([np.linalg.norm(a.np_pos-b.np_pos) for a,b in zip(self.atoms,reference.atoms)])
+    return np.sqrt(np.mean(displacements**2))
+
+  def reorder_atoms(self,reference,map:dict=None):
+    new_sys = self.copy()
+    for atom in reference.atoms:
+      res = self.get_residue(atom.residue,map=map)
+      new_sys.add_atom(res.get_atom(atom.name).copy())
+    new_sys.fix_indices()
+    self = new_sys
+
+  def get_residue(self,name:str,map:dict=None):
+    """ return residues with matching name"""
+    import mout
+    if map is not None:
+      if name in map.keys():
+        name = map[name]
+    matches = [r for r in self.residues if r.name == name]
+    if len(matches) == 0:
+      mout.errorOut(f"No residue found with name {name}")
+      return []
+    elif len(matches) == 1:
+      return matches[0]
+    else:
+      mout.warning(f"Multiple residues found with name {name}")
+      return matches
 
   def copy(self,disk=False,alt=False):
     """Return a deepcopy of the System"""
@@ -649,6 +931,21 @@ class System:
       chain = Chain(atom.chain)
       chain.add_atom(atom)
       self.add_chain(chain)
+
+  def tree(self):
+    from .tree import tree
+    tree(self)
+
+  def expand(self):
+    self._expand = True
+    for chain in self.chains:
+      chain._expand = False
+  def collapse(self):
+    self._expand = False
+
+  @property
+  def children(self):
+    return self.chains
 
   def __repr__(self):
     return self.name

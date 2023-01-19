@@ -17,6 +17,7 @@ class Atom:
 
     # autodetermined
     self.species = name[0]
+    self.symbol = name[0]
 
     self.chain=chain
     self.chain_number = None
@@ -184,6 +185,35 @@ class Atom:
     if self.chain != residue.chain:
       return False
     return True
+
+  @property
+  def type(self):
+    from .residue import res_type
+    return res_type(self.residue)
+
+  @property
+  def ase_atom(self):
+    from ase import Atom
+    return Atom(self.species,self.position)
+
+  def __float__(self):
+    return self.np_pos
+
+  def __sub__(self,other):
+    assert isinstance(other,Atom)
+    return self.np_pos - other.np_pos
+
+  def __add__(self,other):
+    import numpy as np
+    if isinstance(other,np.ndarray):
+      return self.np_pos + other
+    if isinstance(other,Atom):
+      return self.np_pos + other.np_pos
+    raise TypeError
+
+  @property
+  def children(self):
+    return None
 
   def __repr__(self):
     return self.name

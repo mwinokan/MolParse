@@ -97,7 +97,7 @@ class DL_POLY(Calculator):
         os.system("rm -fv "+self.statis_path)
 
   def calculate(self,atoms):
-    from asemolplot import write, read
+    from molparse import write, read
     from .dl_poly_py import SPE
 
     if self.debug: mout.debugOut(self.name+".calculate")

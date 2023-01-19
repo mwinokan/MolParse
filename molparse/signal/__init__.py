@@ -6,7 +6,7 @@ from .modify import differentiate
 from .io import parseDat
 from .io import csv_strip
 
-from .peaks import peakFinder
+from .peaks import peakFinder, closest_index, closest_value
 
 # the fitwizard should be loaded only as needed via: from ase.signal 
 
