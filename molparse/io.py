@@ -124,15 +124,14 @@ def tagFromLine(line,byResidue):
     return 0
 
 def parse(file,verbosity=1):
-  match file.split(".")[-1]:
-    case "pdb":
-      return parsePDB(file,verbosity=verbosity)
-    case "gro":
-      return parseGRO(file,verbosity=verbosity)
-    case other:
-      import mout
-      mout.errorOut("Unsupported file type for AMP parsing, using ASE.io.read")
-      return read(file,verbosity=verbosity)
+  if file.split(".")[-1] == "pdb":
+    return parsePDB(file,verbosity=verbosity)
+  elif file.split(".")[-1] == "gro":
+    return parseGRO(file,verbosity=verbosity)
+  else:
+    import mout
+    mout.errorOut("Unsupported file type for MolParse parsing, using ASE.io.read")
+    return read(file,verbosity=verbosity)
 
 def parsePDB(pdb,systemName=None,index=1,fix_indices=True,fix_atomnames=True,autoname_chains=False,verbosity=1,debug=False,dry=False):
   from .system import System
