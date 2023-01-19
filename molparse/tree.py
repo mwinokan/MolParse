@@ -72,6 +72,11 @@ class TreeViewer(CursesApp):
 			print()
 			import mout
 			mout.errorOut("TreeViewer exited due to an AttributeError (maybe outdated MPyTools?).")
+		except:
+			self.close()
+			print()
+			import mout
+			mout.errorOut("TreeViewer exited due to an error.")
 
 		self.close()
 
