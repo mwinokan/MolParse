@@ -15,9 +15,14 @@ class Atom:
     self._position = position
     self.residue = residue
 
-    # autodetermined
-    self.species = name[0]
-    self.symbol = name[0]
+    name_symbol_dict = {'MG': 'Mg'}
+
+    if name in name_symbol_dict.keys():
+      self.species = name_symbol_dict[name]
+      self.symbol = name_symbol_dict[name]
+    else:
+      self.species = name[0]
+      self.symbol = name[0]
 
     self.chain=chain
     self.chain_number = None
