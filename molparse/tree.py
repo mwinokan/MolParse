@@ -11,11 +11,12 @@ from .amino import AminoAcid
 from .nucleic import NucleicAcid
 
 def tree(obj):
+	"""Open a CLI App showing the hierarchical tree of a MolParse System."""
 	
 	viewer = TreeViewer(obj)
 
 class TreeViewer(CursesApp):
-	"""CLI View of a MolParse object"""
+	"""CLI App showing the hierarchical tree of a MolParse System. Use molparse.tree(sys) to start."""
 	
 	def __init__(self, obj):
 		

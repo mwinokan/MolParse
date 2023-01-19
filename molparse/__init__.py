@@ -1,7 +1,6 @@
 """
 
-MolParse: Molecular Parsing
-
+Molecular Parsing
 
 A python package for parsing, modifying, and analysis of molecular structure files. 
 
@@ -15,6 +14,10 @@ Key features:
 
 	system = mp.parsePDB(filestr)
 	system = mp.parseGRO(filestr)
+
+* Viewing the molecular hierarchy of a system:
+
+	mp.tree(system)
 
 * Parsing of delimited text files:
 
@@ -72,6 +75,9 @@ Key features:
 * Tunnel
 
 """
+
+# import sys
+# assert sys.version_info >= (3, 10), "Use Python 3.10 or newer"
 
 # Custom IO
 from .io import read
