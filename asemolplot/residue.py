@@ -301,7 +301,7 @@ def res_type(resname):
   """Guess type from residue name"""
   if resname.startswith(('DA','DT','DC','DG')):
     this_type = "DNA"
-  elif resname.startswith(('SOL','WAT','TIP','T3P')):
+  elif resname.startswith(('SOL','WAT','TIP','T3P','HOH')):
     this_type = "SOL"
   elif resname.startswith(('ION','MG','CL','NA','SOD','POT','CAL','LIT','Na+','Cl-')):
     this_type = "ION"

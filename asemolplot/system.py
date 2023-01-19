@@ -133,6 +133,7 @@ class System:
     """Return a list of indices that are intersecting within a given radius between this system and another."""
 
     import mout
+    # mout.debugOut(f"amp.System.check_intersection({system},radius={radius},by_residue={by_residue},boolean={boolean},chain={chain})")
     import numpy as np
 
     indices = []
@@ -150,31 +151,36 @@ class System:
 
       # for each residue
       for i,res in enumerate(residues):
-        if num_residues > 5000 and i%100==0:
+        if num_residues > 500 and i%100==0:
           mout.progress(i,num_residues,prepend="Calculating intersection",append=" of residues checked")
 
         residue_CoM = res.CoM(verbosity=0)
         d = np.linalg.norm(residue_CoM-system_CoM)
         r_residue = res.bbox_norm
-        
+
         if d > r_system + r_residue:
           continue
 
         for atom2 in system.atoms:
           
-          if r_system > np.linalg.norm(residue_CoM-atom2.np_pos):
+          d = np.linalg.norm(residue_CoM-atom2.np_pos)
+
+          if d > r_system:
             continue
 
           for atom1 in res.atoms:
 
-            if np.linalg.norm(atom1.np_pos - atom2.np_pos) <= radius:
+            d = np.linalg.norm(atom1.np_pos - atom2.np_pos)
+
+            if d <= radius:
+
               if boolean:
                 return True
               else:
                 indices.append(res.number)
                 break
 
-      if num_residues > 5000:
+      if num_residues > 500:
         mout.progress(num_residues,num_residues,prepend="Calculating intersection",append=" of residues checked. Done.")
 
     else:

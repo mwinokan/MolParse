@@ -103,7 +103,7 @@ class Atom:
 
   @name.setter
   def name(self,name):
-    self.set_name(name=name)
+    self.set_name(name=name,verbosity=0)
 
   @property
   def atomic_number(self):
