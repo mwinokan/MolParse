@@ -8,11 +8,11 @@ A python package for parsing, modifying, and analysis of molecular structure fil
 
 MolParse is primarily a python module which can be used interactively, or within (batch) scripts:
 
-Try importing the module and using the builtin help method:
+Use `pydoc` to see help on the `molparse` module, or its methods & classes. E.g. from a shell:
 
-`import molparse`
+`pydoc molparse`
 
-`help(molparse)`
+`pydoc molparse.System`
 
 ### moltree Binary
 
