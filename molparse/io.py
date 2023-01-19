@@ -523,16 +523,15 @@ def parseGRO(gro,systemName=None,fix_indices=True,fix_atomnames=True,autoname_ch
 def new_residue(name,index,chain):
   from .residue import res_type
 
-  match res_type(name):
-    case "PRO":
-      from .amino import AminoAcid
-      return AminoAcid(name,index,chain)
-    case "DNA":
-      from .nucleic import NucleicAcid
-      return NucleicAcid(name,index,chain)
-    case other:
-      from .residue import Residue
-      return Residue(name,index,chain)
+  if res_type(name) == "PRO":
+    from .amino import AminoAcid
+    return AminoAcid(name,index,chain)
+  elif res_type(name) == "DNA":
+    from .nucleic import NucleicAcid
+    return NucleicAcid(name,index,chain)
+  else:
+    from .residue import Residue
+    return Residue(name,index,chain)
 
 def parseGROAtomLine(line,res_index,atom_index,chain_counter):
 
