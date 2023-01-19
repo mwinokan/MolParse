@@ -22,7 +22,7 @@ import mout # https://github.com/mwinokan/MPyTools
 import mcol # https://github.com/mwinokan/MPyTools
 import mplot # https://github.com/mwinokan/MPyTools
 
-import asemolplot as amp # https://github.com/mwinokan/AseMolPlot
+import molparse as amp # https://github.com/mwinokan/AseMolPlot
 
 # from ase.io.trajectory import Trajectory
 

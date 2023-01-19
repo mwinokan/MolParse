@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import asemolplot as amp
+import molparse as amp
 import mout
 import mcol
 

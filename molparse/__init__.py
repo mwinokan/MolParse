@@ -1,73 +1,73 @@
 """
 
-ASE Molecular Plotting
+MolParse: Molecular Parsing
 
 
-Extensions to ASE for tasks involving molecular simulations
+A python package for parsing, modifying, and analysis of molecular structure files. 
 
 It is recommended to import as the acronym:
 
-	import asemolplot as amp
+	import molparse as mp
 
 Key features:
 
 * Parsing coordinate files into System objects:
 
-	system = amp.parsePDB(filestr)
-	system = amp.parseGRO(filestr)
+	system = mp.parsePDB(filestr)
+	system = mp.parseGRO(filestr)
 
 * Parsing of delimited text files:
 
-	see help(amp.signal.parseDat)
+	see help(mp.signal.parseDat)
 
 * Writing System or ase.Atoms objects or lists thereof:
 
-	amp.write(filestr,object)
+	mp.write(filestr,object)
 
 * An object oriented approach to molecular system hierarchies:
 
-	amp.System
-	    |__ amp.Chain
-	            |__ amp.Residue
-	                    |__ amp.Atom
+	mp.System
+	    |__ mp.Chain
+	            |__ mp.Residue
+	                    |__ mp.Atom
 
 	See also:
 
-	help(amp.System), help(amp.Chain), etc.
+	help(mp.System), help(mp.Chain), etc.
 
-* Wrappers for common ASE methods (with AMP class support):
+* Wrappers for common ASE methods (with mp class support):
 
-	amp.read --> ase.io.read
-	amp.write --> ase.io.write
-	amp.view --> ase.visualize.view
+	mp.read --> ase.io.read
+	mp.write --> ase.io.write
+	mp.view --> ase.visualize.view
 
 * Functions to render images and animations of ASE Atoms:
 
 	with matplotlib:
-		amp.makeImage, 
-		amp.makeImages, 
-		amp.makeAnimation
+		mp.makeImage, 
+		mp.makeImages, 
+		mp.makeAnimation
 
 	with PoVRay:
-		amp.makePovImage, 
-		amp.makePovImages, 
-		amp.makePovAnimation
+		mp.makePovImage, 
+		mp.makePovImages, 
+		mp.makePovAnimation
 
 * Methods relating to DNA:
 
-	see help(amp.dna)
+	see help(mp.dna)
 
 * Finding the stationary points of a double well potential
 
-	see help(amp.tunnel.find_barrier_stationary_points)
+	see help(mp.tunnel.find_barrier_stationary_points)
 
 * Graphing of common molecular properties:
 
-	see help(amp.graphing)
+	see help(mp.graphing)
 
 * Analysis of common molecular properties:
 
-	see help(amp.analysis)
+	see help(mp.analysis)
 
 * Tunnel
 

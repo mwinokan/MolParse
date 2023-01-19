@@ -31,7 +31,7 @@ class NDFES(object):
 
 		import os
 		amp_path = os.environ['MWAMPPATH']
-		script = f'{amp_path}/asemolplot/ndfes/{script}'
+		script = f'{amp_path}/molparse/ndfes/{script}'
 
 		length_str = ""
 		for i in range(self.n_coords):
