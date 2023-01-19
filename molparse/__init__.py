@@ -80,6 +80,9 @@ from .io import parse
 from .io import parsePDB
 from .io import parseGRO
 
+# CLI-Viewer
+from .tree import tree
+
 # Manipulation
 from .manipulate import interpolate
 from .manipulate import auto_rotate

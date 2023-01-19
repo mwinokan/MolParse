@@ -211,6 +211,10 @@ class Atom:
       return self.np_pos + other.np_pos
     raise TypeError
 
+  @property
+  def children(self):
+    return None
+
   def __repr__(self):
     return self.name
   def __str__(self):

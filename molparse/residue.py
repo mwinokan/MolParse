@@ -7,6 +7,7 @@ class Residue:
   coordinate file via amp.parsePDB or otherwise"""
 
   def __init__(self,name: str,number: int=None,chain: str=None,atoms=None):
+    self._expand = False
     self._name = name
     self.chain = chain
     self.number = number
@@ -47,6 +48,12 @@ class Residue:
     """View the system with ASE"""
     from .gui import view
     view(self.ase_atoms)
+
+  def plot3d(self,extra=[],alpha=1.0):
+    """Render the system with plotly graph objects. 
+    extra can contain pairs of coordinates to be shown as vectors."""
+    from .go import plot3d
+    return plot3d(self.atoms,extra,alpha)
 
   @property
   def num_atoms(self):
@@ -359,6 +366,15 @@ class Residue:
     """Length of bounding box diagonal"""
     import numpy as np
     return np.linalg.norm([x[1]-x[0] for x in self.bbox])
+
+  def expand(self):
+    self._expand = True
+  def collapse(self):
+    self._expand = False
+
+  @property
+  def children(self):
+    return self.atoms
 
 def res_type(resname):
   """Guess type from residue name"""

@@ -9,6 +9,8 @@ class System:
 
   def __init__(self,name: str):
 
+    self._expand = False
+
     self.name = name
     self.description = None
     self.chains = []
@@ -674,47 +676,10 @@ class System:
     return ax, copy
 
   def plot3d(self,extra=[],alpha=1.0):
-
-    import plotly.graph_objects as go
-
-    all_atoms = self.atoms
-
-    species = list(set(list(self.symbols)))
-
-    from ase.data import vdw_radii, atomic_numbers
-    from ase.data.colors import jmol_colors
-
-    fig = go.Figure()
-
-    for s in species:
-
-      positions = [a.np_pos for a in self.atoms if a.symbol == s]
-      x = [p[0] for p in positions]
-      y = [p[1] for p in positions]
-      z = [p[2] for p in positions]
-
-      atomic_number = atomic_numbers[s]
-      size = vdw_radii[atomic_number] * 15
-      color = jmol_colors[atomic_number]
-      color = (color[0]*256,color[1]*256,color[2]*256,alpha)
-
-      trace = go.Scatter3d(x=x,y=y,z=z,mode='markers',name=s,marker=dict(size=size,color=f'rgba{color}',line=dict(color='black',width=2)))
-
-      fig.add_trace(trace)
-
-    print(extra)
-
-    for i,(a,b) in enumerate(extra):
-
-      print(i,a,b)
-
-      trace = go.Scatter3d(x=[a[0],b[0]],y=[a[1],b[1]],z=[a[2],b[2]],name=f'extra[{i}]')
-
-      fig.add_trace(trace)
-
-    fig.show()
-
-    return fig
+    """Render the system with plotly graph objects. 
+    extra can contain pairs of coordinates to be shown as vectors."""
+    from .go import plot3d
+    return plot3d(self.atoms,extra,alpha)
 
   def auto_rotate(self):
     """Rotate the system into the XY plane"""
@@ -960,6 +925,21 @@ class System:
       chain = Chain(atom.chain)
       chain.add_atom(atom)
       self.add_chain(chain)
+
+  def tree(self):
+    from .tree import tree
+    tree(self)
+
+  def expand(self):
+    self._expand = True
+    for chain in self.chains:
+      chain._expand = False
+  def collapse(self):
+    self._expand = False
+
+  @property
+  def children(self):
+    return self.chains
 
   def __repr__(self):
     return self.name
