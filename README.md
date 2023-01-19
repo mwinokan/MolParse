@@ -1,4 +1,4 @@
-# MolParse
+![MolParse](https://github.com/mwinokan/MolParse/blob/master/graphics/molparse-01.png?raw=true)
 
 A python package for parsing, modifying, and analysis of molecular structure files. 
 
