@@ -135,11 +135,10 @@ class AminoAcid(Residue):
 		import mout
 		import mcol
 		mout.headerOut(f"Mutating {mcol.arg}{self.longname}{mcol.clear+mcol.bold} --> {mcol.arg}{longname(newname)}{mcol.clear+mcol.bold} ({mcol.result}{self.letter}{self.number}{alphabet(newname)}{mcol.clear+mcol.bold})")
-		match newname:
-			case "ALA":
-				from .mutate.protein import to_alanine
-				to_alanine(self)
-			case other:
-				import mout
-				mout.errorOut("Unsupported mutation!")
+		if newname ==  "ALA":
+			from .mutate.protein import to_alanine
+			to_alanine(self)
+		else:
+			import mout
+			mout.errorOut("Unsupported mutation!")
 	
