@@ -2,6 +2,28 @@
 
 A python package for parsing, modifying, and analysis of molecular structure files. 
 
+## Usage
+
+### Python Module
+
+MolParse is primarily a python module which can be used interactively, or within (batch) scripts:
+
+Use `pydoc` to see help on the `molparse` module, or its methods & classes. E.g. from a shell:
+
+`pydoc molparse`
+
+`pydoc molparse.System`
+
+### moltree Binary
+
+In addition to the python module, an interactive command-line interface is available with the binary `moltree`. Pass a PDB or GRO file as follows:
+
+`moltree <FILE>`
+
+![moltree](https://github.com/mwinokan/MolParse/blob/master/graphics/moltree.png?raw=true)
+
+Use the mouse to interact with buttons and CTR-C to exit.
+
 ## Installation
 
 ### Requirements
@@ -26,10 +48,3 @@ A python package for parsing, modifying, and analysis of molecular structure fil
 * `git clone https://github.com/mwinokan/MolParse.git`
 * Add `export MWMPPATH=/path/to/directory` to your `.bash_profile`
 * Add `export PYTHONPATH=$PYTHONPATH:$MWMPPATH` to your `.bash_profile`
-
-## Usage
-
-try importing the module and using the builtin help method:
-
-`import molparse`
-`help(molparse)`
