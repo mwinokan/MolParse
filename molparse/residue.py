@@ -37,6 +37,10 @@ class Residue:
     self.fix_names()
 
   @property
+  def index(self):
+    return self.number
+
+  @property
   def ase_atoms(self):
     from ase import Atoms
     atoms = self.atoms
