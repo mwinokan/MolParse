@@ -56,17 +56,6 @@ class Residue(AtomGroup):
     from .gui import view
     view(self.ase_atoms)
 
-  def plot3d(self,extra=[],alpha=1.0):
-    """Render the system with plotly graph objects. 
-    extra can contain pairs of coordinates to be shown as vectors."""
-    from .go import plot3d
-    return plot3d(self.atoms,extra,alpha)
-
-  @property
-  def num_atoms(self):
-    """Number of child atoms (int)"""
-    return len(self._atoms)
-
   def fix_names(self):
     """Ensure child Atoms have correct parent name"""
     for atom in self.atoms:
@@ -135,38 +124,6 @@ class Residue(AtomGroup):
     mout.varOut("Residue Chain",self.chain)
     mout.varOut("Residue Number",self.number)
     mout.varOut("Number of Atoms",self.num_atoms)
-
-  @property
-  def species(self):
-    """Returns species of all child Atoms (list)"""
-    species_list = []
-    for atom in self._atoms:
-      species_list.append(atom.species)
-    return ''.join(species_list)
-  
-  @property
-  def charges(self):
-    """Returns charges of all child Atoms (list)"""
-    charges = []
-    for atom in self._atoms:
-      charges.append(atom.charge)
-    return charges
-
-  @property
-  def masses(self):
-    """Returns masses of all child Atoms (list)"""
-    masses = []
-    for atom in self._atoms:
-      masses.append(atom.mass)
-    return masses
-
-  @property
-  def indices(self):
-    """Returns indices of all child Atoms (list)"""
-    indices = []
-    for atom in self._atoms:
-      indices.append(atom.index)
-    return indices
 
   @property
   def atoms(self):
@@ -298,10 +255,6 @@ class Residue(AtomGroup):
 
     return angle(i.position,j.position,k.position)
 
-  def centre_of_mass(self,verbosity: int=1):
-    """Calculate the centre of mass of the Residue"""
-    return self.CoM(verbosity=verbosity)
-
   def summary(self):
     """Summarised output of the Residue"""
     import mout
@@ -310,24 +263,6 @@ class Residue(AtomGroup):
     for atom in self.atoms:
       print(atom.name,atom.index,atom.pdb_index)
     
-  def CoM(self,verbosity: int=1):
-    """Centre of mass of the Residue"""
-    import numpy as np
-    import mout
-
-    position_list = self.positions
-
-    centre_of_mass = np.array([sum([pos[0] for pos in position_list])/len(position_list),
-                               sum([pos[1] for pos in position_list])/len(position_list),
-                               sum([pos[2] for pos in position_list])/len(position_list)])
-
-    if verbosity > 0: 
-      mout.varOut("CoM of "+self.name,
-                  centre_of_mass,
-                  unit="Angstroms",precision=4)
-
-    return centre_of_mass
-
   def is_same_as(self,residue):
     assert isinstance(residue, Residue)
 
@@ -342,21 +277,6 @@ class Residue(AtomGroup):
   def set_chain_number(self,index):
     for atom in self.atoms:
       atom.chain_number = index
-
-  @property
-  def bbox(self):
-    """Bounding box of the residue"""
-    import numpy as np
-    x = [min([a.np_pos[0] for a in self.atoms]),max([a.np_pos[0] for a in self.atoms])]
-    y = [min([a.np_pos[1] for a in self.atoms]),max([a.np_pos[1] for a in self.atoms])]
-    z = [min([a.np_pos[2] for a in self.atoms]),max([a.np_pos[2] for a in self.atoms])]
-    return [x,y,z]
-
-  @property
-  def bbox_norm(self):
-    """Length of bounding box diagonal"""
-    import numpy as np
-    return np.linalg.norm([x[1]-x[0] for x in self.bbox])
 
   @property
   def children(self):

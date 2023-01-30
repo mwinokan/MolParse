@@ -40,14 +40,6 @@ class Chain(AtomGroup):
       mout.errorOut(f'Differing residue types in same chain {self.residues[-1]} ({self.residues[-1].type}), {self.residues[0]} ({self.type})')
 
   @property
-  def num_atoms(self):
-    """Number of child Atoms (int)"""
-    num_atoms = 0
-    for residue in self.residues:
-      num_atoms += residue.num_atoms
-    return num_atoms
-
-  @property
   def type(self):
     """Classification of Residues in this Chain"""
     return self.residues[0].type
@@ -63,38 +55,6 @@ class Chain(AtomGroup):
     for residue in self.residues:
       names_list += residue.atom_names(wRes=wRes,noPrime=noPrime)
     return names_list
-
-  @property
-  def atomic_numbers(self):
-    """All child atomic numbers (list)"""
-    number_list = []
-    for residue in self.residues:
-      number_list.append(residue.atomic_numbers)
-    return number_list
-
-  @property
-  def positions(self):
-    """All child Atom positions (list)"""
-    positions_list = []
-    for residue in self.residues:
-      positions_list += residue.positions
-    return positions_list
-
-  @property
-  def charges(self):
-    """All child Atom charges (list)"""
-    charges = []
-    for residue in self.residues:
-      charges += residue.charges
-    return charges
-
-  @property
-  def masses(self):
-    """All child Atom masses (list)"""
-    masses = []
-    for residue in self.residues:
-      masses += residue.masses
-    return masses
 
   @property
   def atoms(self):
