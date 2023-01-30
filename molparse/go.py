@@ -55,7 +55,7 @@ def plot3d(atoms,extra=[],alpha=1.0):
 
 		fig.add_trace(trace)
 
-	fig.update_layout(scene_aspectmode='cube')
+	fig.update_layout(scene_aspectmode='data')
 
 	fig.show()
 
