@@ -1,5 +1,7 @@
 
-class Chain:
+from .group import AtomGroup
+
+class Chain(AtomGroup):
   """Class containing covalently bonded Residue objects
 
   These objects should not be created by the user, 
@@ -7,20 +9,11 @@ class Chain:
   coordinate file via amp.parsePDB or otherwise"""
 
   def __init__(self,name):
-    self._expand = False
-    self._name = name
+
+    super(Chain, self).__init__(name)
+
     self.residues = []
     self.index = None
-    self.fix_names()
-
-  @property
-  def name(self):
-    """Name (str) property"""
-    return self._name
-
-  @name.setter
-  def name(self,name):
-    self._name = name
     self.fix_names()
 
   def fix_names(self):
@@ -162,21 +155,7 @@ class Chain:
       residue.add_atom(atom)
       self.add_residue(residue)
 
-  def expand(self):
-    self._expand = True
-    for residue in self.residues:
-      residue._expand = False
-  def collapse(self):
-    self._expand = False
-
   @property
   def children(self):
     return self.residues
-
-  def __repr__(self):
-    return self.name
-  def __str__(self):
-    return self.name
-  def __len__(self):
-    return len(self.residues)
     

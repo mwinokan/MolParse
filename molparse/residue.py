@@ -1,5 +1,7 @@
 
-class Residue:
+from .group import AtomGroup
+
+class Residue(AtomGroup):
   """Class for chemical Residue
 
   These objects should not be created by the user, 
@@ -7,8 +9,9 @@ class Residue:
   coordinate file via amp.parsePDB or otherwise"""
 
   def __init__(self,name: str,number: int=None,chain: str=None,atoms=None):
-    self._expand = False
-    self._name = name
+    
+    super(Residue, self).__init__(name)
+
     self.chain = chain
     self.number = number
     self._atoms = []
@@ -63,15 +66,6 @@ class Residue:
   def num_atoms(self):
     """Number of child atoms (int)"""
     return len(self._atoms)
-
-  @property
-  def name(self):
-    return self._name
-
-  @name.setter
-  def name(self,name: str):
-    self._name = name
-    self.fix_names()
 
   def fix_names(self):
     """Ensure child Atoms have correct parent name"""
@@ -349,13 +343,6 @@ class Residue:
     for atom in self.atoms:
       atom.chain_number = index
 
-  def __repr__(self):
-    return self.name
-  def __str__(self):
-    return self.name
-  def __len__(self):
-    return len(self.atoms)
-
   @property
   def bbox(self):
     """Bounding box of the residue"""
@@ -370,11 +357,6 @@ class Residue:
     """Length of bounding box diagonal"""
     import numpy as np
     return np.linalg.norm([x[1]-x[0] for x in self.bbox])
-
-  def expand(self):
-    self._expand = True
-  def collapse(self):
-    self._expand = False
 
   @property
   def children(self):

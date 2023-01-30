@@ -1,5 +1,7 @@
 
-class System:
+from .group import AtomGroup
+
+class System(AtomGroup):
 
   """Top-level object for molecular systems
 
@@ -9,9 +11,8 @@ class System:
 
   def __init__(self,name: str):
 
-    self._expand = False
+    super(System, self).__init__(name)
 
-    self.name = name
     self.description = None
     self.chains = []
 
@@ -932,22 +933,6 @@ class System:
       chain.add_atom(atom)
       self.add_chain(chain)
 
-  def tree(self):
-    from .tree import tree
-    tree(self)
-
-  def expand(self):
-    self._expand = True
-    for chain in self.chains:
-      chain._expand = False
-  def collapse(self):
-    self._expand = False
-
   @property
   def children(self):
     return self.chains
-
-  def __repr__(self):
-    return self.name
-  def __str__(self):
-    return self.name
