@@ -38,7 +38,7 @@ class AtomGroup():
 		"""Total charge (float)"""
 		charge = 0
 		for atom in self.atoms:
-		charge += atom.charge
+			charge += atom.charge
 		return charge
 
 	@property
