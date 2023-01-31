@@ -276,12 +276,18 @@ class AtomGroup():
 			'Total #Atoms': self.num_atoms,
 		}
 
+		file_out = f'{self.__class__.__name__}_{self.name}_{self.index}.pdb'
+
+		clickables = {
+			f'Export PDB "{file_out}"': lambda x: x.write(file_out),
+		}
+
 		if self.num_atoms == 1:
 			items.pop('Bounding Box')
 			items.pop('Bounding Box Sides')
 			items.pop('Bounding Box Diagonal')
 
-		return items
+		return items, clickables
 
 	# def _base_context_options(self):
 

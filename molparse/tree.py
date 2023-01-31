@@ -117,7 +117,7 @@ class TreeViewer(CursesApp):
 
 		col = self._last_pressed.col
 
-		items = obj._context_info
+		items,clickables = obj._context_info
 
 		widgets = []
 
@@ -127,6 +127,21 @@ class TreeViewer(CursesApp):
 			data = Text(f"{prop} ",line+1+i,label.endcol,color_pair=self.WHITE_INV)
 			widgets.append(label)
 			widgets.append(data)
+
+		for j,(key,func) in enumerate(clickables.items()):
+
+			label = Button(
+				app=self,
+				line=line+1+i+j,
+				col=col,
+				active=False,
+				enabler=func,
+				target=obj,
+				disabler=func,
+				color_inactive=self.GREEN_INV,
+				color_active=self.GREEN_INV,
+				name=key)
+			widgets.append(label)
 
 		self.context_menu(line,col,widgets)
 
