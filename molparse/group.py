@@ -12,13 +12,11 @@ class AtomGroup():
 
 	""" To-Do's:
 
-		Collect properties into one place:
+		- Do not recalculate atomic properties if not necessary
 
-		- positions
-		- atomic masses
 	"""
 
-	### PROPERTIES
+### PROPERTIES
 
 	@property
 	def name(self):
@@ -140,7 +138,7 @@ class AtomGroup():
 		from ase import Atoms
 		return Atoms(symbols=self.symbols,cell=None, pbc=None,positions=self.positions)
 
-	### METHODS
+### METHODS
 
 	# overloaded by child classes
 	def fix_names(self):
@@ -224,7 +222,7 @@ class AtomGroup():
 		from .go import plot3d
 		return plot3d(self.atoms,extra,alpha)
 
-	### GUI THINGS
+### GUI THINGS
 
 	# open GUI tree viewer
 	def tree(self):
@@ -253,7 +251,39 @@ class AtomGroup():
 		self._show_context = False
 		self._tree.hide_context_menu()
 
-	### DUNDERS
+	@property
+	def _context_info(self):
+
+		com = self.CoM(verbosity=0)
+		com = f'[{com[0]:.2f} {com[1]:.2f} {com[2]:.2f}]'
+
+		bbox = self.bbox
+		bbox = f'[[{bbox[0][0]:.2f} {bbox[0][1]:.2f}] [{bbox[1][0]:.2f} {bbox[1][1]:.2f}] [{bbox[2][0]:.2f} {bbox[2][1]:.2f}]]'
+
+		bbox_sides = self.bbox_sides
+		bbox_sides = f'[{bbox_sides[0]:.2f} {bbox_sides[1]:.2f} {bbox_sides[2]:.2f}]'
+
+		items = {
+			'Centre of Mass': com,
+			'Bounding Box': bbox,
+			'Bounding Box Sides': bbox_sides,
+			'Bounding Box Diagonal': f'{self.bbox_norm:.2f}',
+			'Total Charge': self.charge,
+			'Total #Atoms': self.num_atoms,
+		}
+
+		if self.num_atoms == 1:
+			items.pop('Bounding Box')
+			items.pop('Bounding Box Sides')
+			items.pop('Bounding Box Diagonal')
+
+		return items
+
+	# def _base_context_options(self):
+
+		# pass
+
+### DUNDERS
 
 	def __repr__(self):
 		return self.name

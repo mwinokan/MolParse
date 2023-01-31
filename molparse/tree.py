@@ -10,6 +10,15 @@ from .atom import Atom
 from .amino import AminoAcid
 from .nucleic import NucleicAcid
 
+""" To Do's
+
+* Simplify chains of single atom/residue types repeated over and over
+* Distinguish between hetatm/backbone/sidechain atoms
+* Add more capabilities to context windows
+* Add cursor selection possibility
+
+"""
+
 def tree(obj):
 	"""Open a CLI App showing the hierarchical tree of a MolParse System."""
 	
@@ -20,7 +29,7 @@ class TreeViewer(CursesApp):
 	
 	def __init__(self, obj):
 		
-		super(TreeViewer, self).__init__()
+		super(TreeViewer, self).__init__(debug=False)
 
 		if isinstance(obj,str):
 			from .io import parse
@@ -99,11 +108,37 @@ class TreeViewer(CursesApp):
 
 		return line
 
+	def has_pad_space(self,num_children):
+		if self.pad_h - self.max_padline < num_children:
+			return False
+		return True
+
+	def spawn_context(self,obj,line,col):
+
+		col = self._last_pressed.col
+
+		items = obj._context_info
+
+		widgets = []
+
+		for i,(key,prop) in enumerate(items.items()):
+
+			label = Text(f"{key}: ",line+1+i,col,color_pair=self.WHITE_INV|curses.A_BOLD)
+			data = Text(f"{prop} ",line+1+i,label.endcol,color_pair=self.WHITE_INV)
+			widgets.append(label)
+			widgets.append(data)
+
+		self.context_menu(line,col,widgets)
+
 	def object_line(self,obj,line,max_index,depth):
 
 		col = 4*depth
 
-		if not isinstance(obj,Atom):
+		obj._tree = self
+		obj._gui_line = line
+
+		# add expand/collapse button
+		if not isinstance(obj,Atom) and self.has_pad_space(len(obj.children)):
 
 			f1 = lambda x: x.expand()
 			f2 = lambda x: x.collapse()
@@ -121,43 +156,82 @@ class TreeViewer(CursesApp):
 			self.add_button(button)
 			col = button.endcol + 1
 
+		# no expand functionality
+		else:
+
+			text = Text(f'   ',line,col,bold=False)
+			self.add_text(text)
+			col = text.endcol + 1
+
+		# object type
 		text = Text(f'{self.type_str(obj)} ',line,col,bold=True)
 		self.add_text(text)
 
+		# object index
 		if not isinstance(obj,System):
 			width = len(str(max_index))
 			text = Text(f'{str(obj.index).rjust(width)} ',line,text.endcol,color_pair=self.GREEN,bold=True)
 			self.add_text(text)
 
+		# object name is also a button:
 		if self.type_str(obj) not in ['Atom']:
-			text = Text(f'{obj.name} ',line,text.endcol,color_pair=self.CYAN,bold=True)
-			self.add_text(text)
+			name = obj.name
 		else:
-			text = Text(f'{obj.symbol} ',line,text.endcol,color_pair=self.CYAN,bold=True)
+			name = obj.symbol
+
+		f1 = lambda x: x.spawn_context(line,int(text.endcol)-len(name))
+		f2 = lambda x: x.hide_context()
+
+		if not isinstance(obj,Atom):
+			# obj._show_context = False
+
+			text = Button(app=self,
+							line=line,
+							col=text.endcol,
+							active=obj._show_context,
+							enabler=f1,
+							color_active=self.CYAN_INV,
+							color_inactive=self.CYAN_INV,
+							# color_active=self.WHITE_INV|curses.A_BOLD,
+							# color_inactive=curses.A_UNDERLINE|self.CYAN|curses.A_BOLD,
+							disabler=f2,
+							target=obj,
+							name=f'{name}')
+							# activename=f'!{name}!')
+			self.add_button(text)
+
+		else:
+			text = Text(name,line,text.endcol,color_pair=self.CYAN,bold=True)
 			self.add_text(text)
 
+		# residue/chain type
 		if self.type_str(obj) not in ['System','Atom']:
-			text = Text(f'(',line,text.endcol,bold=True)
+			text = Text(f'(',line,text.endcol+1,bold=True)
 			self.add_text(text)
 			text = Text(f'{obj.type}',line,text.endcol,color_pair=self.MAGENTA,bold=True)
 			self.add_text(text)
-			text = Text(f') ',line,text.endcol,bold=True)
+			text = Text(f')',line,text.endcol,bold=True)
 			self.add_text(text)
 
+		# position
 		if self.type_str(obj) in ['Atom']:
 
-			text = Text(f'[{obj.x:7.3f}, {obj.y:7.3f}, {obj.z:7.3f}]',line,text.endcol)
+			text = Text(f' [{obj.x:7.3f}, {obj.y:7.3f}, {obj.z:7.3f}]',line,text.endcol)
 			self.add_text(text)
 
 			text = Text(f' {obj.name}',line,text.endcol,color_pair=self.MAGENTA,bold=True)
 			self.add_text(text)
 
+		# extra info
 		if self.scr_w >= 80:
-			col = self.extra_info(obj, line, text.endcol)
+			col = self.extra_info(obj, line, text.endcol+1)
 		else:
 			col = text.endcol
 
+		# plotting buttons
 		if self.type_str(obj) in ['System','Residue', 'AminoAcid', 'NucleicAcid']:
+
+			col += 1
 
 			f1 = lambda x: x.plot3d()
 
