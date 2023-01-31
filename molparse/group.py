@@ -140,6 +140,10 @@ class AtomGroup():
 
 ### METHODS
 
+	def write(self,filename):
+		from .io import write
+		write(filename,self)
+
 	# overloaded by child classes
 	def fix_names(self):
 		pass
