@@ -229,7 +229,7 @@ class TreeViewer(CursesApp):
 			col = text.endcol
 
 		# plotting buttons
-		if self.type_str(obj) in ['System','Residue', 'AminoAcid', 'NucleicAcid']:
+		if self.type_str(obj) in ['System', 'Chain', 'Residue', 'AminoAcid', 'NucleicAcid']:
 
 			col += 1
 
@@ -262,6 +262,26 @@ class TreeViewer(CursesApp):
 
 			self.add_button(button)
 			col = button.endcol + 1
+
+		if self.type_str(obj) in ['Residue', 'AminoAcid', 'NucleicAcid', 'Chain']:
+
+			file_out = f'{self.type_str(obj)}_{obj.name}_{obj.index}.pdb'
+
+			f1 = lambda x: x.write(file_out)
+
+			button = Button(app=self,
+							line=line,
+							col=col,
+							active=False,
+							color_inactive=curses.A_UNDERLINE|curses.A_BOLD,
+							enabler=f1,
+							disabler=f1,
+							target=obj,
+							name=f'PDB')
+
+			self.add_button(button)
+			col = button.endcol + 1
+
 
 		return line + 1
 
