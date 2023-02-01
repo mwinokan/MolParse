@@ -232,12 +232,13 @@ class AtomGroup():
 
 		return centre_of_mass
 
-	def guess_bonds(self):
+	def guess_bonds(self,scale=1.2):
 		"""Guess connectivity using covalent radii (list of pairs)"""
 		import numpy as np
 		from ase.gui.view import get_bonds
 		ase_atoms = self.ase_atoms
-		bonds = get_bonds(ase_atoms,np.array(self.covalent_radii))
+		radii = np.array(self.covalent_radii)*(scale/1.5)
+		bonds = get_bonds(ase_atoms,radii)
 		return [[b[0],b[1]] for b in bonds]
 
 	def plot3d(self,extra=[],alpha=1.0,bonds=True):
