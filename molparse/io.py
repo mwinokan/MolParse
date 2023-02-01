@@ -360,6 +360,8 @@ def parsePDBAtomLine(line,res_index,atom_index,chain_counter,debug=False):
     if debug: print(str(atom_index) + ".temp_factor: OK")
 
     chg_str = line[78:80].rstrip('\n')
+    if len(chg_str.strip()) < 1:
+      chg_str = None
     if debug: print(str(atom_index) + ".chg_str: OK")
 
     end = line[80:]

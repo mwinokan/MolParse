@@ -6,7 +6,7 @@ class Atom:
   but constructed automatically when parsing a 
   coordinate file via amp.parsePDB or otherwise"""
 
-  def __init__(self,name,index=None,pdb_index=None,position=None,residue=None,chain=None,res_number=None,charge=0.0,FF_atomtype=None,mass=None,LJ_sigma=None,LJ_epsilon=None,QM=False,occupancy=None,temp_factor=None,heterogen=None,charge_str=None,velocity=None):
+  def __init__(self,name,index=None,pdb_index=None,position=None,residue=None,chain=None,res_number=None,charge=None,FF_atomtype=None,mass=None,LJ_sigma=None,LJ_epsilon=None,QM=False,occupancy=None,temp_factor=None,heterogen=None,charge_str=None,velocity=None):
 
     # necessary upon init
     self._name = name
@@ -35,7 +35,16 @@ class Atom:
     # optional
     self.FF_atomtype = FF_atomtype
     
-    self.charge = charge
+    if charge:
+      self.charge = charge
+    elif charge_str:
+      if charge_str.endswith('-'):
+        self.charge = -1.0*float(charge_str[:-1])
+      else:
+        self.charge = float(charge_str[:-1])
+    else:
+      self.charge = 0.0
+
     self._mass = mass
     self.LJ_sigma = LJ_sigma
     self.LJ_epsilon = LJ_epsilon
@@ -47,6 +56,8 @@ class Atom:
     self.ter_line = None
     self.terminal = None
     self._velocity = velocity
+
+
 
   def __deepcopy__(self, memodict={}):
     copy_object = Atom(self.name, self.index, self.pdb_index, self.position, self.residue)
