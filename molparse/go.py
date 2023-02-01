@@ -1,5 +1,5 @@
 
-def plot3d(atoms,extra=[],alpha=1.0):
+def plot3d(atoms,extra=[],bonds=[],alpha=1.0):
 	"""Render the atoms with plotly graph objects. 
 	extra can contain pairs of coordinates to be shown as vectors."""
 
@@ -13,6 +13,27 @@ def plot3d(atoms,extra=[],alpha=1.0):
 	species = list(set(species))
 
 	fig = go.Figure()
+
+	if bonds:
+
+		x = []
+		y = []
+		z = []
+
+		for a,b in bonds:
+			x.append(a[0])
+			x.append(b[0])
+			x.append(None)
+			y.append(a[1])
+			y.append(b[1])
+			y.append(None)
+			z.append(a[2])
+			z.append(b[2])
+			z.append(None)
+
+		trace = go.Scatter3d(x=x,y=y,z=z,mode='lines',name='bonds',marker=dict(size=1,color='black',line=dict(color='black',width=4)))
+
+		fig.add_trace(trace)
 
 	for s in species:
 

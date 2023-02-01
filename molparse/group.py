@@ -138,6 +138,18 @@ class AtomGroup():
 		from ase import Atoms
 		return Atoms(symbols=self.symbols,cell=None, pbc=None,positions=self.positions)
 
+	@property
+	def covalent_radii(self):
+		
+		from ase.data import covalent_radii
+
+		radii = []
+
+		for atom in self.atoms:
+			radii.append(covalent_radii[atom.atomic_number])
+
+		return radii
+
 ### METHODS
 
 	def write(self,filename):
@@ -220,11 +232,29 @@ class AtomGroup():
 
 		return centre_of_mass
 
-	def plot3d(self,extra=[],alpha=1.0):
+	def guess_bonds(self):
+		"""Guess connectivity using covalent radii (list of pairs)"""
+		import numpy as np
+		from ase.gui.view import get_bonds
+		ase_atoms = self.ase_atoms
+		bonds = get_bonds(ase_atoms,np.array(self.covalent_radii))
+		return [[b[0],b[1]] for b in bonds]
+
+	def plot3d(self,extra=[],alpha=1.0,bonds=True):
 		"""Render the atoms with plotly graph objects. 
 		extra can contain pairs of coordinates to be shown as vectors."""
+
+		if bonds:
+			bonds = self.guess_bonds()
+			bond_vectors = []
+			for a,b in bonds:
+				bond_vectors.append([self.atoms[a].np_pos,self.atoms[b].np_pos])
+			bonds = bond_vectors
+		else:
+			bonds = []
+
 		from .go import plot3d
-		return plot3d(self.atoms,extra,alpha)
+		return plot3d(self.atoms,extra,bonds,alpha)
 
 ### GUI THINGS
 
