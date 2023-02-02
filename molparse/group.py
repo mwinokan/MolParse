@@ -325,10 +325,6 @@ class AtomGroup():
 
 		return items, clickables
 
-	# def _base_context_options(self):
-
-		# pass
-
 ### DUNDERS
 
 	def __repr__(self):

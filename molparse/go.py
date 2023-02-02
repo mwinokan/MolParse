@@ -79,5 +79,3 @@ def plot3d(atoms,extra=[],bonds=[],alpha=1.0):
 	fig.update_layout(scene_aspectmode='data')
 
 	fig.show()
-
-	return fig
