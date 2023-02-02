@@ -3,8 +3,6 @@ def plot3d(atoms,extra=[],bonds=[],alpha=1.0):
 	"""Render the atoms with plotly graph objects. 
 	extra can contain pairs of coordinates to be shown as vectors."""
 
-	# MAKE SURE THAT AXES HAVE THE SAME SCALE!
-
 	import plotly.graph_objects as go
 	from ase.data import vdw_radii, atomic_numbers
 	from ase.data.colors import jmol_colors
@@ -31,7 +29,7 @@ def plot3d(atoms,extra=[],bonds=[],alpha=1.0):
 			z.append(b[2])
 			z.append(None)
 
-		trace = go.Scatter3d(x=x,y=y,z=z,mode='lines',name='bonds',marker=dict(size=1,color='black',line=dict(color='black',width=4)))
+		trace = go.Scatter3d(x=x,y=y,z=z,mode='lines',name='bonds',line=dict(color='black',width=16))
 
 		fig.add_trace(trace)
 
