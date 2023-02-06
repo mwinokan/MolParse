@@ -85,6 +85,7 @@ from .io import write
 from .io import parse
 from .io import parsePDB
 from .io import parseGRO
+from .io import parseXYZ
 
 # CLI-Viewer
 from .tree import tree

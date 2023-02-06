@@ -10,6 +10,8 @@ class AtomGroup():
 		self._show_context = False
 		self._context_options = {}
 
+		self._atoms = []
+
 	""" To-Do's:
 
 		- Do not recalculate atomic properties if not necessary
@@ -17,6 +19,11 @@ class AtomGroup():
 	"""
 
 ### PROPERTIES
+
+	@property
+	def atoms(self):
+		"""Child classes of AtomGroup should overload this method"""
+		return self._atoms
 
 	@property
 	def name(self):
@@ -83,7 +90,7 @@ class AtomGroup():
 	def species(self):
 		"""Returns species of all child Atoms (list)"""
 		species_list = []
-		for atom in self._atoms:
+		for atom in self.atoms:
 			species_list.append(atom.species)
 		return ''.join(species_list)
 
@@ -91,7 +98,7 @@ class AtomGroup():
 	def indices(self):
 		"""Returns indices of all child Atoms (list)"""
 		indices = []
-		for atom in self._atoms:
+		for atom in self.atoms:
 			indices.append(atom.index)
 		return indices
 
@@ -151,6 +158,14 @@ class AtomGroup():
 		return radii
 
 ### METHODS
+
+	def add_atom(self,atom):
+		self._atoms.append(atom)
+
+	def summary(self):
+		print(self.name)
+		for a in self.atoms:
+			print(a,a.position)
 
 	def write(self,filename):
 		from .io import write

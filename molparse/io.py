@@ -815,3 +815,103 @@ def writeGRO(filename,system,verbosity=1,printScript=False):
   if (verbosity > 0):
     mout.out("Done.") # user output
     
+def parseXYZ(xyz,index=":",verbosity=1):
+
+  import mout
+  import mcol
+
+  assert xyz.endswith(".xyz")
+
+  try:
+    index = int(index)
+  except:
+    if index == ":":
+      if verbosity > 0:
+        mout.warningOut("Parsing all models in "+mcol.file+xyz)
+    else:
+      mout.errorOut("Unsupported index: '"+str(index)+"'",fatal=True)
+
+  if index == ":":
+
+    all_models = []
+
+    import subprocess
+    num_lines = int(subprocess.check_output(f"cat {xyz} | wc -l", shell=True))
+
+    with open(xyz,"r") as input_xyz:
+      for line in input_xyz:
+        num_atoms = int(line)
+        break
+
+    if (num_lines/(num_atoms+2)) != (num_lines//(num_atoms+2)):
+      mout.errorOut("Wrong number of lines, check XYZ formatting is correct.",fatal=True)
+
+    num_models = num_lines//(num_atoms+2)
+
+    for i in range(num_models):
+
+      all_models.append(parseXYZ(xyz,index=i,verbosity=verbosity-1))
+
+    return all_models
+
+  else:
+
+    from .group import AtomGroup
+
+    with open(xyz,"r") as input_xyz:
+
+      start_line = 0
+
+      for j,line in enumerate(input_xyz):
+        
+        if j == 0:
+          num_atoms = int(line)
+          start_line = index*(num_atoms+2)
+          continue
+
+        elif j == start_line + 1:
+
+          try:
+            # get the model information
+            i_str, E_str = line.strip().split(',')
+            i = int(i_str.split("=")[-1])
+            E = float(E_str.split("=")[-1])
+            system = AtomGroup(f"{xyz}, image={i}")
+            system._energy = E
+            system._traj_index = i
+          except ValueError:
+            mout.warningOut("XYZ image header string has an unsupported format")
+            system = AtomGroup(f"{xyz}, {line.strip()}")
+
+          # create the system object
+          atom_counter = 0
+          continue
+
+        elif j < start_line + 1:
+          continue
+
+        if num_atoms == atom_counter:
+          break
+
+        atom = parseXYZAtomLine(line, atom_counter)
+        system.add_atom(atom)
+        atom_counter += 1
+
+      if j < start_line:
+        mout.errorOut(f"XYZ has no image with index {index}")
+    
+    return system
+
+def parseXYZAtomLine(line,atom_index):
+
+  from .atom import Atom
+
+  s,x,y,z = line.strip().split()
+
+  x = float(x)
+  y = float(y)
+  z = float(z)
+
+  atom = Atom(s,index=atom_index,position=[x,y,z])
+
+  return atom
