@@ -8,4 +8,8 @@ import molparse as mp
 
 sys = mp.parse(sys.argv[1])
 
+if isinstance(sys, list):
+	if len(sys) == 1:
+		sys = sys[0]
+
 sys.tree()
