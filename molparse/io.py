@@ -531,8 +531,12 @@ def new_residue(name,index,chain):
   from .residue import res_type
 
   if res_type(name) == "PRO":
-    from .amino import AminoAcid
-    return AminoAcid(name,index,chain)
+    if name in ['HIS','HID','HIE','HSE','HSD','HSP']:
+      from .histidine import Histidine
+      return Histidine(name,index,chain)
+    else:
+      from .amino import AminoAcid
+      return AminoAcid(name,index,chain)
   elif res_type(name) == "DNA":
     from .nucleic import NucleicAcid
     return NucleicAcid(name,index,chain)

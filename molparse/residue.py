@@ -130,7 +130,7 @@ class Residue(AtomGroup):
     """Returns all child Atoms (list)"""
     return self._atoms
 
-  def get_atom(self,name):
+  def get_atom(self,name,verbosity=1):
     """Get a child Atom by name"""
     if isinstance(name,list):
       return [self.get_atom(n) for n in name]
@@ -140,10 +140,11 @@ class Residue(AtomGroup):
 
     import mout
     import mcol
-    mout.errorOut("No atom "+
-                  mcol.arg+name+
-                  mcol.error+" in residue "+
-                  mcol.arg+self.name+str([self.number]),fatal=False,code="Residue.1")
+    if verbosity > 0:
+      mout.errorOut("No atom "+
+                    mcol.arg+name+
+                    mcol.error+" in residue "+
+                    mcol.arg+self.name+str([self.number]),fatal=False,code="Residue.1")
     return None
 
   def set_positions(self,positions):
