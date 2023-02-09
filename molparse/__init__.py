@@ -95,6 +95,7 @@ from .manipulate import interpolate
 from .manipulate import auto_rotate
 
 # Custom Classes
+from .group import AtomGroup
 from .system import System
 from .chain import Chain
 from .residue import Residue
@@ -127,7 +128,7 @@ from .analysis import getBondLabel
 from .analysis import getAtomLabel
 
 # Structure Comparison
-from .compare import compareSystems
+# from .compare import compareSystems
 from .compare import euclid_dist
 
 # Graphing

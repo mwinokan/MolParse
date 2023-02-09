@@ -26,6 +26,11 @@ class AtomGroup():
 		return self._atoms
 
 	@property
+	def children(self):
+		"""Child classes of AtomGroup should overload this method"""
+		return self.atoms
+
+	@property
 	def name(self):
 		return self._name
 
@@ -256,6 +261,22 @@ class AtomGroup():
 		bonds = get_bonds(ase_atoms,radii)
 		return [[b[0],b[1]] for b in bonds]
 
+	def guess_names(self,target):
+		"""Try and set the atom names of the system by looking for 
+		the closest atom of the same species in the target system"""
+
+		import numpy as np
+
+		positions = [b.np_pos for b in target.atoms]
+		species = [b.species for b in target.atoms]
+
+		for a in self.atoms:
+			a_pos = a.np_pos
+			distances = [np.linalg.norm(a_pos - p) if s == a.species else 999 for s,p in zip(species,positions)]
+			index = np.argmin(distances)
+			b = target.atoms[index]
+			a.set_name(b.name,verbosity=0)
+
 	def plot3d(self,extra=[],alpha=1.0,bonds=True):
 		"""Render the atoms with plotly graph objects. 
 		extra can contain pairs of coordinates to be shown as vectors."""
@@ -323,7 +344,8 @@ class AtomGroup():
 		}
 
 		from .system import System
-		if not isinstance(self,System):
+		from .group import AtomGroup
+		if not isinstance(self,System) and not isinstance(self,AtomGroup):
 			file_out = f'{self.__class__.__name__}_{self.name}_{self.index}.pdb'
 
 			clickables = {

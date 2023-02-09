@@ -3,6 +3,7 @@ from mwin.curses import CursesApp, Button, Text
 
 import curses
 
+from .group import AtomGroup
 from .system import System
 from .chain import Chain
 from .residue import Residue
@@ -47,7 +48,11 @@ class TreeViewer(CursesApp):
 				if obj.chains[0].num_residues == 1:
 					obj.chains[0].residues[0]._expand = True
 
+		if isinstance(obj, AtomGroup):
+			obj._expand = True
+
 		else:
+			import mout
 			mout.errorOut(f"TreeViewer not supported with {self._obj_type}")
 
 		try:
@@ -183,7 +188,7 @@ class TreeViewer(CursesApp):
 		self.add_text(text)
 
 		# object index
-		if not isinstance(obj,System):
+		if self.type_str(obj) not in ['System','AtomGroup']:
 			width = len(str(max_index))
 			text = Text(f'{str(obj.index).rjust(width)} ',line,text.endcol,color_pair=self.GREEN,bold=True)
 			self.add_text(text)
@@ -191,6 +196,10 @@ class TreeViewer(CursesApp):
 		# object name is also a button:
 		if self.type_str(obj) not in ['Atom']:
 			name = obj.name
+
+			if len(name) > 23:
+				name = f'{name[0:20]}...'
+
 		else:
 			name = obj.symbol
 
@@ -211,7 +220,7 @@ class TreeViewer(CursesApp):
 							# color_inactive=curses.A_UNDERLINE|self.CYAN|curses.A_BOLD,
 							disabler=f2,
 							target=obj,
-							name=f'{name}')
+							name=name)
 							# activename=f'!{name}!')
 			self.add_button(text)
 
@@ -220,7 +229,7 @@ class TreeViewer(CursesApp):
 			self.add_text(text)
 
 		# residue/chain type
-		if self.type_str(obj) not in ['System','Atom']:
+		if self.type_str(obj) not in ['System','Atom','AtomGroup']:
 			text = Text(f'(',line,text.endcol+1,bold=True)
 			self.add_text(text)
 			text = Text(f'{obj.type}',line,text.endcol,color_pair=self.MAGENTA,bold=True)
@@ -244,7 +253,7 @@ class TreeViewer(CursesApp):
 			col = text.endcol
 
 		# plotting buttons
-		if self.type_str(obj) in ['System', 'Chain', 'Residue', 'AminoAcid', 'NucleicAcid']:
+		if self.type_str(obj) in ['System', 'Chain', 'Residue', 'AminoAcid', 'NucleicAcid', 'AtomGroup']:
 
 			col += 1
 
@@ -327,3 +336,4 @@ class TreeViewer(CursesApp):
 		if isinstance(obj,NucleicAcid): return "NucleicAcid"
 		if isinstance(obj,Residue): return "Residue"
 		if isinstance(obj,Atom): return "Atom"
+		if isinstance(obj,AtomGroup): return "AtomGroup"
