@@ -131,6 +131,8 @@ def parse(file,verbosity=1):
     return parsePDB(file,verbosity=verbosity)
   elif file.split(".")[-1] == "gro":
     return parseGRO(file,verbosity=verbosity)
+  elif file.split(".")[-1] == "xyz":
+    return parseXYZ(file,verbosity=verbosity)
   else:
     import mout
     mout.errorOut("Unsupported file type for MolParse parsing, using ASE.io.read")
@@ -854,6 +856,23 @@ def parseXYZ(xyz,index=":",verbosity=1):
 
     return all_models
 
+  elif index < 0:
+
+    import subprocess
+    num_lines = int(subprocess.check_output(f"cat {xyz} | wc -l", shell=True))
+
+    with open(xyz,"r") as input_xyz:
+      for line in input_xyz:
+        num_atoms = int(line)
+        break
+
+    if (num_lines/(num_atoms+2)) != (num_lines//(num_atoms+2)):
+      mout.errorOut("Wrong number of lines, check XYZ formatting is correct.",fatal=True)
+
+    num_models = num_lines//(num_atoms+2)
+
+    return parseXYZ(xyz,index=num_models+index-1,verbosity=verbosity)
+
   else:
 
     from .group import AtomGroup
@@ -863,6 +882,8 @@ def parseXYZ(xyz,index=":",verbosity=1):
       start_line = 0
 
       for j,line in enumerate(input_xyz):
+
+        # print(line)
         
         if j == 0:
           num_atoms = int(line)
@@ -906,7 +927,12 @@ def parseXYZAtomLine(line,atom_index):
 
   from .atom import Atom
 
-  s,x,y,z = line.strip().split()
+  split_line = line.strip().split()
+
+  if len(split_line) == 4:
+    s,x,y,z = split_line
+  else:
+    s,x,y,z = split_line[:4]
 
   x = float(x)
   y = float(y)
