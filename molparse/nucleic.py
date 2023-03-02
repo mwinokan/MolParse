@@ -81,6 +81,17 @@ class NucleicAcid(Residue):
 			self._backbone = self.get_atom(self.bb_names)
 		return self._backbone
 
+	def remove_backbone(self,add_link=True):
+		"""Remove backbone atoms"""
+
+		if add_link:
+			self.get_atom("C1'").set_name('HLNK')
+
+		for atom in self.backbone:
+			if not atom:
+				continue
+			self.delete_atom(atom.name)
+
 	@property
 	def nucleobase(self):
 		"""Get nucleobase atoms"""

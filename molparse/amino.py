@@ -108,6 +108,17 @@ class AminoAcid(Residue):
 
 		return self._backbone
 
+	def remove_backbone(self,add_link=True):
+		"""Remove backbone atoms"""
+
+		if add_link:
+			self.CA.set_name('HLNK')
+
+		for atom in self.backbone:
+			if not atom:
+				continue
+			self.delete_atom(atom.name)
+
 	@property
 	def sidechain(self):
 		"""Get sidechain atoms"""
