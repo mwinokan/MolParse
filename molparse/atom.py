@@ -5,6 +5,8 @@ class Atom:
   These objects should not be created by the user, 
   but constructed automatically when parsing a 
   coordinate file via amp.parsePDB or otherwise"""
+  
+  name_symbol_dict = {'MG': 'Mg'}
 
   def __init__(self,name,index=None,pdb_index=None,position=None,residue=None,chain=None,res_number=None,charge=None,FF_atomtype=None,mass=None,LJ_sigma=None,LJ_epsilon=None,QM=False,occupancy=None,temp_factor=None,heterogen=None,charge_str=None,velocity=None):
 
@@ -15,11 +17,9 @@ class Atom:
     self._position = position
     self.residue = residue
 
-    name_symbol_dict = {'MG': 'Mg'}
-
-    if name in name_symbol_dict.keys():
-      self.species = name_symbol_dict[name]
-      self.symbol = name_symbol_dict[name]
+    if name in self.name_symbol_dict.keys():
+      self.species = self.name_symbol_dict[name]
+      self.symbol = self.name_symbol_dict[name]
     else:
       self.species = name[0]
       self.symbol = name[0]
@@ -56,8 +56,6 @@ class Atom:
     self.ter_line = None
     self.terminal = None
     self._velocity = velocity
-
-
 
   def __deepcopy__(self, memodict={}):
     copy_object = Atom(self.name, self.index, self.pdb_index, self.position, self.residue)
@@ -111,7 +109,13 @@ class Atom:
                mcol.varName+self.residue+str([self.res_number])+
                mcol.clear+" to "+mcol.arg+name)
     self._name = name
-    self.species = name[0]
+    # self.species = name[0]
+    if name in self.name_symbol_dict.keys():
+      self.species = self.name_symbol_dict[name]
+      self.symbol = self.name_symbol_dict[name]
+    else:
+      self.species = name[0]
+      self.symbol = name[0]
 
   @property
   def name(self):
