@@ -15,6 +15,7 @@ class System(AtomGroup):
 
     self.description = None
     self.chains = []
+    self.remarks = []
 
     self.bondlist=None
     self.box = None

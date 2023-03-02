@@ -652,6 +652,10 @@ def writePDB(filename,system,verbosity=1,printScript=False,append=False,model=1)
     if isinstance(system, System):
       strbuff += "REMARK "+"# Chains:   "+str(system.num_chains)+end
       strbuff += "REMARK "+"# Residues: "+str(system.num_residues)+end
+      if system.remarks:
+        for line in system.remarks:
+          strbuff += f"REMARK {line}"+end
+
     strbuff += "REMARK "+"# Atoms:    "+str(system.num_atoms)+end
   else:
     strbuff = ""
