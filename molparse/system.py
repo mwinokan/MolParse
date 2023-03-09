@@ -201,7 +201,7 @@ class System(AtomGroup):
     if boolean:
       return False
     else:
-      return indices
+      return list(set(indices))
 
   def summary(self,res_limit=10):
     """Print a summary of the System"""
