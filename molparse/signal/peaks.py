@@ -211,6 +211,7 @@ def closest_index(value,xdata,comparison=None,numpy=False):
 						return i
 					else:
 						return i-1
+		return i
 
 def closest_value(xvalue,xdata,ydata=None,comparison=None,numpy=False):
 	"""Return the yvalue of the data point nearest the given xvalue"""
