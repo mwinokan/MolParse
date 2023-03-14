@@ -258,6 +258,8 @@ def parsePDB(pdb,systemName=None,index=1,fix_indices=True,fix_atomnames=True,aut
               continue
             elif line.startswith("MASTER"):
               continue
+            elif line.startswith("ANISOU"):
+              continue
             elif dry and any(res in line for res in ["WAT","SOL","HOH","H2O"]):
               continue
             else:
