@@ -143,6 +143,9 @@ from .graphing import graphBondVibSpec
 # Console IO
 from .console_io import printEnergy # needs documentation
 
+# XVG Parsing
+from .xvg import parseXVG
+
 # Amber specific
 from .amber import prep4amber
 from .amber import amber2charmm
