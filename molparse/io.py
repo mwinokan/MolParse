@@ -316,7 +316,7 @@ def parsePDB(pdb,systemName=None,index=1,fix_indices=True,fix_atomnames=True,aut
 
     return system
 
-def parsePDBAtomLine(line,res_index,atom_index,chain_counter,debug=False):
+def parsePDBAtomLine(line,res_index,atom_index,chain_counter,debug=False,alternative_site_warnings=True):
   from .atom import Atom
   import mout
   import string
@@ -342,8 +342,8 @@ def parsePDBAtomLine(line,res_index,atom_index,chain_counter,debug=False):
     res_number = line[22:26].strip()
     if debug: print(str(atom_index) + ".res_number: OK")
       
-    if len(line[16:17].strip()) > 0:
-      mout.errorOut(f"Possible alternative site in PDB! res={residue}, atom={atom_name}, res_number={res_number}")
+    if alternative_site_warnings and len(line[16:17].strip()) > 0:
+      mout.warningOut(f"Possible alternative site in PDB! res={residue}, atom={atom_name}, res_number={res_number}")
 
     position = []
     position.append(float(line[31:39].strip()))
