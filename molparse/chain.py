@@ -107,7 +107,7 @@ class Chain(AtomGroup):
     if self.residues and atom.is_in_residue(self.residues[-1]): 
       self.residues[-1].add_atom(atom)
     else:
-      # print(f'adding atom {atom} to new residue {atom.residue}')
+
       residue = Residue(atom.residue)
       residue.index = atom.res_number
       residue.number = atom.res_number
