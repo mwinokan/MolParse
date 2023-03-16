@@ -8,7 +8,7 @@ class Atom:
   
   name_symbol_dict = {'MG': 'Mg'}
 
-  def __init__(self,name,index=None,pdb_index=None,position=None,residue=None,chain=None,res_number=None,charge=None,FF_atomtype=None,mass=None,LJ_sigma=None,LJ_epsilon=None,QM=False,occupancy=None,temp_factor=None,heterogen=None,charge_str=None,velocity=None):
+  def __init__(self,name,index=None,pdb_index=None,position=None,residue=None,chain=None,res_number=None,charge=None,FF_atomtype=None,mass=None,LJ_sigma=None,LJ_epsilon=None,QM=False,occupancy=None,temp_factor=None,heterogen=None,charge_str=None,velocity=None,alternative_site=None):
 
     # necessary upon init
     self._name = name
@@ -55,6 +55,7 @@ class Atom:
     self.charge_str = charge_str
     self.ter_line = None
     self.terminal = None
+    self.alternative_site = alternative_site
     self._velocity = velocity
 
   def __deepcopy__(self, memodict={}):

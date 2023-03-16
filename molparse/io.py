@@ -326,7 +326,8 @@ def parsePDBAtomLine(line,res_index,atom_index,chain_counter,debug=False,alterna
     mout.out("Attempting to parse atom with index: "+str(atom_index))
 
   try:
-    atom_name = line[12:17].strip()
+    atom_name = line[12:16].strip()
+
     if debug: print(str(atom_index) + ".name: OK")
     residue = line[17:21].strip()
     if debug: print(str(atom_index) + ".residue: OK")
@@ -342,8 +343,10 @@ def parsePDBAtomLine(line,res_index,atom_index,chain_counter,debug=False,alterna
     res_number = line[22:26].strip()
     if debug: print(str(atom_index) + ".res_number: OK")
       
+    alt_site_str = None
     if alternative_site_warnings and len(line[16:17].strip()) > 0:
-      mout.warningOut(f"Possible alternative site in PDB! res={residue}, atom={atom_name}, res_number={res_number}")
+      mout.warningOut(f"Alternative site in PDB! res={residue}, atom={atom_name}, res_number={res_number}")
+      alt_site_str = line[16:17]
 
     position = []
     position.append(float(line[31:39].strip()))
@@ -382,7 +385,7 @@ def parsePDBAtomLine(line,res_index,atom_index,chain_counter,debug=False,alterna
       isQM = False
     if debug: print(str(atom_index) + ".isqm: OK")
 
-    atom = Atom(atom_name,pdb_index,pdb_index,position,residue,chain,res_number,QM=isQM,occupancy=occupancy,temp_factor=temp_factor,heterogen=hetatm,charge_str=chg_str)
+    atom = Atom(atom_name,pdb_index,pdb_index,position,residue,chain,res_number,QM=isQM,occupancy=occupancy,temp_factor=temp_factor,heterogen=hetatm,charge_str=chg_str,alternative_site=alt_site_str)
 
     return atom
 
@@ -684,8 +687,12 @@ def writePDB(filename,system,verbosity=1,printScript=False,append=False,model=1)
 
     strbuff += atom_serial_str
     strbuff += " "
-    strbuff += str(atom.name).rjust(4)
-    strbuff += " "
+    strbuff += str(atom.name[:4]).ljust(4)
+    if atom.alternative_site:
+      strbuff += str(atom.alternative_site)
+    else:
+      strbuff += " "
+    # strbuff += " "
     strbuff += str(atom.residue).ljust(4)
     # assert len(chain.name) == 1
     # strbuff += str(chain.name)
