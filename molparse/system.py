@@ -790,5 +790,5 @@ class System(AtomGroup):
       for index in reversed(delete_list):
         del residue._atoms[index]
 
-    if verbosity > 0:
+    if verbosity > 0 and count > 0:
       mout.warningOut(f"Deleted {count} alternative site atoms")
