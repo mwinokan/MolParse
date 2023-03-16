@@ -2,62 +2,96 @@
 from .residue import Residue, res_type
 
 def alphabet(name):
-	if "ALA": return "A" 
-	elif name == "ARG": return "R" 
-	elif name == "ASN":	return "N" 
-	elif name == "ASP": return "D" 
-	elif name == "CYS": return "C" 
-	elif name == "GLN": return "Q" 
-	elif name == "GLU": return "E" 
-	elif name == "GLY": return "G" 
-	elif name == "HIS": return "H" 
-	elif name == "HSD": return "H" 
-	elif name == "HSE": return "H" 
-	elif name == "HSP": return "H" 
-	elif name == "ILE": return "I" 
-	elif name == "LEU": return "L" 
-	elif name == "LYS": return "K" 
-	elif name == "MET": return "M" 
-	elif name == "PHE": return "F" 
-	elif name == "PRO": return "P" 
-	elif name == "SER": return "S" 
-	elif name == "THR": return "T" 
-	elif name == "TRP": return "W" 
-	elif name == "TYR": return "Y" 
-	elif name == "VAL": return "V" 
-	else:
-		import mout
+	try:
+		return _letter_from_resname[name]
+	except KeyError:
 		mout.errorOut(f"Unsupported amino acid residue name: {name}")
 		return None
 
 def longname(name):
-	if name == "ALA": return "Alanine" 
-	elif name == "ARG": return "Arginine" 
-	elif name == "ASN":	return "Asparagine" 
-	elif name == "ASP": return "Aspartic Acid" 
-	elif name == "CYS": return "Cysteine" 
-	elif name == "GLN": return "Glutamine" 
-	elif name == "GLU": return "Glutamic Acid" 
-	elif name == "GLY": return "Glycine" 
-	elif name == "HIS": return "Histidine" 
-	elif name == "HSD": return "Histidine (Delta)" 
-	elif name == "HSE": return "Histidine (Epsilon)" 
-	elif name == "HSP": return "Histidine (Protonated)" 
-	elif name == "ILE": return "Isoleucine" 
-	elif name == "LEU": return "Leucine" 
-	elif name == "LYS": return "Lysine" 
-	elif name == "MET": return "Methionine" 
-	elif name == "PHE": return "Phenylalanine" 
-	elif name == "PRO": return "Proline" 
-	elif name == "SER": return "Serine" 
-	elif name == "THR": return "Threonine" 
-	elif name == "TRP": return "Tryptophan" 
-	elif name == "TYR": return "Tyrosine" 
-	elif name == "VAL": return "Valine" 
-	else:
-		import mout
+	try:
+		return _longname_from_resname[name]
+	except KeyError:
 		mout.errorOut(f"Unsupported amino acid residue name: {name}")
 		return None
+
+_letter_from_resname = { 
+	"ALA": "A",
+	"ARG": "R",
+	"ASN": "N",
+	"ASP": "D",
+	"CYS": "C",
+	"GLN": "Q",
+	"GLU": "E",
+	"GLY": "G",
+	"HIS": "H",
+	"HSD": "H",
+	"HSE": "H",
+	"HSP": "H",
+	"ILE": "I",
+	"LEU": "L",
+	"LYS": "K",
+	"MET": "M",
+	"PHE": "F",
+	"PRO": "P",
+	"SER": "S",
+	"THR": "T",
+	"TRP": "W",
+	"TYR": "Y",
+	"VAL": "V"
+}
+
+_resname_from_letter = {
+	"A":"ALA",
+	"R":"ARG",
+	"N":"ASN",
+	"D":"ASP",
+	"C":"CYS",
+	"Q":"GLN",
+	"E":"GLU",
+	"G":"GLY",
+	"H":"HIS",
+	"H":"HSD",
+	"H":"HSE",
+	"H":"HSP",
+	"I":"ILE",
+	"L":"LEU",
+	"K":"LYS",
+	"M":"MET",
+	"F":"PHE",
+	"P":"PRO",
+	"S":"SER",
+	"T":"THR",
+	"W":"TRP",
+	"Y":"TYR",
+	"V":"VAL"
+}
+
+_longname_from_resname = {
+	"ALA":"Alanine",
+	"ARG":"Arginine",
+	"ASN":"Asparagine",
+	"ASP":"Aspartic Acid",
+	"CYS":"Cysteine",
+	"GLN":"Glutamine",
+	"GLU":"Glutamic Acid",
+	"GLY":"Glycine",
+	"HIS":"Histidine",
+	"HSD":"Histidine (Delta)",
+	"HSE":"Histidine (Epsilon)",
+	"HSP":"Histidine (Protonated)",
+	"ILE":"Isoleucine",
+	"LEU":"Leucine",
+	"LYS":"Lysine",
+	"MET":"Methionine",
+	"PHE":"Phenylalanine",
+	"PRO":"Proline",
+	"SER":"Serine",
+	"THR":"Threonine",
+	"TRP":"Tryptophan",
+	"TYR":"Tyrosine",
+	"VAL":"Valine"
+}
 
 class AminoAcid(Residue):
 	"""Class for Amino Acid Residue
