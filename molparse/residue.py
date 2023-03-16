@@ -301,6 +301,14 @@ def res_type(resname):
                              "MET","PHE","PRO","SER","THR",
                              "TRP","TYR","VAL","HID","HIE","HIP","HSP")):
     this_type = "PRO"
+  elif len(resname) == 4 and resname.endswith(("ALA","ARG","ASN","ASP",
+                             "CYS","GLN","GLU","GLY","HSD",
+                             "HSE","HIS","ILE","LEU","LYS",
+                             "MET","PHE","PRO","SER","THR",
+                             "TRP","TYR","VAL","HID","HIE","HIP","HSP")):
+    this_type = "PRO"
+  elif resname.endswith(("CRO")):
+    this_type = "PRO"
   else:
     import mcol
     import mout
