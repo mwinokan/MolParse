@@ -35,6 +35,13 @@ class Chain(AtomGroup):
     from .residue import Residue
     assert isinstance(residue,Residue)
     residue.set_chain_number(self.index)
+
+    # remove any termini
+    if self.residues:
+      for atom in self.residues[-1].atoms:
+        atom.terminal = None
+        atom.ter_line = None
+
     self.residues.append(residue)
     if self.num_residues > 1 and self.residues[-1].type != self.type:
       mout.errorOut(f'Differing residue types in same chain {self.residues[-1]} ({self.residues[-1].type}), {self.residues[0]} ({self.type})')

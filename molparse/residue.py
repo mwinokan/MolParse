@@ -110,6 +110,12 @@ class Residue(AtomGroup):
     """add an Atom"""
     from .atom import Atom
     assert isinstance(atom,Atom)
+    
+    if self.atoms:
+      # remove any termini
+      self.atoms[-1].terminal = None
+      self.atoms[-1].ter_line = None
+
     self._atoms.append(atom)
 
   def translate(self,vector):
@@ -285,29 +291,37 @@ class Residue(AtomGroup):
 
 def res_type(resname):
   """Guess type from residue name"""
+  # DNA
   if resname.startswith(('DA','DT','DC','DG','ADE9','THMN','GUA9','CTSN')):
     this_type = "DNA"
-  elif resname.startswith(('SOL','WAT','TIP','T3P','HOH')):
+  # solvents
+  elif resname.startswith(('SOL','WAT','TIP','T3P','HOH','PEG','SO4')):
     this_type = "SOL"
-  elif resname.startswith(('ION','MG','CL','NA','SOD','POT','CAL','LIT','Na+','Cl-')):
+  # ions
+  elif resname.startswith(('ION','MG','CL','NA','SOD','POT','CAL','LIT','Na+','Cl-','CA')):
     this_type = "ION"
+  # lipids
   elif resname.startswith(('DPPC','POPC','DAG','TAG')):
     this_type = "LIP"
+  # ligands
   elif resname.startswith(('ATP','GTP')):
     this_type = "LIG"
+  # amino acids
   elif resname.startswith(("ALA","ARG","ASN","ASP",
                              "CYS","GLN","GLU","GLY","HSD",
                              "HSE","HIS","ILE","LEU","LYS",
                              "MET","PHE","PRO","SER","THR",
                              "TRP","TYR","VAL","HID","HIE","HIP","HSP")):
     this_type = "PRO"
-  elif len(resname) == 4 and resname.endswith(("ALA","ARG","ASN","ASP",
+  # amino acids w/ termini in Amber naming
+  elif resname[0] in ("N","C") and len(resname) == 4 and resname.endswith(("ALA","ARG","ASN","ASP",
                              "CYS","GLN","GLU","GLY","HSD",
                              "HSE","HIS","ILE","LEU","LYS",
                              "MET","PHE","PRO","SER","THR",
                              "TRP","TYR","VAL","HID","HIE","HIP","HSP")):
     this_type = "PRO"
-  elif resname.endswith(("CRO")):
+  # chromophore
+  elif resname in ("CRO"):
     this_type = "PRO"
   else:
     import mcol
