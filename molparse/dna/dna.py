@@ -80,8 +80,8 @@ def check_legality(residue1,residue2):
 	return False
 
 def fix_termini(chain):
-	make_5ter(chain.residues[0])
-	make_3ter(chain.residues[-1])
+	chain.residues[0].make_5ter()
+	chain.residues[-1].make_3ter()
 
 def make_5ter(residue):
 
