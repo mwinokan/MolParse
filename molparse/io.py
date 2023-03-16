@@ -6,6 +6,7 @@ def write(filename,image,verbosity=1,printScript=False,**parameters):
   import mout
   from .system import System
   from .group import AtomGroup
+  import plotly.graph_objects as go
 
   if (verbosity > 0):
     mout.out("writing "+mcol.file+
@@ -43,6 +44,12 @@ def write(filename,image,verbosity=1,printScript=False,**parameters):
         io.write(filename,image,**parameters)
       else:
         mout.errorOut("Unsupported",fatal=True)
+
+    elif isinstance(image,go.Figure):
+      if filename.endswith('.html'):
+        image.write_html(filename)
+      else:
+        image.write_image(filename)
 
     # Others:
     else:
