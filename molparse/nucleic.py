@@ -115,22 +115,22 @@ class NucleicAcid(Residue):
 		"""Create a 5-Terminus"""
 
 		# Append 5 to residue name
-		if not residue.name.endswith("5"):
-			residue.name += "5"
+		if not self.name.endswith("5"):
+			self.name += "5"
 
 		# Remove HTER/H5T
-		residue.delete_atom("HTER")
-		residue.delete_atom("H5T")
-		residue.delete_atom("HO5'")
-		residue.delete_atom("OXT")
-		residue.delete_atom("O5T")
-		residue.delete_atom("O1P")
-		residue.delete_atom("O2P")
-		residue.delete_atom("OP1")
-		residue.delete_atom("OP2")
+		self.delete_atom("HTER")
+		self.delete_atom("H5T")
+		self.delete_atom("HO5'")
+		self.delete_atom("OXT")
+		self.delete_atom("O5T")
+		self.delete_atom("O1P")
+		self.delete_atom("O2P")
+		self.delete_atom("OP1")
+		self.delete_atom("OP2")
 
 		# Rename P->H5T
-		atom = residue.get_atom("P")
+		atom = self.get_atom("P")
 		if atom is not None:
 			atom.name = "H5T"
 
@@ -138,19 +138,19 @@ class NucleicAcid(Residue):
 		"""Create a 3-Terminus"""
 
 		# Append 3 to residue name
-		if not residue.name.endswith("3"):
-			residue.name += "3"
+		if not self.name.endswith("3"):
+			self.name += "3"
 
 		# Remove HTER/H3T
-		residue.delete_atom("O1P3")
-		residue.delete_atom("O2P3")
-		residue.delete_atom("O3T")
-		residue.delete_atom("H3T")
-		residue.delete_atom("HO3'")
-		residue.delete_atom("HCAP")
+		self.delete_atom("O1P3")
+		self.delete_atom("O2P3")
+		self.delete_atom("O3T")
+		self.delete_atom("H3T")
+		self.delete_atom("HO3'")
+		self.delete_atom("HCAP")
 
 		# Rename P3->H3T
-		atom = residue.get_atom("P3")
+		atom = self.get_atom("P3")
 		if atom is not None:
 			atom.name = "H3T"
 
