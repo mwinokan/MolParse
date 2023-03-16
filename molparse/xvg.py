@@ -9,7 +9,8 @@ def parseXVG(file):
 	
 	header_buffer = []
 	xvg = None
-	many = False
+	many = []
+	multiname = None
 
 	with open(file) as f:
 		for line in f:
@@ -24,10 +25,15 @@ def parseXVG(file):
 
 			elif line.startswith('&'):
 				if many:
-					many.append(xvg)
-					xvg = xvg.create_blank_copy()
+					if xvg.entries:
+						many.append(xvg)
+						many[-1].title = f"[{len(many)}]"
+						xvg = xvg.create_blank_copy()
 				else:
 					many = [xvg]
+					multiname = xvg.title
+					many[-1].title = f"[{len(many)}]"
+					xvg = xvg.create_blank_copy()
 				continue
 
 			elif not xvg:
@@ -39,7 +45,10 @@ def parseXVG(file):
 				xvg.parse_data_line(line)
 
 	if many:
-		return many
+		if xvg.entries:
+			many.append(xvg)
+			many[-1].title = f"[{len(many)}]"
+		return XVGCollection(many,multiname)
 	else:
 		return xvg
 		
@@ -83,7 +92,7 @@ class XVG():
 			self.columns = {'x':[],'y':[],'yerr':[]}
 		else:
 			mout.errorOut(f"Unrecognised XVG type: {self.type}, with {self.num_columns} columns",fatal=True)
-	
+
 	def parse_data_line(self,line):
 		"""Parse a line of XVG data"""
 
@@ -119,6 +128,37 @@ class XVG():
 			plt.show()
 		return fig,ax
 
+	def get_go_trace(self,name=None):
+
+		import plotly.graph_objects as go
+
+		if self.type == 'xy' and self.num_columns == 2:
+			trace = go.Scatter(x=self.columns['x'],
+							   y=self.columns['y'],
+							   name=name,
+							   mode='lines')
+		elif self.type == 'xy':
+			traces = []
+			for key in self.column_labels[1:]:
+				trace = go.Scatter(x=self.columns['x'],
+								   y=self.columns[key],
+								   mode='lines',
+								   name=key)
+				traces.append(trace)
+			return traces
+		elif self.type == 'xydy' and self.num_columns == 3:
+			trace = go.Scatter(x=self.columns['x'],
+							   y=self.columns['y'],
+							   name=name,
+							   error_y=dict(type='data',
+							   				array=self.columns['yerr'],
+							   				visible=True),
+							   mode='lines')
+		else:
+			mout.errorOut(f"Unrecognised XVG type (XVG.plotly): {self.type}, with {self.num_columns} columns",fatal=True)
+
+		return trace
+
 	def plotly(self,show=False):
 		"""Use plotly to plot the XVG data"""
 
@@ -126,35 +166,15 @@ class XVG():
 
 		fig = go.Figure()
 
-		if self.type == 'xy' and self.num_columns == 2:
-			trace = go.Scatter(x=self.columns['x'],
-							   y=self.columns['y'],
-							   mode='lines')
-			fig.add_trace(trace)
-		elif self.type == 'xy':
-			for key in self.column_labels[1:]:
-				trace = go.Scatter(x=self.columns['x'],
-								   y=self.columns[key],
-								   mode='lines',
-								   name=key)
-				fig.add_trace(trace)
-		elif self.type == 'xydy' and self.num_columns == 3:
-			trace = go.Scatter(x=self.columns['x'],
-							   y=self.columns['y'],
-							   error_y=dict(type='data',
-							   				array=self.columns['yerr'],
-							   				visible=True),
-							   mode='lines')
-			fig.add_trace(trace)
-		else:
-			mout.errorOut(f"Unrecognised XVG type (XVG.plotly): {self.type}, with {self.num_columns} columns",fatal=True)
-
 		fig.update_layout(
 			title=self.title,
 			xaxis_title=self.xlabel,
 			yaxis_title=self.ylabel,
 			font=dict(family="Helvetica Neue",size=18)
 		)
+
+		trace = self.get_go_trace()
+		fig.add_trace(trace)
 
 		if show:
 			fig.show()
@@ -168,12 +188,94 @@ class XVG():
 
 		copy = XVG()
 
-		xvg.title = self.title
-		xvg.xlabel = self.xlabel
-		xvg.ylabel = self.ylabel
-		xvg.type = self.type
-		xvg.column_labels = self.column_labels
-		xvg.column_types = self.column_types
-		xvg.columns = self.columns
+		copy.title = self.title
+		copy.xlabel = self.xlabel
+		copy.ylabel = self.ylabel
+		copy.type = self.type
+		copy.column_labels = self.column_labels
+		copy.column_types = self.column_types
 
-		return xvg
+		copy.columns = {}
+		for key in self.columns:
+			copy.columns[key] = []
+		
+		copy.num_columns = self.num_columns
+
+		return copy
+
+class XVGCollection():
+	"""Class to store many XVG objects"""
+	def __init__(self,xvg_list,title):
+		self.children = xvg_list
+		self.title = title
+
+	def plotly(self,show=False,statistics=False):
+
+		import plotly.graph_objects as go
+
+		fig = go.Figure()
+
+		fig.update_layout(
+			title=self.title,
+			xaxis_title=self.children[0].xlabel,
+			yaxis_title=self.children[0].ylabel,
+			font=dict(family="Helvetica Neue",size=18)
+		)
+
+		if not statistics:
+
+			for xvg in self.children:
+
+				fig.add_trace(xvg.get_go_trace(name=xvg.title))
+
+		else:
+
+			import numpy as np
+
+			x = self.children[0].columns['x']
+			mean = []
+			mean_plus_std = []
+			mean_minus_std = []
+			mins = []
+			maxs = []
+
+			# calculate mean curve
+			for i in range(self.children[0].entries):
+				this_slice = [xvg.columns['y'][i] for xvg in self.children]
+
+				mins.append(min(this_slice))
+				maxs.append(max(this_slice))
+
+				mu = np.mean(this_slice)
+				std = np.std(this_slice)
+
+				mean.append(mu)
+				mean_plus_std.append(mu+std)
+				mean_minus_std.append(mu-std)
+
+			fig.add_trace(go.Scatter(x=x,y=maxs,name="max",line=dict(width=0,color='black')))
+			fig.add_trace(go.Scatter(x=x,y=mins,name="min",fill='tonexty',line=dict(width=0,color='black'),fillcolor='rgba(0,0,0,0.15)'))
+			fig.add_trace(go.Scatter(x=x,y=mean_plus_std,name="mean+std",line=dict(width=0,color='black')))
+			fig.add_trace(go.Scatter(x=x,y=mean_minus_std,name="mean-std",fill='tonexty',line=dict(width=0),fillcolor='rgba(0,0,0,0.3)'))
+			fig.add_trace(go.Scatter(x=x,y=mean,name="mean",line=dict(color="black",width=4)))
+
+			fig.update_layout(showlegend=False)
+
+		if show:
+			fig.show()
+
+		return fig
+
+	def align_ydata(self,function):
+
+		import numpy as np
+
+		for xvg in self.children:
+
+			data = xvg.columns['y']
+			ref_value = function(data)
+			array = np.array(data)
+			array -= ref_value
+			xvg.columns['y'] = list(array)
+
+
