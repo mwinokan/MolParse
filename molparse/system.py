@@ -769,3 +769,26 @@ class System(AtomGroup):
   @property
   def children(self):
     return self.chains
+
+  def prune_alternative_sites(self,site='A',verbosity=1):
+    """Remove atoms with alternative sites"""
+    import mout
+    
+    count = 0
+
+    for residue in self.residues:
+      delete_list = []
+      for index,atom in enumerate(residue.atoms):
+        if not atom.alternative_site:
+          continue
+        elif atom.alternative_site == site:
+          atom.alternative_site = None
+        elif atom.alternative_site != site:
+          delete_list.append(index)
+          count += 1
+
+      for index in reversed(delete_list):
+        del residue._atoms[index]
+
+    if verbosity > 0:
+      mout.warningOut(f"Deleted {count} alternative site atoms")

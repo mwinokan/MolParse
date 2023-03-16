@@ -138,7 +138,7 @@ def parse(file,verbosity=1):
     mout.errorOut("Unsupported file type for MolParse parsing, using ASE.io.read")
     return read(file,verbosity=verbosity)
 
-def parsePDB(pdb,systemName=None,index=1,fix_indices=True,fix_atomnames=True,autoname_chains=False,verbosity=1,debug=False,dry=False):
+def parsePDB(pdb,systemName=None,index=1,fix_indices=True,fix_atomnames=True,autoname_chains=False,prune_alternative_sites=True,verbosity=1,debug=False,dry=False):
   from .system import System
   from .chain import Chain
   from .residue import Residue
@@ -301,6 +301,9 @@ def parsePDB(pdb,systemName=None,index=1,fix_indices=True,fix_atomnames=True,aut
 
     chain.add_residue(residue)
     system.add_chain(chain)
+
+    if prune_alternative_sites:
+      system.prune_alternative_sites()
 
     if fix_indices:
       system.fix_indices()
