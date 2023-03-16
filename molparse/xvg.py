@@ -256,7 +256,7 @@ class XVGCollection():
 			fig.add_trace(go.Scatter(x=x,y=maxs,name="max",line=dict(width=0,color='black')))
 			fig.add_trace(go.Scatter(x=x,y=mins,name="min",fill='tonexty',line=dict(width=0,color='black'),fillcolor='rgba(0,0,0,0.15)'))
 			fig.add_trace(go.Scatter(x=x,y=mean_plus_std,name="mean+std",line=dict(width=0,color='black')))
-			fig.add_trace(go.Scatter(x=x,y=mean_minus_std,name="mean-std",fill='tonexty',line=dict(width=0),fillcolor='rgba(0,0,0,0.3)'))
+			fig.add_trace(go.Scatter(x=x,y=mean_minus_std,name="mean-std",fill='tonexty',line=dict(width=0,color='black'),fillcolor='rgba(0,0,0,0.3)'))
 			fig.add_trace(go.Scatter(x=x,y=mean,name="mean",line=dict(color="black",width=4)))
 
 			fig.update_layout(showlegend=False)
