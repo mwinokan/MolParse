@@ -88,7 +88,7 @@ from .io import parseGRO
 from .io import parseXYZ
 
 # CLI-Viewer
-from .tree import tree
+# from .tree import tree
 
 # Manipulation
 from .manipulate import interpolate
