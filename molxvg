@@ -1,0 +1,63 @@
+#!/usr/bin/env python3
+
+import argparse
+
+parser = argparse.ArgumentParser(prog='molxvg',description='Parses and plots XVG files created by Gromacs')
+
+parser.add_argument("file",help='XVG file')
+parser.add_argument("-s",'--show',action='store_true',
+					help='open a plotly plot')
+parser.add_argument("-html",action='store_true',
+					help='save an HTML file')
+parser.add_argument("-pdf",action='store_true',
+					help='save a PDF file')
+parser.add_argument("-png",action='store_true',
+					help='save a PNG file')
+parser.add_argument("-align","--align-ydata",
+					help='align the ydata using this function or x-coordinate')
+parser.add_argument("-o","--outkey",
+					help='output file basename')
+parser.add_argument("-stat","--statistics",action='store_true',
+					help='calculate and plot mean statistics of the traces')
+
+args = parser.parse_args()
+
+########
+
+import mout
+import molparse as mp
+
+data = mp.xvg.parseXVG(args.file)
+
+if args.align_ydata:
+	if args.align_ydata == 'min':
+		data.align_ydata(min)
+	elif args.align_ydata == 'max':
+		data.align_ydata(max)
+	else:
+		data.align_ydata(float(args.align_ydata))
+
+if isinstance(data,mp.xvg.XVGCollection):
+	fig = data.plotly(show=args.show,statistics=args.statistics)
+else:
+	if args.statistics:
+		mout.warningOut("statistics flag ignored for single trace XVG file")
+	fig = data.plotly(show=args.show)
+
+if not any([args.pdf,args.png,args.html]):
+	exit()
+
+import os
+if args.outkey:
+	outfile = f'{args.outkey}.xvg'
+else:
+	outfile = os.path.basename(args.file)
+
+if args.pdf:
+	mp.write(outfile.replace(".xvg",".pdf"),fig)
+
+if args.png:
+	mp.write(outfile.replace(".xvg",".png"),fig)
+
+if args.html:
+	mp.write(outfile.replace(".xvg",".html"),fig)
