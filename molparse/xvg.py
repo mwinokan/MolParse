@@ -2,7 +2,7 @@
 import mout
 import mcol
 
-def parseXVG(file,convert_nanometres=True):
+def parseXVG(file,xmin=None,xmax=None,convert_nanometres=True):
 	"""Parse a GROMACS XVG file and return a molparse.XVG object"""
 
 	mout.out(f"Parsing {mcol.file}{file}{mcol.clear}...")
@@ -38,7 +38,7 @@ def parseXVG(file,convert_nanometres=True):
 
 			elif not xvg:
 				xvg = XVG()
-				xvg.determine_data_shape(header_buffer,line,convert_nanometres)
+				xvg.determine_data_shape(header_buffer,line,convert_nanometres,xmin=xmin,xmax=xmax)
 				xvg.parse_data_line(line)
 
 			else:
@@ -53,6 +53,7 @@ def parseXVG(file,convert_nanometres=True):
 		return xvg
 		
 def clean_label(string):
+	"""Parses Grace label syntax into LaTeX"""
 
 	substring = string
 	chunks = []
@@ -98,17 +99,24 @@ class XVG():
 	def __init__(self):
 		self.entries = 0
 	
-	def determine_data_shape(self,header_buffer,demo_line,convert_nanometres):
+	def determine_data_shape(self,header_buffer,demo_line,convert_nanometres,xmin,xmax):
 		"""Use the header strings and an example data line to construct the data shape"""
 		self.title = [line.lstrip("title ") for line in header_buffer if line.startswith("title")]
 		self.xlabel = [line.lstrip("xaxis ") for line in header_buffer if line.startswith("xaxis")]
 		self.ylabel = [line.lstrip("yaxis ") for line in header_buffer if line.startswith("yaxis")]
 		self.type = [line.lstrip("TYPE ") for line in header_buffer if line.startswith("TYPE")]
+		self.series_labels = [line for line in header_buffer if line.startswith("s") and 'legend' in line]
+
+		if self.series_labels:
+			self.series_labels = {int(l.split("legend")[0].strip().lstrip("s")):l.split("legend")[1].strip().replace('"','') for l in self.series_labels}
 
 		if len(self.title) > 1: mout.warningOut("Multiple title headers")
 		if len(self.xlabel) > 1: mout.warningOut("Multiple xaxis headers")
 		if len(self.ylabel) > 1: mout.warningOut("Multiple yaxis headers")
 		if len(self.type) > 1: mout.warningOut("Multiple TYPE headers")
+
+		self.xmin = xmin
+		self.xmax = xmax
 
 		self.title = self.title[0]
 		self.xlabel = self.xlabel[0].lstrip('label "').rstrip('"')
@@ -135,7 +143,10 @@ class XVG():
 			self.column_scales = [self.xscale,self.yscale]
 			self.columns = {'x':[],'y':[]}
 		elif self.type == 'xy':
-			self.column_labels = ['x'] + [f'y{i+1}' for i in range(self.num_columns-1)]
+			if self.series_labels:
+				self.column_labels = ['x'] + [v for _,v in self.series_labels.items()]
+			else:
+				self.column_labels = ['x'] + [f'y{i+1}' for i in range(self.num_columns-1)]
 			self.column_scales = [self.xscale] + [self.yscale]*(self.num_columns-1)
 			self.column_types = [float]*self.num_columns
 			self.columns = {key:[] for key in self.column_labels}
@@ -154,9 +165,16 @@ class XVG():
 
 		for value,column,data_type,scale in zip(split_line,self.column_labels,self.column_types,self.column_scales):
 			if scale is not None:
-				self.columns[column].append(data_type(value)*scale)
+				value = data_type(value)*scale
 			else:
-				self.columns[column].append(data_type(value)*scale)
+				value = data_type(value)
+
+			if self.xmin and column == 'x' and float(self.xmin) > value:
+				return
+			if self.xmax and column == 'x' and float(self.xmax) < value:
+				return
+
+			self.columns[column].append(value)
 
 		self.entries += 1
 
@@ -186,6 +204,7 @@ class XVG():
 		return fig,ax
 
 	def get_go_trace(self,name=None):
+		"""get the plotly.go trace(s) for the data"""
 
 		import plotly.graph_objects as go
 
@@ -197,10 +216,30 @@ class XVG():
 		elif self.type == 'xy':
 			traces = []
 			for key in self.column_labels[1:]:
-				trace = go.Scatter(x=self.columns['x'],
-								   y=self.columns[key],
-								   mode='lines',
-								   name=key)
+
+				group = "default"
+
+				if 'pull' in self.title.lower():
+					group = 'RC'
+
+				if 'ref' in key:
+					group = 'REF'
+				elif 'X' in key or 'Y' in key or 'Z' in key:
+					group = 'COM'
+
+				if group:
+					trace = go.Scatter(x=self.columns['x'],
+									   y=self.columns[key],
+									   mode='lines',
+									   name=key,
+									   legendgroup=group,
+									   legendgrouptitle_text=group)
+				else:
+					trace = go.Scatter(x=self.columns['x'],
+									   y=self.columns[key],
+									   mode='lines',
+									   name=key)
+
 				traces.append(trace)
 			return traces
 		elif self.type == 'xydy' and self.num_columns == 3:
@@ -216,6 +255,18 @@ class XVG():
 
 		return trace
 
+	def get_stationary_point_trace(self,name=None,column='y'):
+		"""find any stationary points and make a plotly.go.Scatter trace"""
+		import numpy as np
+		import scipy.signal as sps
+		import plotly.graph_objects as go
+		self.minima_indices = sps.argrelextrema(np.array(self.columns[column]), np.less)[0]
+		self.maxima_indices = sps.argrelextrema(np.array(self.columns[column]), np.greater)[0]
+		indices = list(self.minima_indices) + list(self.maxima_indices)
+		xdata = [self.columns['x'][i] for i in indices]
+		ydata = [self.columns[column][i] for i in indices]
+		return go.Scatter(x=xdata,y=ydata,name=name,mode='markers')
+
 	def plotly(self,show=False):
 		"""Use plotly to plot the XVG data"""
 
@@ -227,11 +278,17 @@ class XVG():
 			title=self.title,
 			xaxis_title=self.xlabel,
 			yaxis_title=self.ylabel,
+			legend=dict(groupclick="toggleitem"),
 			font=dict(family="Helvetica Neue",size=18)
 		)
 
 		trace = self.get_go_trace()
-		fig.add_trace(trace)
+
+		if isinstance(trace, list):
+			for t in trace:
+				fig.add_trace(t)
+		else:
+			fig.add_trace(trace)
 
 		if show:
 			fig.show()
@@ -252,6 +309,9 @@ class XVG():
 		copy.column_labels = self.column_labels
 		copy.column_types = self.column_types
 		copy.column_scales = self.column_scales
+		
+		copy.xmin = self.xmin
+		copy.xmax = self.xmax
 
 		copy.columns = {}
 		for key in self.columns:
@@ -278,13 +338,24 @@ class XVG():
 		array -= ref_value
 		self.columns['y'] = list(array)
 
+	def smooth(self,column='y',window_length=24,polyorder=3):
+		"""Smooth a column of data"""
+		from scipy.signal import savgol_filter
+		self.columns[column] = list(savgol_filter(self.columns[column], window_length, polyorder))
+
 class XVGCollection():
 	"""Class to store many XVG objects"""
 	def __init__(self,xvg_list,title):
 		self.children = xvg_list
 		self.title = title
 
-	def plotly(self,show=False,statistics=False):
+	def smooth(self,column='y',window_length=24,polyorder=3):
+		"""Smooth all the children's data"""
+		for xvg in self.children:
+			xvg.smooth(column,window_length,polyorder)
+
+	def plotly(self,show=False,statistics=False,stationary_points=False):
+		"""Use plotly to plot the XVG collection"""
 
 		import plotly.graph_objects as go
 
@@ -294,6 +365,7 @@ class XVGCollection():
 			title=self.title,
 			xaxis_title=self.children[0].xlabel,
 			yaxis_title=self.children[0].ylabel,
+			legend=dict(groupclick="toggleitem"),
 			font=dict(family="Helvetica Neue",size=18)
 		)
 
@@ -302,6 +374,7 @@ class XVGCollection():
 			for xvg in self.children:
 
 				fig.add_trace(xvg.get_go_trace(name=xvg.title))
+				fig.add_trace(xvg.get_stationary_point_trace(name=xvg.title))
 
 		else:
 

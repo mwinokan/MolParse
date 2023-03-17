@@ -5,20 +5,15 @@ import argparse
 parser = argparse.ArgumentParser(prog='molxvg',description='Parses and plots XVG files created by Gromacs')
 
 parser.add_argument("file",help='XVG file')
-parser.add_argument("-s",'--show',action='store_true',
-					help='open a plotly plot')
-parser.add_argument("-html",action='store_true',
-					help='save an HTML file')
-parser.add_argument("-pdf",action='store_true',
-					help='save a PDF file')
-parser.add_argument("-png",action='store_true',
-					help='save a PNG file')
-parser.add_argument("-align","--align-ydata",
-					help='align the ydata using this function or x-coordinate')
-parser.add_argument("-o","--outkey",
-					help='output file basename')
-parser.add_argument("-stat","--statistics",action='store_true',
-					help='calculate and plot mean statistics of the traces')
+parser.add_argument("-s",'--show',action='store_true',help='open a plotly plot')
+parser.add_argument("-html",action='store_true',help='save an HTML file')
+parser.add_argument("-pdf",action='store_true',help='save a PDF file')
+parser.add_argument("-png",action='store_true',help='save a PNG file')
+parser.add_argument("-align","--align-ydata",help='align the ydata using this function or x-coordinate')
+parser.add_argument("-o","--outkey",help='output file basename')
+parser.add_argument("-stat","--statistics",action='store_true',help='calculate and plot mean statistics of the traces')
+parser.add_argument("-xmin",help='cut off any data below this x-value')
+parser.add_argument("-xmax",help='cut off any data above this x-value')
 
 args = parser.parse_args()
 
@@ -27,7 +22,10 @@ args = parser.parse_args()
 import mout
 import molparse as mp
 
-data = mp.xvg.parseXVG(args.file)
+if not any([args.show,args.pdf,args.png,args.html]):
+	mout.errorOut("These arguments will not produce any output",fatal=True)
+
+data = mp.xvg.parseXVG(args.file,xmin=args.xmin,xmax=args.xmax)
 
 if args.align_ydata:
 	if args.align_ydata == 'min':
