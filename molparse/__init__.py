@@ -76,8 +76,8 @@ Key features:
 
 """
 
-# import sys
-# assert sys.version_info >= (3, 10), "Use Python 3.10 or newer"
+from .version import import_checks
+import_checks()
 
 # Custom IO
 from .io import read
