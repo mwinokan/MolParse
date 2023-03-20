@@ -2,7 +2,7 @@
 import mout
 import mcol
 
-def parseXVG(file,xmin=None,xmax=None,convert_nanometres=True):
+def parseXVG(file,xmin=None,xmax=None,convert_nanometres=True,yscale=1.0,ylabel=None):
 	"""Parse a GROMACS XVG file and return a molparse.XVG object"""
 
 	mout.out(f"Parsing {mcol.file}{file}{mcol.clear}...")
@@ -38,7 +38,9 @@ def parseXVG(file,xmin=None,xmax=None,convert_nanometres=True):
 
 			elif not xvg:
 				xvg = XVG()
-				xvg.determine_data_shape(header_buffer,line,convert_nanometres,xmin=xmin,xmax=xmax)
+				if ylabel:
+					xvg.ylabel = ylabel
+				xvg.determine_data_shape(header_buffer,line,convert_nanometres,xmin=xmin,xmax=xmax,yscale=yscale)
 				xvg.parse_data_line(line)
 
 			else:
@@ -99,7 +101,7 @@ class XVG():
 	def __init__(self):
 		self.entries = 0
 	
-	def determine_data_shape(self,header_buffer,demo_line,convert_nanometres,xmin,xmax):
+	def determine_data_shape(self,header_buffer,demo_line,convert_nanometres,xmin,xmax,yscale=1.0):
 		"""Use the header strings and an example data line to construct the data shape"""
 		self.title = [line.lstrip("title ") for line in header_buffer if line.startswith("title")]
 		self.xlabel = [line.lstrip("xaxis ") for line in header_buffer if line.startswith("xaxis")]
@@ -128,7 +130,7 @@ class XVG():
 		self.type = self.type[-1]
 		
 		self.xscale = 1.0
-		self.yscale = 1.0
+		self.yscale = yscale
 		if convert_nanometres and '(nm)' in self.xlabel:
 			self.xscale = 10.0
 			self.xlabel = self.xlabel.replace('(nm)','(Å)')
@@ -265,7 +267,16 @@ class XVG():
 		indices = list(self.minima_indices) + list(self.maxima_indices)
 		xdata = [self.columns['x'][i] for i in indices]
 		ydata = [self.columns[column][i] for i in indices]
+		self.stationary_points = {'minima':[],'maxima':[]}
+		for i in self.minima_indices:
+			self.stationary_points['minima'].append(dict(type='min',index=i,x=self.columns['x'][i],y=self.columns[column][i]))
+		for i in self.maxima_indices:
+			self.stationary_points['maxima'].append(dict(type='max',index=i,x=self.columns['x'][i],y=self.columns[column][i]))
 		return go.Scatter(x=xdata,y=ydata,name=name,mode='markers')
+
+	def get_closest_value(self,x,column='y'):
+		from .signal import closest_value
+		return closest_value(x,self.columns['x'],self.columns[column])
 
 	def plotly(self,show=False):
 		"""Use plotly to plot the XVG data"""
