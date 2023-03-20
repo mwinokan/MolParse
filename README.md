@@ -32,6 +32,8 @@ Gromacs produces data files in XVG format by default, these can be parsed using 
 
 `molxvg [FILE.xvg] -s`
 
+![moltree](https://github.com/mwinokan/MolParse/blob/master/graphics/molxvg.png?raw=true)
+
 Other options can be found by running `molxvg --help`.
 
 ## Installation
