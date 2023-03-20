@@ -14,7 +14,9 @@ Use `pydoc` to see help on the `molparse` module, or its methods & classes. E.g.
 
 `pydoc molparse.System`
 
-### moltree Binary
+### Binaries and command-line programs
+
+#### moltree
 
 In addition to the python module, an interactive command-line interface is available with the binary `moltree`. Pass a PDB or GRO file as follows:
 
@@ -23,6 +25,14 @@ In addition to the python module, an interactive command-line interface is avail
 ![moltree](https://github.com/mwinokan/MolParse/blob/master/graphics/moltree.png?raw=true)
 
 Use the mouse to interact with buttons and CTR-C to exit.
+
+#### molxvg
+
+Gromacs produces data files in XVG format by default, these can be parsed using the `molparse.xvg.parseXVG` method from within a python environment, alternatively a binary exists to access its basic functionality from the command line. Run the following to open an interactive plotly graph of an xvg:
+
+`molxvg [FILE.xvg] -s`
+
+Other options can be found by running `molxvg --help`.
 
 ## Installation
 
