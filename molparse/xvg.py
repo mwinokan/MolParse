@@ -440,8 +440,6 @@ class XVGCollection():
 
 			trace = go.Scatter(x=x,y=maxs,name="max",legendgroup=self.title,legendgrouptitle_text=self.title,line=dict(width=0,color=color))
 
-			# print(trace.line)
-
 			fig.add_trace(go.Scatter(x=x,y=maxs,name="max",legendgroup=self.title,legendgrouptitle_text=self.title,line=dict(width=0,color=color)))
 			fig.add_trace(go.Scatter(x=x,y=mins,name="min",fill='tonexty',legendgroup=self.title,legendgrouptitle_text=self.title,line=dict(width=0,color=color),fillcolor=color.replace('rgb','rgba').replace(')',',0.15)')))
 			fig.add_trace(go.Scatter(x=x,y=mean_plus_std,name="mean+std",legendgroup=self.title,legendgrouptitle_text=self.title,line=dict(width=0,color=color)))
