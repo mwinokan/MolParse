@@ -35,6 +35,9 @@ def main():
 	if many:
 		show = False
 
+	if many and not args.outkey:
+		mout.errorOut("Provide outkey with '-o KEY' when plotting several XVGs",fatal=True)
+
 	# get the colour sequence
 	color_sequence = [get_rgbstr_from_name(c) for c in _color_sequence]
 	color_sequence = color_sequence * (len(args.file)//len(color_sequence)+1)
