@@ -1,61 +1,243 @@
 #!/usr/bin/env python3
 
-import argparse
+def main():
 
-parser = argparse.ArgumentParser(prog='molxvg',description='Parses and plots XVG files created by Gromacs')
+	import argparse
 
-parser.add_argument("file",help='XVG file')
-parser.add_argument("-s",'--show',action='store_true',help='open a plotly plot')
-parser.add_argument("-html",action='store_true',help='save an HTML file')
-parser.add_argument("-pdf",action='store_true',help='save a PDF file')
-parser.add_argument("-png",action='store_true',help='save a PNG file')
-parser.add_argument("-align","--align-ydata",help='align the ydata using this function or x-coordinate')
-parser.add_argument("-o","--outkey",help='output file basename')
-parser.add_argument("-stat","--statistics",action='store_true',help='calculate and plot mean statistics of the traces')
-parser.add_argument("-xmin",help='cut off any data below this x-value')
-parser.add_argument("-xmax",help='cut off any data above this x-value')
+	parser = argparse.ArgumentParser(prog='molxvg',description='Parses and plots XVG files created by Gromacs')
 
-args = parser.parse_args()
+	parser.add_argument("file",help='XVG file(s)',nargs='+')
+	parser.add_argument("-s",'--show',action='store_true',help='open a plotly plot')
+	parser.add_argument("-html",action='store_true',help='save an HTML file')
+	parser.add_argument("-pdf",action='store_true',help='save a PDF file')
+	parser.add_argument("-png",action='store_true',help='save a PNG file')
+	parser.add_argument("-align","--align-ydata",help='align the ydata using this function or x-coordinate')
+	parser.add_argument("-o","--outkey",help='output file basename')
+	parser.add_argument("-stat","--statistics",action='store_true',help='calculate and plot mean statistics of the traces')
+	parser.add_argument("-xmin",help='cut off any data below this x-value')
+	parser.add_argument("-xmax",help='cut off any data above this x-value')
 
-########
+	args = parser.parse_args()
 
-import mout
-import molparse as mp
+	########
 
-if not any([args.show,args.pdf,args.png,args.html]):
-	mout.errorOut("These arguments will not produce any output",fatal=True)
+	import mout
+	import molparse as mp
+	import plotly.graph_objects as go
 
-data = mp.xvg.parseXVG(args.file,xmin=args.xmin,xmax=args.xmax)
+	if not any([args.show,args.pdf,args.png,args.html]):
+		mout.errorOut("These arguments will not produce any output",fatal=True)
 
-if args.align_ydata:
-	if args.align_ydata == 'min':
-		data.align_ydata(min)
-	elif args.align_ydata == 'max':
-		data.align_ydata(max)
+	fig = go.Figure()
+	many = len(args.file) > 1
+	show = args.show
+
+	if many:
+		show = False
+
+	# get the colour sequence
+	color_sequence = [get_rgbstr_from_name(c) for c in _color_sequence]
+	color_sequence = color_sequence * (len(args.file)//len(color_sequence)+1)
+
+	for file,color in zip(args.file,color_sequence):
+
+		data = mp.xvg.parseXVG(file,xmin=args.xmin,xmax=args.xmax)
+
+		if args.align_ydata:
+			if args.align_ydata == 'min':
+				data.align_ydata(min)
+			elif args.align_ydata == 'max':
+				data.align_ydata(max)
+			else:
+				data.align_ydata(float(args.align_ydata))
+
+		if isinstance(data,mp.xvg.XVGCollection):
+			fig = data.plotly(show=show,fig=fig,statistics=args.statistics,color=color)
+		else:
+			if args.statistics:
+				mout.warningOut("statistics flag ignored for single trace XVG file")
+			fig = data.plotly(show=show,fig=fig,color=color)
+
+		if not any([args.pdf,args.png,args.html]):
+			continue
+
+	if many:
+		fig.update_layout(title=str(args.file),showlegend=True,legend=dict(groupclick="togglegroup"))
+
+	if many and args.show:
+		fig.show()
+
+	import os
+	if args.outkey:
+		outfile = f'{args.outkey}.xvg'
 	else:
-		data.align_ydata(float(args.align_ydata))
+		outfile = os.path.basename(file)
 
-if isinstance(data,mp.xvg.XVGCollection):
-	fig = data.plotly(show=args.show,statistics=args.statistics)
-else:
-	if args.statistics:
-		mout.warningOut("statistics flag ignored for single trace XVG file")
-	fig = data.plotly(show=args.show)
+	if args.pdf:
+		mp.write(outfile.replace(".xvg",".pdf"),fig)
 
-if not any([args.pdf,args.png,args.html]):
-	exit()
+	if args.png:
+		mp.write(outfile.replace(".xvg",".png"),fig)
 
-import os
-if args.outkey:
-	outfile = f'{args.outkey}.xvg'
-else:
-	outfile = os.path.basename(args.file)
+	if args.html:
+		mp.write(outfile.replace(".xvg",".html"),fig)
 
-if args.pdf:
-	mp.write(outfile.replace(".xvg",".pdf"),fig)
+def get_rgbstr_from_name(name):
 
-if args.png:
-	mp.write(outfile.replace(".xvg",".png"),fig)
+	if name.startswith('#'):
+		hex_str = name
+	else:
+		hex_str = _named_colors[name]
 
-if args.html:
-	mp.write(outfile.replace(".xvg",".html"),fig)
+	r,g,b = (int(hex_str.lstrip('#')[i:i+2], 16) for i in (0, 2, 4))
+
+	return f'rgb({r},{g},{b})'
+
+# plotly defauly color sequence
+_color_sequence = ['#636EFA', '#EF553B', '#00CC96', '#AB63FA', '#FFA15A', '#19D3F3', '#FF6692', '#B6E880', '#FF97FF', '#FECB52']
+
+_named_colors = {
+	'aliceblue':            '#F0F8FF',
+	'antiquewhite':         '#FAEBD7',
+	'aqua':                 '#00FFFF',
+	'aquamarine':           '#7FFFD4',
+	'azure':                '#F0FFFF',
+	'beige':                '#F5F5DC',
+	'bisque':               '#FFE4C4',
+	'black':                '#000000',
+	'blanchedalmond':       '#FFEBCD',
+	'blue':                 '#0000FF',
+	'blueviolet':           '#8A2BE2',
+	'brown':                '#A52A2A',
+	'burlywood':            '#DEB887',
+	'cadetblue':            '#5F9EA0',
+	'chartreuse':           '#7FFF00',
+	'chocolate':            '#D2691E',
+	'coral':                '#FF7F50',
+	'cornflowerblue':       '#6495ED',
+	'cornsilk':             '#FFF8DC',
+	'crimson':              '#DC143C',
+	'cyan':                 '#00FFFF',
+	'darkblue':             '#00008B',
+	'darkcyan':             '#008B8B',
+	'darkgoldenrod':        '#B8860B',
+	'darkgray':             '#A9A9A9',
+	'darkgreen':            '#006400',
+	'darkkhaki':            '#BDB76B',
+	'darkmagenta':          '#8B008B',
+	'darkolivegreen':       '#556B2F',
+	'darkorange':           '#FF8C00',
+	'darkorchid':           '#9932CC',
+	'darkred':              '#8B0000',
+	'darksalmon':           '#E9967A',
+	'darkseagreen':         '#8FBC8F',
+	'darkslateblue':        '#483D8B',
+	'darkslategray':        '#2F4F4F',
+	'darkturquoise':        '#00CED1',
+	'darkviolet':           '#9400D3',
+	'deeppink':             '#FF1493',
+	'deepskyblue':          '#00BFFF',
+	'dimgray':              '#696969',
+	'dodgerblue':           '#1E90FF',
+	'firebrick':            '#B22222',
+	'floralwhite':          '#FFFAF0',
+	'forestgreen':          '#228B22',
+	'fuchsia':              '#FF00FF',
+	'gainsboro':            '#DCDCDC',
+	'ghostwhite':           '#F8F8FF',
+	'gold':                 '#FFD700',
+	'goldenrod':            '#DAA520',
+	'gray':                 '#808080',
+	'green':                '#008000',
+	'greenyellow':          '#ADFF2F',
+	'honeydew':             '#F0FFF0',
+	'hotpink':              '#FF69B4',
+	'indianred':            '#CD5C5C',
+	'indigo':               '#4B0082',
+	'ivory':                '#FFFFF0',
+	'khaki':                '#F0E68C',
+	'lavender':             '#E6E6FA',
+	'lavenderblush':        '#FFF0F5',
+	'lawngreen':            '#7CFC00',
+	'lemonchiffon':         '#FFFACD',
+	'lightblue':            '#ADD8E6',
+	'lightcoral':           '#F08080',
+	'lightcyan':            '#E0FFFF',
+	'lightgoldenrodyellow': '#FAFAD2',
+	'lightgreen':           '#90EE90',
+	'lightgray':            '#D3D3D3',
+	'lightpink':            '#FFB6C1',
+	'lightsalmon':          '#FFA07A',
+	'lightseagreen':        '#20B2AA',
+	'lightskyblue':         '#87CEFA',
+	'lightslategray':       '#778899',
+	'lightsteelblue':       '#B0C4DE',
+	'lightyellow':          '#FFFFE0',
+	'lime':                 '#00FF00',
+	'limegreen':            '#32CD32',
+	'linen':                '#FAF0E6',
+	'magenta':              '#FF00FF',
+	'maroon':               '#800000',
+	'mediumaquamarine':     '#66CDAA',
+	'mediumblue':           '#0000CD',
+	'mediumorchid':         '#BA55D3',
+	'mediumpurple':         '#9370DB',
+	'mediumseagreen':       '#3CB371',
+	'mediumslateblue':      '#7B68EE',
+	'mediumspringgreen':    '#00FA9A',
+	'mediumturquoise':      '#48D1CC',
+	'mediumvioletred':      '#C71585',
+	'midnightblue':         '#191970',
+	'mintcream':            '#F5FFFA',
+	'mistyrose':            '#FFE4E1',
+	'moccasin':             '#FFE4B5',
+	'navajowhite':          '#FFDEAD',
+	'navy':                 '#000080',
+	'oldlace':              '#FDF5E6',
+	'olive':                '#808000',
+	'olivedrab':            '#6B8E23',
+	'orange':               '#FFA500',
+	'orangered':            '#FF4500',
+	'orchid':               '#DA70D6',
+	'palegoldenrod':        '#EEE8AA',
+	'palegreen':            '#98FB98',
+	'paleturquoise':        '#AFEEEE',
+	'palevioletred':        '#DB7093',
+	'papayawhip':           '#FFEFD5',
+	'peachpuff':            '#FFDAB9',
+	'peru':                 '#CD853F',
+	'pink':                 '#FFC0CB',
+	'plum':                 '#DDA0DD',
+	'powderblue':           '#B0E0E6',
+	'purple':               '#800080',
+	'red':                  '#FF0000',
+	'rosybrown':            '#BC8F8F',
+	'royalblue':            '#4169E1',
+	'saddlebrown':          '#8B4513',
+	'salmon':               '#FA8072',
+	'sandybrown':           '#FAA460',
+	'seagreen':             '#2E8B57',
+	'seashell':             '#FFF5EE',
+	'sienna':               '#A0522D',
+	'silver':               '#C0C0C0',
+	'skyblue':              '#87CEEB',
+	'slateblue':            '#6A5ACD',
+	'slategray':            '#708090',
+	'snow':                 '#FFFAFA',
+	'springgreen':          '#00FF7F',
+	'steelblue':            '#4682B4',
+	'tan':                  '#D2B48C',
+	'teal':                 '#008080',
+	'thistle':              '#D8BFD8',
+	'tomato':               '#FF6347',
+	'turquoise':            '#40E0D0',
+	'violet':               '#EE82EE',
+	'wheat':                '#F5DEB3',
+	'white':                '#FFFFFF',
+	'whitesmoke':           '#F5F5F5',
+	'yellow':               '#FFFF00',
+	'yellowgreen':          '#9ACD32'
+}
+
+if __name__ == '__main__':
+	main()

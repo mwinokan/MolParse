@@ -41,6 +41,9 @@ def parseXVG(file,xmin=None,xmax=None,convert_nanometres=True,yscale=1.0,ylabel=
 				if ylabel:
 					xvg.ylabel = ylabel
 				xvg.determine_data_shape(header_buffer,line,convert_nanometres,xmin=xmin,xmax=xmax,yscale=yscale)
+
+				xvg.title = f'{file}: {xvg.title}'
+
 				xvg.parse_data_line(line)
 
 			else:
@@ -205,7 +208,7 @@ class XVG():
 			plt.show()
 		return fig,ax
 
-	def get_go_trace(self,name=None):
+	def get_go_trace(self,name=None,color=None):
 		"""get the plotly.go trace(s) for the data"""
 
 		import plotly.graph_objects as go
@@ -213,6 +216,7 @@ class XVG():
 		if self.type == 'xy' and self.num_columns == 2:
 			trace = go.Scatter(x=self.columns['x'],
 							   y=self.columns['y'],
+							   line=dict(color=color),
 							   name=name,
 							   mode='lines')
 		elif self.type == 'xy':
@@ -233,6 +237,7 @@ class XVG():
 					trace = go.Scatter(x=self.columns['x'],
 									   y=self.columns[key],
 									   mode='lines',
+									   line=dict(color=color),
 									   name=key,
 									   legendgroup=group,
 									   legendgrouptitle_text=group)
@@ -240,6 +245,7 @@ class XVG():
 					trace = go.Scatter(x=self.columns['x'],
 									   y=self.columns[key],
 									   mode='lines',
+		   							   line=dict(color=color),
 									   name=key)
 
 				traces.append(trace)
@@ -248,6 +254,7 @@ class XVG():
 			trace = go.Scatter(x=self.columns['x'],
 							   y=self.columns['y'],
 							   name=name,
+							   line=dict(color=color),
 							   error_y=dict(type='data',
 							   				array=self.columns['yerr'],
 							   				visible=True),
@@ -257,33 +264,46 @@ class XVG():
 
 		return trace
 
-	def get_stationary_point_trace(self,name=None,column='y'):
-		"""find any stationary points and make a plotly.go.Scatter trace"""
+	def calculate_stationary_points(self):
+		"""find any stationary points"""
+
 		import numpy as np
 		import scipy.signal as sps
-		import plotly.graph_objects as go
+
 		self.minima_indices = sps.argrelextrema(np.array(self.columns[column]), np.less)[0]
 		self.maxima_indices = sps.argrelextrema(np.array(self.columns[column]), np.greater)[0]
-		indices = list(self.minima_indices) + list(self.maxima_indices)
-		xdata = [self.columns['x'][i] for i in indices]
-		ydata = [self.columns[column][i] for i in indices]
+
 		self.stationary_points = {'minima':[],'maxima':[]}
 		for i in self.minima_indices:
 			self.stationary_points['minima'].append(dict(type='min',index=i,x=self.columns['x'][i],y=self.columns[column][i]))
 		for i in self.maxima_indices:
 			self.stationary_points['maxima'].append(dict(type='max',index=i,x=self.columns['x'][i],y=self.columns[column][i]))
-		return go.Scatter(x=xdata,y=ydata,name=name,mode='markers')
+
+	def get_stationary_point_trace(self,name=None,column='y',color=None):
+		"""find any stationary points and make a plotly.go.Scatter trace"""
+		
+		import plotly.graph_objects as go
+
+		if not any(self.minima_indices,self.maxima_indices):
+			self.calculate_stationary_points()
+		
+		indices = list(self.minima_indices) + list(self.maxima_indices)
+		xdata = [self.columns['x'][i] for i in indices]
+		ydata = [self.columns[column][i] for i in indices]
+
+		return go.Scatter(x=xdata,y=ydata,name=name,mode='markers',marker=dict(color=color))
 
 	def get_closest_value(self,x,column='y'):
 		from .signal import closest_value
 		return closest_value(x,self.columns['x'],self.columns[column])
 
-	def plotly(self,show=False):
+	def plotly(self,show=False,color=None,fig=None):
 		"""Use plotly to plot the XVG data"""
 
 		import plotly.graph_objects as go
 
-		fig = go.Figure()
+		if fig is None:
+			fig = go.Figure()
 
 		fig.update_layout(
 			title=self.title,
@@ -293,7 +313,7 @@ class XVG():
 			font=dict(family="Helvetica Neue",size=18)
 		)
 
-		trace = self.get_go_trace()
+		trace = self.get_go_trace(name=self.title,color=color)
 
 		if isinstance(trace, list):
 			for t in trace:
@@ -365,12 +385,13 @@ class XVGCollection():
 		for xvg in self.children:
 			xvg.smooth(column,window_length,polyorder)
 
-	def plotly(self,show=False,statistics=False,stationary_points=False):
+	def plotly(self,show=False,fig=None,statistics=False,stationary_points=False,color=None):
 		"""Use plotly to plot the XVG collection"""
 
 		import plotly.graph_objects as go
 
-		fig = go.Figure()
+		if fig is None:
+			fig = go.Figure()
 
 		fig.update_layout(
 			title=self.title,
@@ -384,8 +405,10 @@ class XVGCollection():
 
 			for xvg in self.children:
 
-				fig.add_trace(xvg.get_go_trace(name=xvg.title))
-				fig.add_trace(xvg.get_stationary_point_trace(name=xvg.title))
+				fig.add_trace(xvg.get_go_trace(name=xvg.title,color=color))
+
+				if stationary_points:
+					fig.add_trace(xvg.get_stationary_point_trace(name=xvg.title,color=color))
 
 		else:
 
@@ -412,11 +435,18 @@ class XVGCollection():
 				mean_plus_std.append(mu+std)
 				mean_minus_std.append(mu-std)
 
-			fig.add_trace(go.Scatter(x=x,y=maxs,name="max",line=dict(width=0,color='black')))
-			fig.add_trace(go.Scatter(x=x,y=mins,name="min",fill='tonexty',line=dict(width=0,color='black'),fillcolor='rgba(0,0,0,0.15)'))
-			fig.add_trace(go.Scatter(x=x,y=mean_plus_std,name="mean+std",line=dict(width=0,color='black')))
-			fig.add_trace(go.Scatter(x=x,y=mean_minus_std,name="mean-std",fill='tonexty',line=dict(width=0,color='black'),fillcolor='rgba(0,0,0,0.3)'))
-			fig.add_trace(go.Scatter(x=x,y=mean,name="mean",line=dict(color="black",width=4)))
+			if not color:
+				color = 'rgb(0,0,0)' # default is black
+
+			trace = go.Scatter(x=x,y=maxs,name="max",legendgroup=self.title,legendgrouptitle_text=self.title,line=dict(width=0,color=color))
+
+			# print(trace.line)
+
+			fig.add_trace(go.Scatter(x=x,y=maxs,name="max",legendgroup=self.title,legendgrouptitle_text=self.title,line=dict(width=0,color=color)))
+			fig.add_trace(go.Scatter(x=x,y=mins,name="min",fill='tonexty',legendgroup=self.title,legendgrouptitle_text=self.title,line=dict(width=0,color=color),fillcolor=color.replace('rgb','rgba').replace(')',',0.15)')))
+			fig.add_trace(go.Scatter(x=x,y=mean_plus_std,name="mean+std",legendgroup=self.title,legendgrouptitle_text=self.title,line=dict(width=0,color=color)))
+			fig.add_trace(go.Scatter(x=x,y=mean_minus_std,name="mean-std",fill='tonexty',legendgroup=self.title,legendgrouptitle_text=self.title,line=dict(width=0,color=color),fillcolor=color.replace('rgb','rgba').replace(')',',0.3)')))
+			fig.add_trace(go.Scatter(x=x,y=mean,name="mean",legendgroup=self.title,legendgrouptitle_text=self.title,line=dict(color=color,width=4)))
 
 			fig.update_layout(showlegend=False)
 
