@@ -16,9 +16,13 @@ def main():
 	parser.add_argument("-stat","--statistics",action='store_true',help='calculate and plot mean statistics of the traces')
 	parser.add_argument("-xmin",help='cut off any data below this x-value')
 	parser.add_argument("-xmax",help='cut off any data above this x-value')
+	parser.add_argument("-ymin",help='cut off any data below this y-value')
+	parser.add_argument("-ymax",help='cut off any data above this y-value')
 	parser.add_argument("-no-com",help='Skip centre of mass pullx columns',action='store_true')
 	parser.add_argument("-no-ref",help='Skip reference pullx columns',action='store_true')
 	parser.add_argument("-smooth",help='Apply a Savitzky-Golay filter to smooth the XVG',action='store_true')
+	parser.add_argument("--sum",help='Sum all the data columns',action='store_true')
+	parser.add_argument("-hist",'--histogram',metavar='BINS',help='Make a histogram of the data')
 
 	args = parser.parse_args()
 
@@ -41,6 +45,9 @@ def main():
 	if many and any([args.pdf,args.png,args.html]) and not args.outkey:
 		mout.errorOut("Provide outkey with '-o KEY' when plotting several XVGs",fatal=True)
 
+	if args.sum and args.histogram:
+		mout.errorOut("Incompatible options: histogram & summed",fatal=True)
+
 	# get the colour sequence
 	color_sequence = [get_rgbstr_from_name(c) for c in _color_sequence]
 	color_sequence = color_sequence * (len(args.file)//len(color_sequence)+1)
@@ -50,10 +57,13 @@ def main():
 		if not many:
 			color=None
 
-		data = mp.xvg.parseXVG(file,xmin=args.xmin,xmax=args.xmax,no_com=args.no_com,no_ref=args.no_ref)
+		data = mp.xvg.parseXVG(file,xmin=args.xmin,xmax=args.xmax,ymin=args.ymin,ymax=args.ymax,no_com=args.no_com,no_ref=args.no_ref)
 
 		if args.smooth:
-			data.smooth()
+			try:
+				data.smooth()
+			except KeyError:
+				mout.warningOut("Smoothing is not currently supported with multiple data columns")
 
 		if args.align_ydata:
 			if args.align_ydata == 'min':
@@ -64,17 +74,44 @@ def main():
 				data.align_ydata(float(args.align_ydata))
 
 		if isinstance(data,mp.xvg.XVGCollection):
+			if args.statistics:
+				mout.warningOut("statistics flag ignored for multiple trace XVG file")
+			if args.histogram:
+				mout.warningOut("histogram flag ignored for multiple trace XVG file")
+			if args.sum:
+				mout.warningOut("sum flag ignored for multiple trace XVG file")
+
 			fig = data.plotly(show=show,fig=fig,statistics=args.statistics,color=color,group_from_title=many)
 		else:
 			if args.statistics:
 				mout.warningOut("statistics flag ignored for single trace XVG file")
-			fig = data.plotly(show=show,fig=fig,color=color,group_from_title=many)
+			fig = data.plotly(show=show,fig=fig,color=color,group_from_title=many,histogram=args.histogram,summed=args.sum)
 
 		if not any([args.pdf,args.png,args.html]):
 			continue
 
+	if args.ymin or args.ymax:
+		if args.ymin:
+			ymin = float(args.ymin)
+		else:
+			ymin = args.ymin
+
+		if args.ymax:
+			ymax = float(args.ymax)
+		else:
+			ymax = args.ymax
+
+		if args.show or args.html:
+			mout.warningOut("Axis limits don't work when showing interactive HTML")
+
+		fig.update_layout(yaxis=dict(range=[ymin,ymax],autorange=False))
+
 	if many:
 		fig.update_layout(title=str(args.file),showlegend=True,legend=dict(groupclick="togglegroup"))
+
+	if many and args.histogram:
+		print('setting transparency')
+		fig.update_traces(opacity=0.6)
 
 	if many and args.show:
 		fig.show()

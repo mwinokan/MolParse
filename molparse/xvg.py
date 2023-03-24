@@ -2,7 +2,7 @@
 import mout
 import mcol
 
-def parseXVG(file,xmin=None,xmax=None,convert_nanometres=True,yscale=1.0,ylabel=None,no_com=False,no_ref=False):
+def parseXVG(file,xmin=None,xmax=None,convert_nanometres=True,yscale=1.0,ylabel=None,no_com=False,no_ref=False,ymin=None,ymax=None):
 	"""Parse a GROMACS XVG file and return a molparse.XVG object"""
 
 	mout.out(f"Parsing {mcol.file}{file}{mcol.clear}...")
@@ -38,7 +38,7 @@ def parseXVG(file,xmin=None,xmax=None,convert_nanometres=True,yscale=1.0,ylabel=
 				continue
 
 			elif not xvg:
-				xvg = XVG()
+				xvg = XVG(ymin=ymin,ymax=ymax)
 				if ylabel:
 					xvg.ylabel = ylabel
 				xvg.determine_data_shape(header_buffer,line,convert_nanometres,xmin=xmin,xmax=xmax,yscale=yscale)
@@ -116,10 +116,12 @@ def clean_label(string):
 
 class XVG():
 	"""Class to store data obtained from an XVG"""
-	def __init__(self):
+	def __init__(self,ymin=None,ymax=None):
 		self.entries = 0
 		self._minima_indices = None
 		self._maxima_indices = None
+		self.ymin = ymin
+		self.ymax = ymax
 	
 	def determine_data_shape(self,header_buffer,demo_line,convert_nanometres,xmin,xmax,yscale=1.0):
 		"""Use the header strings and an example data line to construct the data shape"""
@@ -230,17 +232,69 @@ class XVG():
 			plt.show()
 		return fig,ax
 
-	def get_go_trace(self,name=None,color=None,group_from_title=False):
+	@property
+	def y_columns(self):
+		return {k:y for k,y in self.columns.items() if k != 'x'}
+
+	@property
+	def summable(self):
+		if self.type == 'xy' and self.num_columns > 2:
+			return True
+		return False
+	
+	def get_summed_trace(self,name=None,color='black',normalised=False):
+		import plotly.graph_objects as go
+
+		if self.type == 'xy' and self.num_columns > 2:
+
+			summed_data = []
+			for i in range(self.entries):
+				
+				value = 0
+				for key in self.y_columns:
+					value += self.y_columns[key][i]
+
+				summed_data.append(value)
+
+			if normalised:
+				maxval = max(summed_data)
+				summed_data = [x/maxval for x in summed_data]
+
+			trace = go.Scatter(x=self.columns['x'],
+				   y=summed_data,
+				   line=dict(color=color),
+				   name=self.title+' (Summed)',
+				   mode='lines',
+				   )
+
+			return trace
+		else:
+			mout.errorOut(f"Unrecognised XVG type (XVG.get_summed_trace): {self.type}, with {self.num_columns} columns",fatal=True)
+
+	def get_go_trace(self,name=None,color=None,group_from_title=False,histogram=False,normalised=False):
 		"""get the plotly.go trace(s) for the data"""
 
 		import plotly.graph_objects as go
 
+		if normalised:
+			normalised = 'probability'
+
 		if self.type == 'xy' and self.num_columns == 2:
-			trace = go.Scatter(x=self.columns['x'],
-							   y=self.columns['y'],
-							   line=dict(color=color),
-							   name=name,
-							   mode='lines')
+			if histogram:
+				ymin = float(self.ymin or min(self.columns['y']))
+				ymax = float(self.ymax or max(self.columns['y']))
+				trace = go.Histogram(x=self.columns['y'],
+								   	 marker_color=color,
+								   	 histnorm=normalised,
+								     xbins=dict(start=ymin,end=ymax,size=(ymax-ymin)/float(histogram)),
+								   	 name=name)
+			else:
+				trace = go.Scatter(x=self.columns['x'],
+								   y=self.columns['y'],
+								   line=dict(color=color),
+								   name=name,
+								   mode='lines',
+								   )
 		elif self.type == 'xy':
 			traces = []
 			for key in self.column_labels[1:]:
@@ -260,32 +314,46 @@ class XVG():
 					elif 'X' in key or 'Y' in key or 'Z' in key:
 						group = 'COM'
 
-				# if group:
-				trace = go.Scatter(x=self.columns['x'],
-								   y=self.columns[key],
-								   mode='lines',
-								   line=dict(color=color),
-								   name=key,
-								   legendgroup=group,
-								   legendgrouptitle_text=group)
-				# else:
-				# 	trace = go.Scatter(x=self.columns['x'],
-				# 					   y=self.columns[key],
-				# 					   mode='lines',
-		   		# 					   line=dict(color=color),
-				# 					   name=key)
+				if histogram:
+					ymin = float(self.ymin or min(self.columns[key]))
+					ymax = float(self.ymax or max(self.columns[key]))
+					trace = go.Histogram(x=self.columns[key],
+									   marker_color=color,
+									   marker_opacity=0.6,
+									   name=key,
+									   histnorm=normalised,
+									   xbins=dict(start=ymin,end=ymax,size=(ymax-ymin)/float(histogram)),
+									   legendgroup=group,
+									   legendgrouptitle_text=group)
+				else:
+					trace = go.Scatter(x=self.columns['x'],
+									   y=self.columns[key],
+									   mode='lines',
+									   line=dict(color=color),
+									   name=key,
+									   legendgroup=group,
+									   legendgrouptitle_text=group)
 
 				traces.append(trace)
 			return traces
 		elif self.type == 'xydy' and self.num_columns == 3:
-			trace = go.Scatter(x=self.columns['x'],
-							   y=self.columns['y'],
-							   name=name,
-							   line=dict(color=color),
-							   error_y=dict(type='data',
-							   				array=self.columns['yerr'],
-							   				visible=True),
-							   mode='lines')
+			if histogram:
+				ymin = float(self.ymin or min(self.columns['y']))
+				ymax = float(self.ymax or max(self.columns['y']))
+				trace = go.Histogram(x=self.columns['y'],
+								   name=name,
+								   histnorm=normalised,
+								   marker_color=color,
+								   )
+			else:
+				trace = go.Scatter(x=self.columns['x'],
+								   y=self.columns['y'],
+								   name=name,
+								   line=dict(color=color),
+								   error_y=dict(type='data',
+								   				array=self.columns['yerr'],
+								   				visible=True),
+								   mode='lines')
 		else:
 			mout.errorOut(f"Unrecognised XVG type (XVG.plotly): {self.type}, with {self.num_columns} columns",fatal=True)
 
@@ -311,12 +379,14 @@ class XVG():
 
 	@property
 	def minima_indices(self):
+		"""List of indices pertaining to minima"""
 		if self._minima_indices is None:
 			self.calculate_stationary_points()
 		return self._minima_indices
 
 	@property
 	def maxima_indices(self):
+		"""List of indices pertaining to maxima"""
 		if self._maxima_indices is None:
 			self.calculate_stationary_points()
 		return self._maxima_indices
@@ -357,23 +427,33 @@ class XVG():
 		from .signal import closest_value
 		return closest_value(x,self.columns['x'],self.columns[column],return_x=return_x)
 
-	def plotly(self,show=False,color=None,fig=None,group_from_title=False):
+	def plotly(self,show=False,color=None,fig=None,group_from_title=False,histogram=False,summed=False,normalised=False):
 		"""Use plotly to plot the XVG data"""
 
 		import plotly.graph_objects as go
+
+		if histogram and normalised:
+			mout.errorOut("Not supported!",fatal=True)
 
 		if fig is None:
 			fig = go.Figure()
 
 		fig.update_layout(
 			title=self.title,
-			xaxis_title=self.xlabel,
-			yaxis_title=self.ylabel,
 			legend=dict(groupclick="toggleitem"),
 			font=dict(family="Helvetica Neue",size=18)
 		)
 
-		trace = self.get_go_trace(name=self.title,color=color,group_from_title=group_from_title)
+		if histogram:
+			fig.update_layout(xaxis_title=self.ylabel,yaxis_title='Count',barmode='overlay')
+			fig.update_traces(opacity=0.75)
+		else:
+			fig.update_layout(xaxis_title=self.xlabel, yaxis_title=self.ylabel)
+
+		if summed:
+			trace = self.get_summed_trace(name=self.title,color=color,normalised=normalised)
+		else:
+			trace = self.get_go_trace(name=self.title,color=color,group_from_title=group_from_title,histogram=histogram,normalised=normalised)
 
 		if isinstance(trace, list):
 			for t in trace:
@@ -391,7 +471,7 @@ class XVG():
 	def create_blank_copy(self):
 		"""Create a copy of this data structure but with no entries"""
 
-		copy = XVG()
+		copy = XVG(ymin=self.ymin,ymax=self.ymax)
 
 		copy.title = self.title
 		copy.xlabel = self.xlabel
@@ -412,26 +492,27 @@ class XVG():
 
 		return copy
 
-	def align_ydata(self,method):
-		"""Shift the y-values of all the trace to align them according to a function such as min/max or an x-coordinate"""
+	def align_ydata(self,method,column='y'):
+		"""Shift the y-values of all the column to align them according to a function such as min/max or an x-coordinate"""
 
 		import numpy as np
 		from .signal import closest_value
 
-		data = self.columns['y']
+		data = self.columns[column]
 
 		if isinstance(method, float):
-			ref_value = closest_value(method,self.columns['x'],self.columns['y'])
+			ref_value = closest_value(method,self.columns['x'],self.columns[column])
 		else:
 			ref_value = method(data)
 
 		array = np.array(data)
 		array -= ref_value
-		self.columns['y'] = list(array)
+		self.columns[column] = list(array)
 
 	def smooth(self,column='y',window_length=24,polyorder=3):
 		"""Smooth a column of data"""
 		from scipy.signal import savgol_filter
+
 		self.columns[column] = list(savgol_filter(self.columns[column], window_length, polyorder))
 
 class XVGCollection():
