@@ -118,8 +118,8 @@ class XVG():
 	"""Class to store data obtained from an XVG"""
 	def __init__(self):
 		self.entries = 0
-		self.minima_indices = None
-		self.maxima_indices = None
+		self._minima_indices = None
+		self._maxima_indices = None
 	
 	def determine_data_shape(self,header_buffer,demo_line,convert_nanometres,xmin,xmax,yscale=1.0):
 		"""Use the header strings and an example data line to construct the data shape"""
@@ -308,6 +308,26 @@ class XVG():
 		self.minima_indices = sps.argrelextrema(np.array(self.columns[column]), np.less)[0]
 		self.maxima_indices = sps.argrelextrema(np.array(self.columns[column]), np.greater)[0]
 		self.stationary_column = column
+
+	@property
+	def minima_indices(self):
+		if self._minima_indices is None:
+			self.calculate_stationary_points()
+		return self._minima_indices
+
+	@property
+	def maxima_indices(self):
+		if self._maxima_indices is None:
+			self.calculate_stationary_points()
+		return self._maxima_indices
+
+	@minima_indices.setter
+	def minima_indices(self,a):
+		self._minima_indices = a
+
+	@maxima_indices.setter
+	def maxima_indices(self,a):
+		self._maxima_indices = a
 
 	@property
 	def stationary_points(self):
