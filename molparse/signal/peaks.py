@@ -213,14 +213,24 @@ def closest_index(value,xdata,comparison=None,numpy=False):
 						return i-1
 		return i
 
-def closest_value(xvalue,xdata,ydata=None,comparison=None,numpy=False):
+def closest_value(xvalue,xdata,ydata=None,comparison=None,numpy=False,return_x=False):
 	"""Return the yvalue of the data point nearest the given xvalue"""
 	if ydata is None:
 		ydata = xdata
 	if isinstance(xvalue,list):
-		result = []
+		x_result = []
+		y_result = []
 		for x in xvalue:
-			result.append(closest_value(x, xdata, ydata,comparison=comparison,numpy=numpy))
-		return result
+			xres, yres = closest_value(x, xdata, ydata,comparison=comparison,numpy=numpy,return_x=return_x)
+			x_result = []
+			y_result = []
+		if return_x:
+			return x_result, y_result
+		else:
+			return y_result
 	else:
-		return ydata[closest_index(xvalue, xdata,comparison=comparison,numpy=numpy)]
+		index = closest_index(xvalue, xdata,comparison=comparison,numpy=numpy)
+		if return_x:
+			return xdata[index], ydata[index]
+		else:
+			return ydata[index]

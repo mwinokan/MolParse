@@ -16,6 +16,9 @@ def main():
 	parser.add_argument("-stat","--statistics",action='store_true',help='calculate and plot mean statistics of the traces')
 	parser.add_argument("-xmin",help='cut off any data below this x-value')
 	parser.add_argument("-xmax",help='cut off any data above this x-value')
+	parser.add_argument("-no-com",help='Skip centre of mass pullx columns',action='store_true')
+	parser.add_argument("-no-ref",help='Skip reference pullx columns',action='store_true')
+	parser.add_argument("-smooth",help='Apply a Savitzky-Golay filter to smooth the XVG',action='store_true')
 
 	args = parser.parse_args()
 
@@ -35,7 +38,7 @@ def main():
 	if many:
 		show = False
 
-	if many and not args.outkey:
+	if many and any([args.pdf,args.png,args.html]) and not args.outkey:
 		mout.errorOut("Provide outkey with '-o KEY' when plotting several XVGs",fatal=True)
 
 	# get the colour sequence
@@ -44,7 +47,13 @@ def main():
 
 	for file,color in zip(args.file,color_sequence):
 
-		data = mp.xvg.parseXVG(file,xmin=args.xmin,xmax=args.xmax)
+		if not many:
+			color=None
+
+		data = mp.xvg.parseXVG(file,xmin=args.xmin,xmax=args.xmax,no_com=args.no_com,no_ref=args.no_ref)
+
+		if args.smooth:
+			data.smooth()
 
 		if args.align_ydata:
 			if args.align_ydata == 'min':
@@ -55,11 +64,11 @@ def main():
 				data.align_ydata(float(args.align_ydata))
 
 		if isinstance(data,mp.xvg.XVGCollection):
-			fig = data.plotly(show=show,fig=fig,statistics=args.statistics,color=color)
+			fig = data.plotly(show=show,fig=fig,statistics=args.statistics,color=color,group_from_title=many)
 		else:
 			if args.statistics:
 				mout.warningOut("statistics flag ignored for single trace XVG file")
-			fig = data.plotly(show=show,fig=fig,color=color)
+			fig = data.plotly(show=show,fig=fig,color=color,group_from_title=many)
 
 		if not any([args.pdf,args.png,args.html]):
 			continue

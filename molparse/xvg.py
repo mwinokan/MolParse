@@ -2,7 +2,7 @@
 import mout
 import mcol
 
-def parseXVG(file,xmin=None,xmax=None,convert_nanometres=True,yscale=1.0,ylabel=None):
+def parseXVG(file,xmin=None,xmax=None,convert_nanometres=True,yscale=1.0,ylabel=None,no_com=False,no_ref=False):
 	"""Parse a GROMACS XVG file and return a molparse.XVG object"""
 
 	mout.out(f"Parsing {mcol.file}{file}{mcol.clear}...")
@@ -11,6 +11,7 @@ def parseXVG(file,xmin=None,xmax=None,convert_nanometres=True,yscale=1.0,ylabel=
 	xvg = None
 	many = []
 	multiname = None
+	contains_nan = False
 
 	with open(file) as f:
 		for line in f:
@@ -44,17 +45,31 @@ def parseXVG(file,xmin=None,xmax=None,convert_nanometres=True,yscale=1.0,ylabel=
 
 				xvg.title = f'{file}: {xvg.title}'
 
-				xvg.parse_data_line(line)
+				status = xvg.parse_data_line(line)
+				contains_nan = contains_nan or not status
 
 			else:
-				xvg.parse_data_line(line)
+				status = xvg.parse_data_line(line)
+				contains_nan = contains_nan or not status
 
 	if many:
-		if xvg.entries:
-			many.append(xvg)
-			many[-1].title = f"[{len(many)}]"
+		for xvg in many:
+			if no_com:
+				xvg.remove_com_columns()
+			if no_ref:
+				xvg.remove_ref_columns()
+		many.append(xvg)
+		many[-1].title = f"[{len(many)}]"
+		if contains_nan:
+			mout.warningOut("At least one NaN in XVG!")
 		return XVGCollection(many,multiname)
 	else:
+		if no_com:
+			xvg.remove_com_columns()
+		if no_ref:
+			xvg.remove_ref_columns()
+		if contains_nan:
+			mout.warningOut("At least one NaN in XVG!")
 		return xvg
 		
 def clean_label(string):
@@ -103,6 +118,8 @@ class XVG():
 	"""Class to store data obtained from an XVG"""
 	def __init__(self):
 		self.entries = 0
+		self.minima_indices = None
+		self.maxima_indices = None
 	
 	def determine_data_shape(self,header_buffer,demo_line,convert_nanometres,xmin,xmax,yscale=1.0):
 		"""Use the header strings and an example data line to construct the data shape"""
@@ -183,6 +200,11 @@ class XVG():
 
 		self.entries += 1
 
+		if 'nan' in line:
+			return False
+		else:
+			return True
+
 	def plot(self,show=False):
 		"""Use matplotlib to plot the XVG data"""
 		
@@ -208,7 +230,7 @@ class XVG():
 			plt.show()
 		return fig,ax
 
-	def get_go_trace(self,name=None,color=None):
+	def get_go_trace(self,name=None,color=None,group_from_title=False):
 		"""get the plotly.go trace(s) for the data"""
 
 		import plotly.graph_objects as go
@@ -223,30 +245,35 @@ class XVG():
 			traces = []
 			for key in self.column_labels[1:]:
 
-				group = "default"
+				if group_from_title:
+					group = self.title
 
-				if 'pull' in self.title.lower():
-					group = 'RC'
-
-				if 'ref' in key:
-					group = 'REF'
-				elif 'X' in key or 'Y' in key or 'Z' in key:
-					group = 'COM'
-
-				if group:
-					trace = go.Scatter(x=self.columns['x'],
-									   y=self.columns[key],
-									   mode='lines',
-									   line=dict(color=color),
-									   name=key,
-									   legendgroup=group,
-									   legendgrouptitle_text=group)
 				else:
-					trace = go.Scatter(x=self.columns['x'],
-									   y=self.columns[key],
-									   mode='lines',
-		   							   line=dict(color=color),
-									   name=key)
+
+					group = "default"
+
+					if 'pull' in self.title.lower():
+						group = 'RC'
+
+					if 'ref' in key:
+						group = 'REF'
+					elif 'X' in key or 'Y' in key or 'Z' in key:
+						group = 'COM'
+
+				# if group:
+				trace = go.Scatter(x=self.columns['x'],
+								   y=self.columns[key],
+								   mode='lines',
+								   line=dict(color=color),
+								   name=key,
+								   legendgroup=group,
+								   legendgrouptitle_text=group)
+				# else:
+				# 	trace = go.Scatter(x=self.columns['x'],
+				# 					   y=self.columns[key],
+				# 					   mode='lines',
+		   		# 					   line=dict(color=color),
+				# 					   name=key)
 
 				traces.append(trace)
 			return traces
@@ -264,7 +291,15 @@ class XVG():
 
 		return trace
 
-	def calculate_stationary_points(self):
+	def remove_com_columns(self):
+		self.columns = {key:column for key,column in self.columns.items() if not any(['X' in key, 'Y' in key, 'Z' in key])}		
+		self.column_labels = [key for key in self.column_labels if not any(['X' in key, 'Y' in key, 'Z' in key])]
+
+	def remove_ref_columns(self):
+		self.columns = {key:column for key,column in self.columns.items() if not 'ref' in key}		
+		self.column_labels = [key for key in self.column_labels if not 'ref' in key]
+
+	def calculate_stationary_points(self,column='y'):
 		"""find any stationary points"""
 
 		import numpy as np
@@ -272,19 +307,24 @@ class XVG():
 
 		self.minima_indices = sps.argrelextrema(np.array(self.columns[column]), np.less)[0]
 		self.maxima_indices = sps.argrelextrema(np.array(self.columns[column]), np.greater)[0]
+		self.stationary_column = column
 
-		self.stationary_points = {'minima':[],'maxima':[]}
+	@property
+	def stationary_points(self):
+		"""build the stationary points dictionary"""
+		dictionary = {'minima':[],'maxima':[]}
 		for i in self.minima_indices:
-			self.stationary_points['minima'].append(dict(type='min',index=i,x=self.columns['x'][i],y=self.columns[column][i]))
+			dictionary['minima'].append(dict(type='min',index=i,x=self.columns['x'][i],y=self.columns[self.stationary_column][i]))
 		for i in self.maxima_indices:
-			self.stationary_points['maxima'].append(dict(type='max',index=i,x=self.columns['x'][i],y=self.columns[column][i]))
+			dictionary['maxima'].append(dict(type='max',index=i,x=self.columns['x'][i],y=self.columns[self.stationary_column][i]))
+		return dictionary
 
 	def get_stationary_point_trace(self,name=None,column='y',color=None):
 		"""find any stationary points and make a plotly.go.Scatter trace"""
 		
 		import plotly.graph_objects as go
 
-		if not any(self.minima_indices,self.maxima_indices):
+		if self.minima_indices is None or self.maxima_indices is None:
 			self.calculate_stationary_points()
 		
 		indices = list(self.minima_indices) + list(self.maxima_indices)
@@ -293,11 +333,11 @@ class XVG():
 
 		return go.Scatter(x=xdata,y=ydata,name=name,mode='markers',marker=dict(color=color))
 
-	def get_closest_value(self,x,column='y'):
+	def get_closest_value(self,x,column='y',return_x=False):
 		from .signal import closest_value
-		return closest_value(x,self.columns['x'],self.columns[column])
+		return closest_value(x,self.columns['x'],self.columns[column],return_x=return_x)
 
-	def plotly(self,show=False,color=None,fig=None):
+	def plotly(self,show=False,color=None,fig=None,group_from_title=False):
 		"""Use plotly to plot the XVG data"""
 
 		import plotly.graph_objects as go
@@ -313,7 +353,7 @@ class XVG():
 			font=dict(family="Helvetica Neue",size=18)
 		)
 
-		trace = self.get_go_trace(name=self.title,color=color)
+		trace = self.get_go_trace(name=self.title,color=color,group_from_title=group_from_title)
 
 		if isinstance(trace, list):
 			for t in trace:
@@ -385,7 +425,7 @@ class XVGCollection():
 		for xvg in self.children:
 			xvg.smooth(column,window_length,polyorder)
 
-	def plotly(self,show=False,fig=None,statistics=False,stationary_points=False,color=None):
+	def plotly(self,show=False,fig=None,statistics=False,stationary_points=False,color=None,group_from_title=False):
 		"""Use plotly to plot the XVG collection"""
 
 		import plotly.graph_objects as go
@@ -405,7 +445,7 @@ class XVGCollection():
 
 			for xvg in self.children:
 
-				fig.add_trace(xvg.get_go_trace(name=xvg.title,color=color))
+				fig.add_trace(xvg.get_go_trace(name=xvg.title,color=color,group_from_title=group_from_title))
 
 				if stationary_points:
 					fig.add_trace(xvg.get_stationary_point_trace(name=xvg.title,color=color))
