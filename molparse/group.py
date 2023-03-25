@@ -293,6 +293,89 @@ class AtomGroup():
 		from .go import plot3d
 		return plot3d(self.atoms,extra,bonds,alpha)
 
+	def set_coordinates(self,reference):
+	    """Set all coordinates according to a reference ase.Atoms object"""
+	    if type(reference) is str:
+	      from ase.io import read
+	      atoms = read(reference)
+	    elif isinstance(reference,list):
+	      for index,atom in enumerate(self.atoms):
+	        atom.position = reference[index]
+	      return
+	    else:
+	      atoms = reference
+
+	    for index,atom in enumerate(self.atoms):
+	      atom.position = atoms[index].position
+
+
+	def rotate(self,angle,vector,center=(0,0,0)):
+		"""Rotate the system (see ase.Atoms.rotate)"""
+		ase_atoms = self.ase_atoms
+		ase_atoms.rotate(angle,vector,center=center)
+		self.set_coordinates(ase_atoms)
+
+	def align_by_posmap(self,map):
+
+	    """Align the system to a target by superimposing three shared atoms:
+
+	      a --> A
+	      b --> B
+	      c --> C
+
+	      (a,b,c) are atoms from this system
+	      (A,B,C) are atoms from the target system
+
+	      map should contain Atoms: [[a,b,c],[A,B,C]]
+
+	    """
+
+	    import numpy as np
+
+	    a = map[0][0]
+	    b = map[0][1]
+	    c = map[0][2]
+
+	    A = map[1][0]
+	    B = map[1][1]
+	    C = map[1][2]
+
+	    # TRANSLATION
+
+	    displacement = A - a
+	    self.translate(displacement)
+
+	    # ROTATION 1
+
+	    d = (b+c)/2
+	    D = (B+C)/2
+	    self.rotate(d-A.np_pos,D-A.np_pos,center=A.np_pos)
+
+	    # ROTATION 2
+
+	    d = (b+c)/2
+	    D = (B+C)/2
+
+	    v_bc = c - b
+	    v_BC = C - B
+
+	    def unit_vector(a):
+	      return a/np.linalg.norm(a)
+
+	    def remove_parallel_component(vector,reference):
+	      unit_reference = unit_vector(reference)
+	      projection = np.dot(vector,unit_reference)
+	      return vector - projection
+
+	    v_ad = d - a.np_pos
+	    v_bc_normal_to_ad = remove_parallel_component(v_bc, v_ad)
+	    v_BC_normal_to_ad = remove_parallel_component(v_BC, v_ad)
+	    self.rotate(v_bc_normal_to_ad, v_BC_normal_to_ad,center=A.np_pos)
+
+	    # extra stuff for plotly
+	    extra = [[A.np_pos,A.np_pos+v_ad]]
+	    return extra
+
 ### GUI THINGS
 
 	# open GUI tree viewer
