@@ -198,12 +198,30 @@ class AminoAcid(Residue):
 
 	def mutate(self,newname):
 		"""Mutate this amino acid to another"""
+
+		import os
 		import mout
 		import mcol
+		import glob
+
 		mout.headerOut(f"Mutating {mcol.arg}{self.longname}{mcol.clear+mcol.bold} --> {mcol.arg}{longname(newname)}{mcol.clear+mcol.bold} ({mcol.result}{self.letter}{self.number}{alphabet(newname)}{mcol.clear+mcol.bold})")
+
+		# look for reference files
+		amp_path = os.path.dirname(__file__)
+		files = glob.glob(f'{amp_path}/ref/???.pdb')
+		keys = [os.path.basename(f).replace(".pdb","") for f in files]
+
 		if newname ==  "ALA":
 			from .mutate.protein import to_alanine
 			to_alanine(self)
+
+		elif newname in keys:
+
+			from .io import parse
+			from .mutate.protein import replace_sidechain
+			reference = parse(f'{amp_path}/ref/{newname}.pdb').residues[0]
+			replace_sidechain(self,reference)
+
 		else:
 			import mout
 			mout.errorOut("Unsupported mutation!")
