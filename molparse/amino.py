@@ -106,6 +106,7 @@ class AminoAcid(Residue):
 
 		self._backbone = None
 		self._sidechain = None
+		self._sidechain_names = None
 
 	@property
 	def letter(self):
@@ -142,25 +143,41 @@ class AminoAcid(Residue):
 
 		return self._backbone
 
-	def remove_backbone(self,add_link=True):
+	def remove_backbone(self,add_link=True,verbosity=2):
 		"""Remove backbone atoms"""
 
 		if add_link:
+			if verbosity:
+				mout.warningOut("Adding HLNK linker")
 			self.CA.set_name('HLNK')
 
 		for atom in self.backbone:
 			if not atom:
 				continue
-			self.delete_atom(atom.name)
+			self.delete_atom(atom.name,verbosity=verbosity-1)
 
+	def remove_sidechain(self,verbosity=2):
+		"""Remove sidechain atoms"""
+
+		for atom in self.sidechain:
+			if not atom:
+				continue
+			self.delete_atom(atom.name,verbosity=verbosity-1)
+
+	@property
+	def sidechain_names(self):
+		if not self._sidechain_names:
+			bb_names = ["N","HN","CA","HA","C","O"]
+			self._sidechain_names = [n for n in self.atom_names() if n not in bb_names]
+
+		return self._sidechain_names
+	
 	@property
 	def sidechain(self):
 		"""Get sidechain atoms"""
 
 		if not self._sidechain:
-			bb_names = ["N","HN","CA","HA","C","O"]
-			names = [n for n in self.atom_names() if n not in bb_names]
-			self._sidechain = self.get_atom(names)
+			self._sidechain = self.get_atom(self.sidechain_names)
 
 		return self._sidechain
 
