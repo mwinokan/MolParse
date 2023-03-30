@@ -146,6 +146,9 @@ from .console_io import printEnergy # needs documentation
 # XVG Parsing
 from .xvg import parseXVG
 
+# NDX Parsing
+from .ndx import parseNDX
+
 # Amber specific
 from .amber import prep4amber
 from .amber import amber2charmm
