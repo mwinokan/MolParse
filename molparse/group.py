@@ -308,7 +308,6 @@ class AtomGroup():
 	    for index,atom in enumerate(self.atoms):
 	      atom.position = atoms[index].position
 
-
 	def rotate(self,angle,vector,center=(0,0,0)):
 		"""Rotate the system (see ase.Atoms.rotate)"""
 		ase_atoms = self.ase_atoms
