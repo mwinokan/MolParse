@@ -183,7 +183,6 @@ class NucleicAcid(Residue):
 		ref_res = ref_sys.residues[0]
 
 		if self.is_purine and ref_res.is_purine:
-			mout.warningOut("Purine --> Purine")
 
 			# get atoms to align by
 			names = ["N9","C6","C2"]
@@ -197,7 +196,6 @@ class NucleicAcid(Residue):
 			ref_res.delete_atom("H9",verbosity=0)
 
 		elif self.is_pyrimidine and ref_res.is_pyrimidine:
-			mout.warningOut("Pyrimidine --> Pyrimidine")
 			
 			# get atoms to align by
 			names = ["C6","C4","C2"]
@@ -245,6 +243,8 @@ class NucleicAcid(Residue):
 			# delete intersecting atoms
 			ref_res.delete_atom("H9",verbosity=0)
 		
+		self.name = newname
+
 		if show:
 			view_sys = ref_sys.copy()
 			for atom in self.atoms:
