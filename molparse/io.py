@@ -45,6 +45,10 @@ def write(filename,image,verbosity=1,printScript=False,**parameters):
       else:
         mout.errorOut("Unsupported",fatal=True)
 
+    elif isinstance(image,System):
+      mout.errorOut(f"Filetype {mcol.file}{filename.split(".")[-1]}{mcol.error} not supported for mp.System object",code="amp.io.write[1]")
+      return None
+
     elif isinstance(image,go.Figure):
       if filename.endswith('.html'):
         image.write_html(filename)
@@ -56,7 +60,7 @@ def write(filename,image,verbosity=1,printScript=False,**parameters):
       io.write(filename,image,**parameters)
   except TypeError:
     mout.out("Fail.")
-    mout.errorOut("Could not write empty object to "+mcol.file+filename,code="amp.io.write[1]",end="")
+    mout.errorOut(f"{type(image)} could not be written to "+mcol.file+filename,code="amp.io.write[1]")
     return None
 
   if (verbosity > 0):
