@@ -526,6 +526,20 @@ class XVGCollection():
 		for xvg in self.children:
 			xvg.smooth(column,window_length,polyorder)
 
+	def map_xdata(self,before_low,before_high,after_low,after_high):
+
+		scale = (after_high - after_low)/(before_high - before_low)
+
+		for xvg in self.children:
+
+			data = xvg.columns['x']
+			mapped = []
+
+			for x in data:
+				mapped.append((x-before_low)*scale + after_low)
+			
+			xvg.columns['x'] = mapped
+
 	def plotly(self,show=False,fig=None,statistics=False,stationary_points=False,color=None,group_from_title=False):
 		"""Use plotly to plot the XVG collection"""
 
