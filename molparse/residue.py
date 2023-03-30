@@ -108,11 +108,18 @@ class Residue(AtomGroup):
     """add an Atom"""
     self.addAtom(atom)
 
-  def addAtom(self,atom):
+  def addAtom(self,atom,copy=True):
     """add an Atom"""
     from .atom import Atom
     assert isinstance(atom,Atom)
-    
+
+    if copy:
+      atom = atom.copy()
+
+    atom.chain = self.chain
+    atom.residue = self.name
+    atom.res_number = self.number
+
     if self.atoms:
       # remove any termini
       self.atoms[-1].terminal = None
