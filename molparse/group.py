@@ -10,7 +10,8 @@ class AtomGroup():
 		self._show_context = False
 		self._context_options = {}
 
-		self._atoms = []
+		from .list import NamedList
+		self._atoms = NamedList()
 
 	""" To-Do's:
 
@@ -452,3 +453,38 @@ class AtomGroup():
 		return self.name
 	def __len__(self):
 		return len(self.children)
+
+	def __getitem__(self,key):
+
+		"""Access child Atom, Residue or Chain by index or name
+
+		group['a0'] : returns the first atom
+		group['aH1'] : returns all atoms named 'H1'
+
+		group['r0'] : returns the first residue
+		group['rASN'] : returns all residues named 'ASN'
+
+		group['c0'] : returns the first chain
+		group['cA'] : returns all chains named 'A'
+		"""
+
+		try:
+			
+			if key[0] == 'a':
+				return self.atoms[key[1:]]
+
+			elif key[0] == 'r':
+				return self.residues[key[1:]]
+
+			elif key[0] == 'c':
+				return self.chains[key[1:]]
+
+			else:
+				import mout
+				mout.errorOut("key must start with 'a', 'r', or 'c' to refer to an Atom, Residue, or Chain, respectively. See help(molparse.group.__getitem__)")
+
+		except AttributeError:
+
+			import mout
+			lookup = {'a':'atoms','c':'chains','r':'residues'}
+			mout.errorOut(f"{type(self)} does not possess {lookup[key[0]]} attribute")

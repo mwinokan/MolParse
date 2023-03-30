@@ -14,8 +14,10 @@ class System(AtomGroup):
     super(System, self).__init__(name)
 
     self.description = None
-    self.chains = []
     self.remarks = []
+
+    from .list import NamedList
+    self.chains = NamedList()
 
     self.bondlist=None
     self.box = None

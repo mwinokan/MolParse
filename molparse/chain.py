@@ -12,7 +12,9 @@ class Chain(AtomGroup):
 
     super(Chain, self).__init__(name)
 
-    self.residues = []
+    from .list import NamedList
+    self.residues = NamedList()
+
     self.index = None
     self.fix_names()
 

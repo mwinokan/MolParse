@@ -14,7 +14,9 @@ class Residue(AtomGroup):
 
     self.chain = chain
     self.number = number
-    self._atoms = []
+    
+    from .list import NamedList
+    self._atoms = NamedList()
     
     if atoms:
 
