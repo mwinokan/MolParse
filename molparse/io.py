@@ -46,7 +46,7 @@ def write(filename,image,verbosity=1,printScript=False,**parameters):
         mout.errorOut("Unsupported",fatal=True)
 
     elif isinstance(image,System):
-      mout.errorOut(f"Filetype {mcol.file}{filename.split(".")[-1]}{mcol.error} not supported for mp.System object",code="amp.io.write[1]")
+      mout.errorOut(f"Filetype {mcol.file}{filename.split('.')[-1]}{mcol.error} not supported for mp.System object",code="amp.io.write[1]")
       return None
 
     elif isinstance(image,go.Figure):
