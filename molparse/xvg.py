@@ -122,6 +122,11 @@ class XVG():
 		self._maxima_indices = None
 		self.ymin = ymin
 		self.ymax = ymax
+
+	@property
+	def dataframe(self):
+		import pandas
+		return pandas.DataFrame(data=self.columns)
 	
 	def determine_data_shape(self,header_buffer,demo_line,convert_nanometres,xmin,xmax,yscale=1.0):
 		"""Use the header strings and an example data line to construct the data shape"""
@@ -187,6 +192,10 @@ class XVG():
 
 		split_line = line.strip().split()
 
+		if len(split_line) < len(self.column_labels):
+			mout.warningOut("Skipping incomplete data-line")
+			return False
+
 		for value,column,data_type,scale in zip(split_line,self.column_labels,self.column_types,self.column_scales):
 			if scale is not None:
 				value = data_type(value)*scale
@@ -194,11 +203,13 @@ class XVG():
 				value = data_type(value)
 
 			if self.xmin and column == 'x' and float(self.xmin) > value:
-				return
+				return True
 			if self.xmax and column == 'x' and float(self.xmax) < value:
-				return
+				return True
 
 			self.columns[column].append(value)
+
+		print(self.columns['x'][-1],self.columns['1'][-1])
 
 		self.entries += 1
 
