@@ -248,6 +248,14 @@ class System(AtomGroup):
       names.append(chain.name)
     return names
 
+  @property
+  def residue_names(self):
+    """Get all Chain names (list)"""
+    names = []
+    for residue in self.residues:
+      names.append(residue.name)
+    return names
+
   def rename_atoms(self,old:str,new:str,res_filter:str=None,verbosity:int=2):
     """Rename all matching atoms"""
     import mcol
