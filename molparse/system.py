@@ -69,11 +69,11 @@ class System(AtomGroup):
       if index != atom.index:
         print(index,atom.index,atom.name,atom.residue)
 
-  def fix_indices(self,verbosity=0):
-    """Fix all child Atoms' indices"""
+  def fix_indices(self,verbosity=0,exclude=[]):
+    """Fix all child Atoms' indices. exclude is a list of residue names to ignore"""
     if verbosity:
       import mout
-      exclude = ['SOL','ION']
+      
     for index,atom in enumerate(self.atoms):
       if verbosity == 2 and atom.index != index:
         mout.warningOut(f"Re-indexing atom {atom} (#{atom.index} --> #{index})")
@@ -82,11 +82,11 @@ class System(AtomGroup):
       atom.index = index
 
     for index,residue in enumerate(self.residues):
-      if verbosity == 2 and residue.number != index:
-        mout.warningOut(f"Re-indexing residue {residue} (#{residue.number} --> #{index})")
-      elif verbosity == 2 and residue.type not in exclude and residue.number != index:
-        mout.warningOut(f"Re-indexing residue {residue} (#{residue.number} --> #{index})")
-      residue.number = index
+      if verbosity == 2 and residue.index != index:
+        mout.warningOut(f"Re-indexing residue {residue} (#{residue.index} --> #{index})")
+      elif verbosity == 2 and residue.type not in exclude and residue.index != index:
+        mout.warningOut(f"Re-indexing residue {residue} (#{residue.index} --> #{index})")
+      residue.index = index
 
       residue.fix_names()
       residue.fix_indices()
