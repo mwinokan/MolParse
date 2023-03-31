@@ -291,17 +291,19 @@ class Residue(AtomGroup):
   def summary(self):
     """Summarised output of the Residue"""
     import mout
-    mout.headerOut(f'\nResidue {self.name}, index={self.number}, #atoms={self.num_atoms}')
+    import mcol
+    mout.headerOut(f'\nResidue {self.name}, index={self.index}, number={self.number}, chain={self.chain}, #atoms={self.num_atoms}')
 
+    print(f"{mcol.underline}{'NAME':4} {'INDEX':>6} {'NUMBER':>6} {'X':>7} {'Y':>7} {'Z':>7}{mcol.clear}")
     for atom in self.atoms:
-      print(atom.name,atom.index,atom.pdb_index)
+      print(f'{atom.name:4} {atom.index:>6} {atom.number:>6} {atom.x:>7.2f} {atom.y:>7.2f} {atom.z:>7.2f}')
     
   def is_same_as(self,residue):
     assert isinstance(residue, Residue)
 
     if self.name != residue.name:
       return False
-    if self.index != residue.index:
+    if self.number != residue.number:
       return False
     if self.chain != residue.chain:
       return False
