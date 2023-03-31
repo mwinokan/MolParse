@@ -62,10 +62,23 @@ class Atom:
     self.alternative_site = alternative_site
     self._velocity = velocity
 
+    self._parent = None
+
+  @property
+  def parent(self):
+    return self._parent
+
+  @parent.setter
+  def parent(self,obj):
+    # from .group import AtomGroup
+    # from .residue import Residue
+    # assert isinstance(obj, Residue) or isinstance(obj, Residue)
+    self._parent = obj
+
   def __deepcopy__(self, memodict={}):
-    copy_object = Atom(self.name, self.index, self.pdb_index, self.position, self.residue)
+    copy_object = Atom(self.name, self.index, self.pdb_index, self.position, self.residue, res_number=self.res_number, res_index=self.res_index)
     copy_object.chain = self.chain
-    copy_object.res_number = self.res_number
+    # copy_object.res_number = self.res_number
     copy_object.QM = self.QM
     copy_object.occupancy = self.occupancy
     copy_object.temp_factor = self.temp_factor

@@ -116,6 +116,7 @@ class System(AtomGroup):
     from .chain import Chain
     assert isinstance(chain,Chain)
     chain.index = len(self.chains)
+    chain.parent = self
     self.chains.append(chain)
 
   def add_system(self,system,same_chain=False):
@@ -720,3 +721,4 @@ class System(AtomGroup):
 
     if verbosity > 0 and count > 0:
       mout.warningOut(f"Deleted {count} alternative site atoms")
+

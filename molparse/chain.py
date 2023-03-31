@@ -18,6 +18,18 @@ class Chain(AtomGroup):
     self.index = None
     self.fix_names()
 
+    self._parent = None
+
+  @property
+  def parent(self):
+    return self._parent
+
+  @parent.setter
+  def parent(self,obj):
+    # from .system import System
+    # assert isinstance(obj, System)
+    self._parent = obj
+
   def fix_names(self):
     """Ensure child-classes have correct parent name"""
     for residue in self.residues:
@@ -37,6 +49,7 @@ class Chain(AtomGroup):
     from .residue import Residue
     assert isinstance(residue,Residue)
     residue.set_chain_number(self.index)
+    residue.parent = self
 
     # remove any termini
     if self.residues:

@@ -51,8 +51,14 @@ class Residue(AtomGroup):
     self.fix_names()
 
   @property
-  def index(self):
-    return self.number
+  def resid(self):
+    """resid and number are the residue index from the original file"""
+    return self._number
+  
+  @property
+  def number(self):
+    """resid and number are the residue index from the original file"""
+    return self._number
 
   @property
   def ase_atoms(self):
@@ -127,7 +133,9 @@ class Residue(AtomGroup):
 
     atom.chain = self.chain
     atom.residue = self.name
-    atom.res_number = self.number
+    atom.res_index = self.index
+
+    atom.parent = self
 
     if self.atoms:
       # remove any termini

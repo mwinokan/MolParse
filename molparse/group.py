@@ -166,6 +166,7 @@ class AtomGroup():
 ### METHODS
 
 	def add_atom(self,atom):
+		atom.parent = self
 		self._atoms.append(atom)
 
 	def summary(self):
