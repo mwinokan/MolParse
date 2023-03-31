@@ -8,8 +8,8 @@ class Histidine(AminoAcid):
 	but constructed automatically when parsing a 
 	coordinate file via amp.parsePDB or otherwise"""
 
-	def __init__(self,name,index,chain):
-		super(Histidine, self).__init__(name,index,chain)
+	def __init__(self,name,index,number,chain):
+		super(Histidine, self).__init__(name,index,number,chain)
 
 		assert len(name) == 3
 		assert name in ['HIS','HID','HIE','HSE','HSD','HSP']

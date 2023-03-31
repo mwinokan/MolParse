@@ -8,12 +8,12 @@ class Atom:
   
   name_symbol_dict = {'MG': 'Mg'}
 
-  def __init__(self,name,index=None,pdb_index=None,position=None,residue=None,chain=None,res_number=None,charge=None,FF_atomtype=None,mass=None,LJ_sigma=None,LJ_epsilon=None,QM=False,occupancy=None,temp_factor=None,heterogen=None,charge_str=None,velocity=None,alternative_site=None):
+  def __init__(self,name,index=None,pdb_index=None,position=None,residue=None,chain=None,res_number=None,charge=None,FF_atomtype=None,mass=None,LJ_sigma=None,LJ_epsilon=None,QM=False,occupancy=None,temp_factor=None,heterogen=None,charge_str=None,velocity=None,alternative_site=None,res_index=None):
 
     # necessary upon init
     self._name = name
     self.index = index
-    self.pdb_index = pdb_index
+    self._number = pdb_index
     self._position = position
     self.residue = residue
 
@@ -28,9 +28,13 @@ class Atom:
     self.chain_number = None
     self._atomic_number = None
     if res_number:
-      self.res_number = int(res_number)
+      self._res_number = int(res_number)
     else:
-      self.res_number = None
+      self._res_number = None
+    if res_index:
+      self.res_index = int(res_index)
+    else:
+      self.res_index = None
     
     # optional
     self.FF_atomtype = FF_atomtype
@@ -117,6 +121,21 @@ class Atom:
     else:
       self.species = name[0]
       self.symbol = name[0]
+
+  @property
+  def res_number(self):
+    """number or pdb_index are the fixed residue index from the original structure file"""
+    return self._res_number
+  
+  @property
+  def number(self):
+    """number or pdb_index are the fixed atom index from the original structure file"""
+    return self._number
+  
+  @property
+  def pdb_index(self):
+    """number or pdb_index are the fixed atom index from the original structure file"""
+    return self._number
 
   @property
   def name(self):

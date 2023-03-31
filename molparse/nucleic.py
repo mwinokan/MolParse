@@ -44,9 +44,9 @@ class NucleicAcid(Residue):
 	but constructed automatically when parsing a 
 	coordinate file via amp.parsePDB or otherwise"""
 
-	def __init__(self,name: str,number: int=None,chain: str=None,atoms=None):
+	def __init__(self,name: str,index: int=None, number: int=None,chain: str=None,atoms=None):
 		assert res_type(name) == "DNA"
-		super(NucleicAcid, self).__init__(name,number,chain,atoms)
+		super(NucleicAcid, self).__init__(name,index,number,chain,atoms)
 
 		self._backbone = None
 		self._nucleobase = None

@@ -8,13 +8,14 @@ class Residue(AtomGroup):
   but constructed automatically when parsing a 
   coordinate file via amp.parsePDB or otherwise"""
 
-  def __init__(self,name: str,number: int=None,chain: str=None,atoms=None):
+  def __init__(self,name: str,index: int=None, number: int=None,chain: str=None,atoms=None):
     
     super(Residue, self).__init__(name)
 
     self.chain = chain
-    self.number = number
-    
+    self.index = index
+    self._number = number
+
     from .list import NamedList
     self._atoms = NamedList()
     
@@ -22,12 +23,20 @@ class Residue(AtomGroup):
 
       from .atom import Atom
 
-      # import from ASE atoms object:
-
       for atom in atoms:
         self.add_atom(Atom(name=atom.symbol,position=atom.position,residue=self.name))
 
-        # print(atom)
+    self._parent = None
+
+  @property
+  def parent(self):
+    return self._parent
+
+  @parent.setter
+  def parent(self,obj):
+    # from .chain import Chain
+    # assert isinstance(obj, Chain)
+    self._parent = obj
 
   def rename(self,new: str,verbosity: int=1):
     """Rename the residue"""
@@ -64,9 +73,9 @@ class Residue(AtomGroup):
       atom.residue = self.name
 
   def fix_indices(self):
-    """Ensure child Atoms have correct res_number"""
+    """Ensure child Atoms have correct res_index"""
     for atom in self.atoms:
-      atom.res_number = self.number
+      atom.res_index = self.index
 
   def atom_names(self,wRes: bool=False,noPrime: bool=False):
     """Returns names of all child Atoms (list)"""

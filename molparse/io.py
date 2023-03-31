@@ -247,7 +247,7 @@ def parsePDB(pdb,systemName=None,index=1,fix_indices=True,fix_atomnames=True,aut
               #### PARSELINE
               atom = parsePDBAtomLine(line,res_counter,atom_counter,chain_counter,debug=debug)
               chain = Chain(atom.chain)
-              residue = new_residue(atom.residue,res_counter,atom.chain)
+              residue = new_residue(atom.residue,res_counter,atom.res_number,atom.chain)
               residue.addAtom(atom)
               last_residue_name = atom.residue
               last_residue_number = atom.res_number
@@ -291,7 +291,7 @@ def parsePDB(pdb,systemName=None,index=1,fix_indices=True,fix_atomnames=True,aut
                 if residue is not None: 
                   chain.add_residue(residue)
                   res_counter = res_counter+1
-                residue = new_residue(atom.residue,res_counter,atom.chain)
+                residue = new_residue(atom.residue,res_counter,atom.res_number,atom.chain)
                 if make_new_chain:
                   if chain is not None:
                     system.add_chain(chain)
@@ -399,7 +399,7 @@ def parsePDBAtomLine(line,res_index,atom_index,chain_counter,debug=False,alterna
       isQM = False
     if debug: print(str(atom_index) + ".isqm: OK")
 
-    atom = Atom(atom_name,pdb_index,pdb_index,position,residue,chain,res_number,QM=isQM,occupancy=occupancy,temp_factor=temp_factor,heterogen=hetatm,charge_str=chg_str,alternative_site=alt_site_str)
+    atom = Atom(atom_name,pdb_index,pdb_index,position,residue,chain,res_number,QM=isQM,occupancy=occupancy,temp_factor=temp_factor,heterogen=hetatm,charge_str=chg_str,alternative_site=alt_site_str,res_index=res_index)
 
     return atom
 
@@ -408,7 +408,7 @@ def parsePDBAtomLine(line,res_index,atom_index,chain_counter,debug=False,alterna
     mout.errorOut("Unsupported PDB line shown above",fatal=True)
 
 # def parseGRO(gro,systemName=None,fix_indices=True,fix_atomnames=True,verbosity=1,auto_ter=None):
-def parseGRO(gro,systemName=None,fix_indices=True,fix_atomnames=True,autoname_chains=True,verbosity=1,auto_ter=["DA3","DT3","DG3","DC3"],reindex=False):
+def parseGRO(gro,systemName=None,fix_indices=True,fix_atomnames=True,autoname_chains=True,verbosity=1,auto_ter=["DA3","DT3","DG3","DC3"]):
   import mcol
   import mout
   from .system import System
@@ -467,11 +467,8 @@ def parseGRO(gro,systemName=None,fix_indices=True,fix_atomnames=True,autoname_ch
           # first atom
           if line_counter == 3:
             chain = Chain(atom.chain)
-            if reindex:
-              index = res_counter
-            else:
-              index = atom.res_number
-            residue = new_residue(atom.residue,index,atom.chain)
+            index = res_counter
+            residue = new_residue(atom.residue,index,atom.res_number,atom.chain)
             # residue.addAtom(atom)
             last_residue_name = atom.residue
             last_residue_number = atom.res_number
@@ -488,11 +485,7 @@ def parseGRO(gro,systemName=None,fix_indices=True,fix_atomnames=True,autoname_ch
             if residue is not None: 
               chain.add_residue(residue)
               res_counter += 1
-            if reindex:
-              index = res_counter
-            else:
-              index = atom.res_number
-            residue = new_residue(atom.residue,index,atom.chain)
+            residue = new_residue(atom.residue,index,atom.res_number,atom.chain)
 
           # add the atom to the residue
           residue.addAtom(atom)
@@ -546,22 +539,22 @@ def parseGRO(gro,systemName=None,fix_indices=True,fix_atomnames=True,autoname_ch
 
   return system
 
-def new_residue(name,index,chain):
+def new_residue(name,index,number,chain):
   from .residue import res_type
 
   if res_type(name) == "PRO":
     if name in ['HIS','HID','HIE','HSE','HSD','HSP']:
       from .histidine import Histidine
-      return Histidine(name,index,chain)
+      return Histidine(name,index,number,chain)
     else:
       from .amino import AminoAcid
-      return AminoAcid(name,index,chain)
+      return AminoAcid(name,index,number,chain)
   elif res_type(name) == "DNA":
     from .nucleic import NucleicAcid
-    return NucleicAcid(name,index,chain)
+    return NucleicAcid(name,index,number,chain)
   else:
     from .residue import Residue
-    return Residue(name,index,chain)
+    return Residue(name,index,number,chain)
 
 def parseGROAtomLine(line,res_index,atom_index,chain_counter):
 
@@ -590,7 +583,7 @@ def parseGROAtomLine(line,res_index,atom_index,chain_counter):
 
   hetatm=False
 
-  atom = Atom(atom_name,atom_index,gro_index,position,residue,chain,res_number,velocity=velocity)
+  atom = Atom(atom_name,atom_index,gro_index,position,residue,chain,res_number,velocity=velocity,res_index=res_index)
 
   return atom
 

@@ -61,7 +61,7 @@ def plot3d(atoms,extra=[],bonds=[],alpha=1.0):
 		customdata = []
 
 		for a in atom_subset:
-			customstr = f'name={a.name}<br>index={a.index}<br>residue={a.residue}<br>res_number={a.res_number}'
+			customstr = f'name={a.name}<br>index={a.index}<br>number={a.number}<br>residue={a.residue}<br>res_index={a.res_index}<br>res_number={a.res_number}<br>x={a.x:.3f}<br>y={a.y:.3f}<br>z={a.z:.3f}'
 			customdata.append(customstr)
 
 		trace = go.Scatter3d(x=x,y=y,z=z,mode='markers',name=s,marker=dict(size=size,color=f'rgba{color}',line=dict(color='black',width=2)),customdata=customdata,hovertemplate="%{customdata}<extra></extra>")

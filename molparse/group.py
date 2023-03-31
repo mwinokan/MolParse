@@ -459,9 +459,11 @@ class AtomGroup():
 		"""Access child Atom, Residue or Chain by index or name
 
 		group['a0'] : returns the first atom
+		group['an10'] : returns the residue with number/resid 10
 		group['aH1'] : returns all atoms named 'H1'
 
 		group['r0'] : returns the first residue
+		group['rn10'] : returns the residue with number/resid 10
 		group['rASN'] : returns all residues named 'ASN'
 
 		group['c0'] : returns the first chain
