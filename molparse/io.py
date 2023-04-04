@@ -676,62 +676,9 @@ def writePDB(filename,system,verbosity=1,printScript=False,append=False,model=1)
 
   for atom in system.atoms:
 
-    atom_serial = atom.index
-    residue_serial = atom.res_number
+    atomline = constructPDBAtomLine(atom)
 
-    if not atom.heterogen:
-      strbuff += "ATOM  "
-    else:
-      strbuff += "HETATM"
-
-    atom_serial_str = str(atom_serial).rjust(5)
-    if len(atom_serial_str) > 5: 
-      atom_serial_str = "XXXXX"
-
-    residue_serial_str = str(residue_serial).rjust(4)
-    if len(residue_serial_str) > 4: 
-      residue_serial_str = residue_serial_str[-4:]
-
-    strbuff += atom_serial_str
-    strbuff += " "
-    strbuff += str(atom.name[:4]).ljust(4)
-    if atom.alternative_site:
-      strbuff += str(atom.alternative_site)
-    else:
-      strbuff += " "
-    # strbuff += " "
-    strbuff += str(atom.residue).ljust(4)
-    # assert len(chain.name) == 1
-    # strbuff += str(chain.name)
-    strbuff += str(atom.chain)
-    strbuff += residue_serial_str
-    strbuff += "    "
-
-    x_str = '{:.3f}'.format(atom.x).rjust(8)
-    y_str = '{:.3f}'.format(atom.y).rjust(8)
-    z_str = '{:.3f}'.format(atom.z).rjust(8)
-
-    strbuff += x_str+y_str+z_str
-
-    if atom.occupancy is not None:
-      strbuff += '{:.2f}'.format(atom.occupancy).rjust(6)
-    else:
-      strbuff += '      '
-    if atom.temp_factor is not None:
-      strbuff += '{:.2f}'.format(atom.temp_factor).rjust(6)
-    else:
-      strbuff += '      '
-
-    strbuff += "          "
-    strbuff += atom.species.rjust(2)
-    
-    if atom.charge_str is not None:
-      strbuff += atom.charge_str
-
-    if atom.QM:
-      strbuff += "QM"
-
-    strbuff += end
+    strbuff += atomline
 
     if atom.terminal:
       atom.ter_line =  "TER   "
