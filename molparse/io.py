@@ -703,6 +703,107 @@ def writePDB(filename,system,verbosity=1,printScript=False,append=False,model=1)
   if (verbosity > 0):
     mout.out("Done.") # user output    
 
+def modifyPDB(filename,atoms,copy_from=None):
+
+  """ in-place modification of a PDB file for improved performance when only modifying a certain subset of atoms 
+
+  filename: PDB to modify
+  atoms: list of mp.Atom objects that will be modified in the PDB
+  copy_from: (optional) copy {copy_from} --> {filename} before modifying
+
+  """
+
+  if copy_from:
+    import shutil
+    shutil.copyfile(copy_from,filename)
+
+  import fileinput
+
+  pdb_indices = [a.pdb_index for a in atoms]
+
+  max_index = max(pdb_indices)
+  min_index = min(pdb_indices)
+
+  for line in fileinput.FileInput(filename, inplace=1):
+
+    try:
+      pdb_index = int(line[6:12].strip())
+
+    except ValueError:
+      print(line,end='')
+      continue
+      
+    # check if the atom index matches a pdb_index in the atoms
+    if pdb_index >= min_index and pdb_index <= max_index and pdb_index in pdb_indices:
+      line = constructPDBAtomLine(atoms[pdb_indices.index(pdb_index)])
+
+    print(line,end='')
+
+def constructPDBAtomLine(atom):
+
+  end = '\n'
+
+  strlist = []
+
+  atom_serial = atom.index
+  residue_serial = atom.res_number
+
+  if not atom.heterogen:
+    strlist.append("ATOM  ")
+  else:
+    strlist.append("HETATM")
+
+  atom_serial_str = str(atom_serial).rjust(5)
+  if len(atom_serial_str) > 5: 
+    atom_serial_str = "XXXXX"
+
+  residue_serial_str = str(residue_serial).rjust(4)
+  if len(residue_serial_str) > 4: 
+    residue_serial_str = residue_serial_str[-4:]
+
+  strlist.append(atom_serial_str)
+  strlist.append(" ")
+  strlist.append(str(atom.name[:4]).ljust(4))
+  if atom.alternative_site:
+    strlist.append(str(atom.alternative_site))
+  else:
+    strlist.append(" ")
+  # strlist.append(" ")
+  strlist.append(str(atom.residue).ljust(4))
+  # assert len(chain.name) == 1
+  # strlist.append(str(chain.name))
+  strlist.append(str(atom.chain))
+  strlist.append(residue_serial_str)
+  strlist.append("    ")
+
+  x_str = '{:.3f}'.format(atom.x).rjust(8)
+  y_str = '{:.3f}'.format(atom.y).rjust(8)
+  z_str = '{:.3f}'.format(atom.z).rjust(8)
+
+  strlist.append(x_str+y_str+z_str)
+
+  if atom.occupancy is not None:
+    strlist.append('{:.2f}'.format(atom.occupancy).rjust(6))
+  else:
+    strlist.append('      ')
+  if atom.temp_factor is not None:
+    strlist.append('{:.2f}'.format(atom.temp_factor).rjust(6))
+  else:
+    strlist.append('      ')
+
+  strlist.append("          ")
+  strlist.append(atom.species.rjust(2))
+  
+  if atom.charge_str is not None:
+    strlist.append(atom.charge_str)
+
+  if atom.QM:
+    strlist.append("QM")
+
+  strlist.append(end)
+
+  return ''.join(strlist)
+
 def writeGRO(filename,system,verbosity=1,printScript=False):
   import mcol
   import mout
