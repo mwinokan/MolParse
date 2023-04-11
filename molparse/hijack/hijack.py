@@ -7,8 +7,21 @@ import mcol
 
 class FakeAtoms(Atoms):
 
-	def __init__(self,rcs=None,**kwargs):
-		mout.debugHeader("FakeAtoms.__init__()")
+	"""This class creates an object resembling ase.Atoms that encodes any number (N) of reaction coordinates into the x-positions of ase.Atom objects. Use this class together with FakeSurfaceCalculator to perform optimisations inside an N-dimensional PMF.
+
+	Initialise as:
+
+	FakeAtoms(rcs=[...],name=...)
+
+	- rcs is a list of floats representing a vector in reaction-coordinate space
+	- name is an optional string naming this point in RC-space
+
+	"""
+
+	def __init__(self,rcs=None,name=None,**kwargs):
+		mout.debugOut(f"FakeAtoms.__init__({rcs=},{name=},...)")
+
+		self.name = name
 
 		if rcs is not None:
 
@@ -62,10 +75,31 @@ class FakeAtoms(Atoms):
 class FakeSurfaceCalculator(Calculator):
 
 	"""
-		
-		Calculator to hijack BFGS, NEB and other algorithms.
+	
+		Calculator to hijack ASE optimisation algorithms.
 
-		A multidimensional free energy surface which is described by several 1D reaction coordinates, is described by a proxy Atoms object.
+		Initialise as:
+
+		FakeSurfaceCalculator(pmf=function())
+
+		pmf is a N-dimensional free energy surface. Should be callable with the same number of arguments as reaction coordinates described in the FakeAtoms object.
+
+		Optimisation example:
+
+		atoms = FakeAtoms(rcs=[1.0,1.0])
+
+		def pmf(x,y):
+			...
+
+		calc = FakeSurfaceCalculator(pmf=pmf)
+
+		atoms.set_calculator(calc)
+
+		from ase.optimize import BFGS
+
+		dyn = BFGS(atoms=atoms)
+
+		dyn.run()
 
 	"""
 
@@ -76,7 +110,7 @@ class FakeSurfaceCalculator(Calculator):
 	nolabel = True
 
 	def __init__(self, pmf, delta=0.001, suppress_warnings=False, restoring_force = 10, **kwargs):
-		mout.debugHeader(f"FakeSurfaceCalculator.__init__(delta={delta})")
+		mout.debugOut(f"FakeSurfaceCalculator.__init__(delta={delta})")
 		self._pmf = pmf
 		self.delta = delta
 		self._history = []
@@ -87,7 +121,13 @@ class FakeSurfaceCalculator(Calculator):
 	
 	def pmf(self,arg):
 		from ase.units import kcal,mol
-		return self._pmf(arg)*(kcal/mol)
+		e = self._pmf(arg)
+
+		if np.isnan(e):
+
+			mout.errorOut(f"NaN detected in PMF! {arg=}",fatal=True)
+
+		return self._pmf(arg)
 
 	@property
 	def history(self):

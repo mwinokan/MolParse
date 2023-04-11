@@ -183,4 +183,4 @@ from . import tunnel
 from .amino import alphabet as amino_alphabet
 from .amino import longname as amino_longname
 
-# from . import ndfes
+from . import hijack
