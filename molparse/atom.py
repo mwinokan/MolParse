@@ -6,9 +6,9 @@ class Atom:
   but constructed automatically when parsing a 
   coordinate file via amp.parsePDB or otherwise"""
   
-  name_symbol_dict = {'MG': 'Mg'}
+  name_symbol_dict = {'MG': 'Mg','Mg': 'Mg'}
 
-  def __init__(self,name,index=None,pdb_index=None,position=None,residue=None,chain=None,res_number=None,charge=None,FF_atomtype=None,mass=None,LJ_sigma=None,LJ_epsilon=None,QM=False,occupancy=None,temp_factor=None,heterogen=None,charge_str=None,velocity=None,alternative_site=None,res_index=None):
+  def __init__(self,name,index=None,pdb_index=None,position=None,residue=None,chain=None,res_number=None,charge=None,FF_atomtype=None,mass=None,LJ_sigma=None,LJ_epsilon=None,occupancy=None,temp_factor=None,heterogen=None,charge_str=None,velocity=None,alternative_site=None,res_index=None):
 
     # necessary upon init
     self._name = name
@@ -52,7 +52,6 @@ class Atom:
     self._mass = mass
     self.LJ_sigma = LJ_sigma
     self.LJ_epsilon = LJ_epsilon
-    self.QM = QM
     self.occupancy = occupancy
     self.temp_factor = temp_factor
     self.heterogen = heterogen
@@ -78,8 +77,6 @@ class Atom:
   def __deepcopy__(self, memodict={}):
     copy_object = Atom(self.name, self.index, self.pdb_index, self.position, self.residue, res_number=self.res_number, res_index=self.res_index)
     copy_object.chain = self.chain
-    # copy_object.res_number = self.res_number
-    copy_object.QM = self.QM
     copy_object.occupancy = self.occupancy
     copy_object.temp_factor = self.temp_factor
     copy_object.heterogen = self.heterogen

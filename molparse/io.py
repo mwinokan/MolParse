@@ -339,6 +339,8 @@ def parsePDBAtomLine(line,res_index,atom_index,chain_counter,debug=False,alterna
   if debug:
     mout.out("Attempting to parse atom with index: "+str(atom_index))
 
+  charge = None
+
   try:
     atom_name = line[12:16].strip()
 
@@ -385,7 +387,7 @@ def parsePDBAtomLine(line,res_index,atom_index,chain_counter,debug=False,alterna
       chg_str = None
     if debug: print(str(atom_index) + ".chg_str: OK")
 
-    end = line[80:]
+    end = line[80:].strip()
 
     if line.startswith("HETATM"):
       hetatm=True
@@ -393,13 +395,10 @@ def parsePDBAtomLine(line,res_index,atom_index,chain_counter,debug=False,alterna
       hetatm=False
     if debug: print(str(atom_index) + ".hetatm: OK")
 
-    if 'QM' in end:
-      isQM = True
-    else:
-      isQM = False
-    if debug: print(str(atom_index) + ".isqm: OK")
+    if end:
+      charge = float(line[80:89])
 
-    atom = Atom(atom_name,pdb_index,pdb_index,position,residue,chain,res_number,QM=isQM,occupancy=occupancy,temp_factor=temp_factor,heterogen=hetatm,charge_str=chg_str,alternative_site=alt_site_str,res_index=res_index)
+    atom = Atom(atom_name,pdb_index,pdb_index,position,residue,chain,res_number,occupancy=occupancy,temp_factor=temp_factor,heterogen=hetatm,charge_str=chg_str,alternative_site=alt_site_str,res_index=res_index,charge=charge)
 
     return atom
 
@@ -796,9 +795,11 @@ def constructPDBAtomLine(atom):
   
   if atom.charge_str is not None:
     strlist.append(atom.charge_str)
+  else:
+    strlist.append("  ")
 
-  if atom.QM:
-    strlist.append("QM")
+  if atom.charge is not None:
+    strlist.append(f'{atom.charge:8.6f}')
 
   strlist.append(end)
 

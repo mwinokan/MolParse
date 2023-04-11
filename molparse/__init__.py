@@ -76,14 +76,15 @@ Key features:
 
 """
 
-from .version import import_checks
-import_checks()
+# from .version import import_checks
+# import_checks()
 
 # Custom IO
 from .io import read
 from .io import write
 from .io import parse
 from .io import parsePDB
+from .io import writePDB
 from .io import parseGRO
 from .io import parseXYZ
 from .io import modifyPDB
