@@ -130,9 +130,8 @@ class Chain(AtomGroup):
       self.residues[-1].add_atom(atom)
     else:
 
-      residue = Residue(atom.residue)
-      residue.index = atom.res_number
-      residue.number = atom.res_number
+      residue = Residue(atom.residue,number=atom.res_number)
+      residue.index = atom.res_index
       residue.chain = atom.chain
       residue.add_atom(atom)
       self.add_residue(residue)
