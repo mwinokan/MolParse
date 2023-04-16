@@ -604,8 +604,6 @@ class XVGCollection():
 			if not color:
 				color = 'rgb(0,0,0)' # default is black
 
-			trace = go.Scatter(x=x,y=maxs,name="max",legendgroup=self.title,legendgrouptitle_text=self.title,line=dict(width=0,color=color))
-
 			fig.add_trace(go.Scatter(x=x,y=maxs,name="max",legendgroup=self.title,legendgrouptitle_text=self.title,line=dict(width=0,color=color)))
 			fig.add_trace(go.Scatter(x=x,y=mins,name="min",fill='tonexty',legendgroup=self.title,legendgrouptitle_text=self.title,line=dict(width=0,color=color),fillcolor=color.replace('rgb','rgba').replace(')',',0.15)')))
 			fig.add_trace(go.Scatter(x=x,y=mean_plus_std,name="mean+std",legendgroup=self.title,legendgrouptitle_text=self.title,line=dict(width=0,color=color)))
