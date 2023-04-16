@@ -11,6 +11,8 @@ class NamedList(UserList):
 	key: str' 'int  returns list[obj.name == str and obj.index == int]
 	key: str' i'int  returns list[obj.name == str and obj.index == int]
 	
+	Recursion is allowed via: list[[key1,key2,key3]] --> [list[key1],list[key2],list[key3]]
+	
 	"""
 
 	def __init__(self, inherited_list=[]):
@@ -52,6 +54,15 @@ class NamedList(UserList):
 		# if key is a slice
 		if isinstance(key,slice):
 			return NamedList(self.data[key])
+
+		# if key is a list
+		if isinstance(key,list):
+
+			data = []
+			for item in key:
+				data.append(self.__getitem__(item))
+
+			return NamedList(data)
 
 		# try the key as an integer index
 		try:
