@@ -334,6 +334,8 @@ def res_type(resname):
   # ligands
   elif resname.startswith(('ATP','GTP')):
     this_type = "LIG"
+  elif resname.startswith(('QM','MM')):
+    this_type = "N/A"
   # amino acids
   elif resname.startswith(("ALA","ARG","ASN","ASP",
                              "CYS","GLN","GLU","GLY","HSD",
