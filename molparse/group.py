@@ -19,6 +19,123 @@ class AtomGroup():
 
 	"""
 
+### FACTORIES
+
+	@classmethod
+	def from_any(cls,name,source):
+
+		"""Construct a new AtomGroup from:
+			- an mp.NamedList of mp.Atom objects (i.e. mp.System.atoms)
+			- an mp.System object
+			- an mp.AtomGroup object
+			- an mp.Chain object
+			- an mp.Residue object
+			- a list of ase.Atom objects
+			- an ase.Atoms object
+			- a list containing any combination of ase.Atom(s), mp.Atom, mp.Chain, mp.Residue, objects
+		"""
+		
+		import mout
+
+		from ase import Atoms as ase_Atoms
+		from ase import Atom as ase_Atom
+
+		from .system import System
+		from .chain import Chain
+		from .residue import Residue
+		from .list import NamedList
+
+		# mp.AtomGroup subclass
+		if issubclass(source.__class__,cls):
+			return cls.from_group_subclass(source)
+
+		# mp.AtomGroup
+		elif isinstance(source, AtomGroup):
+			return cls.from_group(source)
+
+		# NamedList of atoms (i.e. mp.System.atoms):
+		elif isinstance(source, NamedList) or isinstance(source, ase_Atoms):
+			return cls.from_atoms(name,source)
+
+		# list of various objects
+		elif isinstance(source, list):
+
+			from .atom import Atom
+
+			group = cls.__new__(cls)
+			group.__init__(name)
+
+			for item in source:
+
+				if issubclass(item.__class__,cls):
+					group = cls.from_group_subclass(item,group=group)
+
+				elif isinstance(item, NamedList) or isinstance(item,ase_Atoms):
+					group = cls.from_atoms(name,item,group=group)
+
+				elif isinstance(item,Atom):
+					group.add_atom(item)
+
+				elif isinstance(item,ase_Atom):
+					group.add_atom(Atom(name=item.symbol,position=item.position))
+
+				else:
+					mout.errorOut(f"Not supported ({item.__class__=})",fatal=True)
+
+			return group
+
+		else:
+			mout.errorOut(f"Not supported ({source.__class__=})",fatal=True)
+
+	@classmethod
+	def from_atoms(cls,name,atoms,group=None):
+
+		import mout
+
+		from .list import NamedList
+		from ase import Atoms as ase_Atoms
+		assert isinstance(atoms, list) or isinstance(atoms, NamedList) or isinstance(atoms, ase_Atoms)
+
+		# create new object
+		if group is None:
+			group = cls.__new__(cls)
+			group.__init__(name)
+
+		from .atom import Atom
+		from ase import Atom as ase_Atom
+
+		for atom in atoms:
+
+			if isinstance(atom, Atom):
+				group.add_atom(Atom(name=atom.name,position=atom.position,residue=atom.residue))
+			
+			elif isinstance(atom, ase_Atom):
+				group.add_atom(Atom(name=atom.symbol,position=atom.position))
+
+			else:
+				mout.errorOut("Not supported",fatal=True)
+
+		return group
+
+	@classmethod
+	def from_group_subclass(cls,source,group=None):
+
+		assert issubclass(source.__class__,cls)
+
+		if group is None:
+			group = cls.__new__(cls)
+			group.__init__(source.name)
+
+		for atom in source.atoms:
+			group.add_atom(atom)
+
+		return group
+
+	@classmethod
+	def from_group(cls,group):
+		assert isinstance(group, AtomGroup)
+		return group.copy()
+
 ### PROPERTIES
 
 	@property
@@ -145,9 +262,6 @@ class AtomGroup():
 	def ase_atoms(self):
 		"""Construct an equivalent ase.Atoms object"""
 
-		# from .io import write, read
-		# write("__temp__.pdb",self,verbosity=0)
-		# return read("__temp__.pdb",verbosity=0)
 		from ase import Atoms
 		return Atoms(symbols=self.symbols,cell=None, pbc=None,positions=self.positions)
 
@@ -376,6 +490,10 @@ class AtomGroup():
 	    # extra stuff for plotly
 	    extra = [[A.np_pos,A.np_pos+v_ad]]
 	    return extra
+
+	def copy(self):
+		import copy
+		return copy.deepcopy(self)
 
 ### GUI THINGS
 
