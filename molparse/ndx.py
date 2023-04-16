@@ -45,6 +45,10 @@ class GromacsIndex(UserDict):
 	def group_names(self):
 		return self.data.keys()
 
+	def shift(self,shift=-1):
+		for key in self.data:
+			self.data[key] = [i + shift for i in self.data[key]]
+
 	def summary(self):
 
 		import mout
