@@ -687,13 +687,20 @@ class System(AtomGroup):
     """add an atom to the system"""
     from .chain import Chain
     from .residue import Residue, res_type
+    from .list import NamedList
 
-    if self.chains and atom.chain == self.chains[-1].name and res_type(atom.residue) == self.chains[-1].residues[-1].type:
-      self.chains[-1].add_atom(atom)
+    if isinstance(atom,list) or isinstance(atom,NamedList):
+      for a in atom:
+        self.add_atom(a)
+
     else:
-      chain = Chain(atom.chain)
-      chain.add_atom(atom)
-      self.add_chain(chain)
+
+      if self.chains and atom.chain == self.chains[-1].name and res_type(atom.residue) == self.chains[-1].residues[-1].type:
+        self.chains[-1].add_atom(atom)
+      else:
+        chain = Chain(atom.chain)
+        chain.add_atom(atom)
+        self.add_chain(chain)
 
   @property
   def children(self):
