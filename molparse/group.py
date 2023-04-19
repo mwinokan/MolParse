@@ -102,18 +102,23 @@ class AtomGroup():
 			group.__init__(name)
 
 		from .atom import Atom
+		from .residue import Residue
 		from ase import Atom as ase_Atom
 
 		for atom in atoms:
 
 			if isinstance(atom, Atom):
-				group.add_atom(Atom(name=atom.name,position=atom.position,residue=atom.residue))
+				group.add_atom(atom.copy())
 			
 			elif isinstance(atom, ase_Atom):
 				group.add_atom(Atom(name=atom.symbol,position=atom.position))
 
+			elif isinstance(atom, Residue):
+				for a in atom.atoms:
+					group.add_atom(a.copy())
+
 			else:
-				mout.errorOut("Not supported",fatal=True)
+				mout.errorOut("item in named list is neither mp.Atom, ase.Atom, mp.Residue",fatal=True)
 
 		return group
 
@@ -127,7 +132,7 @@ class AtomGroup():
 			group.__init__(source.name)
 
 		for atom in source.atoms:
-			group.add_atom(atom)
+			group.add_atom(atom.copy())
 
 		return group
 
