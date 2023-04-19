@@ -209,8 +209,6 @@ class XVG():
 
 			self.columns[column].append(value)
 
-		print(self.columns['x'][-1],self.columns['1'][-1])
-
 		self.entries += 1
 
 		if 'nan' in line:
