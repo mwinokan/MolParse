@@ -398,7 +398,65 @@ class AtomGroup():
 			b = target.atoms[index]
 			a.set_name(b.name,verbosity=0)
 
-	def plot3d(self,extra=[],alpha=1.0,bonds=True):
+	def plot(self,ax=None,color=None,center_index=0,show=False,offset=None,padding=1,zeroaxis=None,frame=False,labels=True,textdict={"horizontalalignment":"center","verticalalignment":"center"}):
+		"""Render the system with matplotlib"""
+
+		import numpy as np
+		from ase.visualize.plot import plot_atoms
+
+		# copy the system so as not to alter it
+		copy = self.copy()
+
+		# create new axes if none provided
+		if ax is None:
+			import matplotlib.pyplot as plt
+			fig,ax = plt.subplots()
+
+		# create colours list
+		if color is not None:
+			color = [color for a in copy.atoms]
+
+		# create the canvas unit size from bounding box
+		canvas = np.array(self.bbox_sides)*1.5
+
+		# center the render if needed
+		if offset is None:
+			offset=[0,0]
+			if center_index is not None:
+				vec = - copy.atoms[center_index].np_pos + canvas
+				copy.CoM(shift=vec,verbosity=0)
+
+		# use ASE to render the atoms
+		plot_atoms(copy.ase_atoms,ax,colors=color,offset=offset,bbox=[0,0,canvas[0]*2,canvas[1]*2])
+
+		# do the labels
+		if labels:
+			for atom in copy.atoms:
+				if atom.species != 'H':
+					ax.text(atom.position[0],atom.position[1],atom.name,**textdict)
+
+		# crop the plot
+		xmax = copy.bbox[0][1] + padding
+		xmin = copy.bbox[0][0] - padding
+		ymax = copy.bbox[1][1] + padding
+		ymin = copy.bbox[1][0] - padding
+		ax.set_xlim(xmin,xmax)
+		ax.set_ylim(ymin,ymax)
+
+		# render the centering axes
+		if zeroaxis is not None:
+			ax.axvline(canvas[0],color=zeroaxis)
+			ax.axhline(canvas[1],color=zeroaxis)
+
+		if not frame:
+			ax.axis('off')
+
+		if show:
+			plt.show()
+
+		return ax, copy
+
+	def plot3d(self,extra=[],alpha=1.0,bonds=True,velocity=False,v_scale=1.0,fig=None,flat=False,show=True):
 		"""Render the atoms with plotly graph objects. 
 		extra can contain pairs of coordinates to be shown as vectors."""
 
