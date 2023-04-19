@@ -118,6 +118,20 @@ def parseDat(filename,num_columns=2,header_rows=1,delimiter=' ',debug=False,pre_
 
 		return x,big_y
 
+	elif num_columns == 1:
+
+		x = dataframe.iloc[:, 0].values
+
+		if clean_nan:
+			new_x = []
+			for this_x in list(x):
+				if math.isnan(float(this_x)):
+					continue
+				new_x.append(this_x)
+			return new_x
+
+		return list(x)
+
 	else:
 
 		x = dataframe.iloc[:, 0].values
