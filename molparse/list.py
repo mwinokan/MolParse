@@ -56,7 +56,7 @@ class NamedList(UserList):
 			return NamedList(self.data[key])
 
 		# if key is a list
-		if isinstance(key,list):
+		if isinstance(key,list) or isinstance(key,tuple) or isinstance(key,set):
 
 			data = []
 			for item in key:
