@@ -470,22 +470,31 @@ class AtomGroup():
 			bonds = []
 
 		from .go import plot3d
-		return plot3d(self.atoms,extra,bonds,alpha)
+		return plot3d(self.atoms,extra,bonds,alpha,velocity=velocity,v_scale=v_scale,fig=fig,flat=flat,show=show)
 
-	def set_coordinates(self,reference):
-	    """Set all coordinates according to a reference ase.Atoms object"""
-	    if type(reference) is str:
-	      from ase.io import read
-	      atoms = read(reference)
-	    elif isinstance(reference,list):
-	      for index,atom in enumerate(self.atoms):
-	        atom.position = reference[index]
-	      return
-	    else:
-	      atoms = reference
+	def set_coordinates(self,reference,velocity=False):
+		"""Set all coordinates according to a reference ase.Atoms object"""
+		if type(reference) is str:
+			if velocity:
+				from .io import parse
+				sys = parse(reference)
+				atoms = sys.atoms
+			else:
+				from ase.io import read
+				atoms = read(reference)
+		elif isinstance(reference,list):
+			if velocity:
+				mout.errorOut("Not supported (group.set_coordinates)",fatal=True)
+			for index,atom in enumerate(self.atoms):
+				atom.position = reference[index]
+			return
+		else:
+			atoms = reference
 
-	    for index,atom in enumerate(self.atoms):
-	      atom.position = atoms[index].position
+		for index,atom in enumerate(self.atoms):
+			atom.position = atoms[index].position
+			if velocity:
+				atom.velocity = atoms[index].velocity
 
 	def rotate(self,angle,vector,center=(0,0,0)):
 		"""Rotate the system (see ase.Atoms.rotate)"""
