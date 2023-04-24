@@ -106,6 +106,7 @@ from .restraint import Restraint
 
 # ase.visualize wrappers
 from .gui import view
+from .go import plot3d
 
 # ase standard rendering
 from .plot import makeImage

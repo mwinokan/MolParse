@@ -209,8 +209,6 @@ class XVG():
 
 			self.columns[column].append(value)
 
-		print(self.columns['x'][-1],self.columns['1'][-1])
-
 		self.entries += 1
 
 		if 'nan' in line:
@@ -603,8 +601,6 @@ class XVGCollection():
 
 			if not color:
 				color = 'rgb(0,0,0)' # default is black
-
-			trace = go.Scatter(x=x,y=maxs,name="max",legendgroup=self.title,legendgrouptitle_text=self.title,line=dict(width=0,color=color))
 
 			fig.add_trace(go.Scatter(x=x,y=maxs,name="max",legendgroup=self.title,legendgrouptitle_text=self.title,line=dict(width=0,color=color)))
 			fig.add_trace(go.Scatter(x=x,y=mins,name="min",fill='tonexty',legendgroup=self.title,legendgrouptitle_text=self.title,line=dict(width=0,color=color),fillcolor=color.replace('rgb','rgba').replace(')',',0.15)')))

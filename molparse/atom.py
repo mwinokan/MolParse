@@ -191,7 +191,7 @@ class Atom:
   def np_vel(self):
     """Cartesian velocity (numpy array)"""
     import numpy as np
-    return np.array((self._velocity[0] ,self._velocity[1], self._velocity[2]))
+    return np.array((self.velocity[0] ,self.velocity[1], self.velocity[2]))
 
   @property
   def x(self):

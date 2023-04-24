@@ -1,5 +1,5 @@
 
-def plot3d(atoms,extra=[],bonds=[],alpha=1.0):
+def plot3d(atoms,extra=[],bonds=[],alpha=1.0,velocity=False,v_scale=1.0,fig=None,flat=False,show=True):
 	"""Render the atoms with plotly graph objects. 
 	extra can contain pairs of coordinates to be shown as vectors."""
 
@@ -7,10 +7,18 @@ def plot3d(atoms,extra=[],bonds=[],alpha=1.0):
 	from ase.data import vdw_radii, atomic_numbers
 	from ase.data.colors import jmol_colors
 
+	from .group import AtomGroup
+
+	import mout
+	
+	group = AtomGroup.from_any("Compound AtomGroup", atoms)
+	atoms = group.atoms
+
 	species = [a.symbol for a in atoms]
 	species = list(set(species))
 
-	fig = go.Figure()
+	if fig is None:
+		fig = go.Figure()
 
 	if bonds:
 
@@ -29,7 +37,39 @@ def plot3d(atoms,extra=[],bonds=[],alpha=1.0):
 			z.append(b[2])
 			z.append(None)
 
-		trace = go.Scatter3d(x=x,y=y,z=z,mode='lines',name='bonds',line=dict(color='black',width=16))
+		if flat:
+			trace = go.Scatter(x=x,y=y,mode='lines',name='bonds',line=dict(color='black',width=16))
+		else:
+			trace = go.Scatter3d(x=x,y=y,z=z,mode='lines',name='bonds',line=dict(color='black',width=16))
+
+		fig.add_trace(trace)
+
+	if not flat and velocity:
+
+		x = []
+		y = []
+		z = []
+
+		for atom in atoms:
+
+			if atom.velocity is None:
+				mout.warningOut(f"Atom {atom.name} (#{atom.number}) has no velocity")
+				continue
+
+			a = atom.np_pos
+			b = v_scale*atom.np_vel + a
+
+			x.append(a[0])
+			x.append(b[0])
+			x.append(None)
+			y.append(a[1])
+			y.append(b[1])
+			y.append(None)
+			z.append(a[2])
+			z.append(b[2])
+			z.append(None)
+
+		trace = go.Scatter3d(x=x,y=y,z=z,mode='lines',name='velocity',line=dict(color='red',width=16))
 
 		fig.add_trace(trace)
 
@@ -64,16 +104,23 @@ def plot3d(atoms,extra=[],bonds=[],alpha=1.0):
 			customstr = f'name={a.name}<br>index={a.index}<br>number={a.number}<br>residue={a.residue}<br>res_index={a.res_index}<br>res_number={a.res_number}<br>x={a.x:.3f}<br>y={a.y:.3f}<br>z={a.z:.3f}'
 			customdata.append(customstr)
 
-		trace = go.Scatter3d(x=x,y=y,z=z,mode='markers',name=s,marker=dict(size=size,color=f'rgba{color}',line=dict(color='black',width=2)),customdata=customdata,hovertemplate="%{customdata}<extra></extra>")
+		if flat:
+			trace = go.Scatter(x=x,y=y,mode='markers',name=s,marker=dict(size=size,color=f'rgba{color}',line=dict(color='black',width=2)),customdata=customdata,hovertemplate="%{customdata}<extra></extra>")
+		else:
+			trace = go.Scatter3d(x=x,y=y,z=z,mode='markers',name=s,marker=dict(size=size,color=f'rgba{color}',line=dict(color='black',width=2)),customdata=customdata,hovertemplate="%{customdata}<extra></extra>")
 
 		fig.add_trace(trace)
 
-	for i,(a,b) in enumerate(extra):
+	if not flat:
+		for i,(a,b) in enumerate(extra):
 
-		trace = go.Scatter3d(x=[a[0],b[0]],y=[a[1],b[1]],z=[a[2],b[2]],name=f'extra[{i}]')
+			trace = go.Scatter3d(x=[a[0],b[0]],y=[a[1],b[1]],z=[a[2],b[2]],name=f'extra[{i}]')
 
-		fig.add_trace(trace)
+			fig.add_trace(trace)
 
 	fig.update_layout(scene_aspectmode='data')
 
-	fig.show()
+	if show:
+		fig.show()
+
+	return fig

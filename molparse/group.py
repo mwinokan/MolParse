@@ -19,6 +19,128 @@ class AtomGroup():
 
 	"""
 
+### FACTORIES
+
+	@classmethod
+	def from_any(cls,name,source):
+
+		"""Construct a new AtomGroup from:
+			- an mp.NamedList of mp.Atom objects (i.e. mp.System.atoms)
+			- an mp.System object
+			- an mp.AtomGroup object
+			- an mp.Chain object
+			- an mp.Residue object
+			- a list of ase.Atom objects
+			- an ase.Atoms object
+			- a list containing any combination of ase.Atom(s), mp.Atom, mp.Chain, mp.Residue, objects
+		"""
+		
+		import mout
+
+		from ase import Atoms as ase_Atoms
+		from ase import Atom as ase_Atom
+
+		from .system import System
+		from .chain import Chain
+		from .residue import Residue
+		from .list import NamedList
+
+		# mp.AtomGroup subclass
+		if issubclass(source.__class__,cls):
+			return cls.from_group_subclass(source)
+
+		# mp.AtomGroup
+		elif isinstance(source, AtomGroup):
+			return cls.from_group(source)
+
+		# NamedList of atoms (i.e. mp.System.atoms):
+		elif isinstance(source, NamedList) or isinstance(source, ase_Atoms):
+			return cls.from_atoms(name,source)
+
+		# list of various objects
+		elif isinstance(source, list):
+
+			from .atom import Atom
+
+			group = cls.__new__(cls)
+			group.__init__(name)
+
+			for item in source:
+
+				if issubclass(item.__class__,cls):
+					group = cls.from_group_subclass(item,group=group)
+
+				elif isinstance(item, NamedList) or isinstance(item,ase_Atoms):
+					group = cls.from_atoms(name,item,group=group)
+
+				elif isinstance(item,Atom):
+					group.add_atom(item)
+
+				elif isinstance(item,ase_Atom):
+					group.add_atom(Atom(name=item.symbol,position=item.position))
+
+				else:
+					mout.errorOut(f"Not supported ({item.__class__=})",fatal=True)
+
+			return group
+
+		else:
+			mout.errorOut(f"Not supported ({source.__class__=})",fatal=True)
+
+	@classmethod
+	def from_atoms(cls,name,atoms,group=None):
+
+		import mout
+
+		from .list import NamedList
+		from ase import Atoms as ase_Atoms
+		assert isinstance(atoms, list) or isinstance(atoms, NamedList) or isinstance(atoms, ase_Atoms)
+
+		# create new object
+		if group is None:
+			group = cls.__new__(cls)
+			group.__init__(name)
+
+		from .atom import Atom
+		from .residue import Residue
+		from ase import Atom as ase_Atom
+
+		for atom in atoms:
+
+			if isinstance(atom, Atom):
+				group.add_atom(atom.copy())
+			
+			elif isinstance(atom, ase_Atom):
+				group.add_atom(Atom(name=atom.symbol,position=atom.position))
+
+			elif isinstance(atom, Residue):
+				for a in atom.atoms:
+					group.add_atom(a.copy())
+
+			else:
+				mout.errorOut("item in named list is neither mp.Atom, ase.Atom, mp.Residue",fatal=True)
+
+		return group
+
+	@classmethod
+	def from_group_subclass(cls,source,group=None):
+
+		assert issubclass(source.__class__,cls)
+
+		if group is None:
+			group = cls.__new__(cls)
+			group.__init__(source.name)
+
+		for atom in source.atoms:
+			group.add_atom(atom.copy())
+
+		return group
+
+	@classmethod
+	def from_group(cls,group):
+		assert isinstance(group, AtomGroup)
+		return group.copy()
+
 ### PROPERTIES
 
 	@property
@@ -145,9 +267,6 @@ class AtomGroup():
 	def ase_atoms(self):
 		"""Construct an equivalent ase.Atoms object"""
 
-		# from .io import write, read
-		# write("__temp__.pdb",self,verbosity=0)
-		# return read("__temp__.pdb",verbosity=0)
 		from ase import Atoms
 		return Atoms(symbols=self.symbols,cell=None, pbc=None,positions=self.positions)
 
@@ -279,7 +398,65 @@ class AtomGroup():
 			b = target.atoms[index]
 			a.set_name(b.name,verbosity=0)
 
-	def plot3d(self,extra=[],alpha=1.0,bonds=True):
+	def plot(self,ax=None,color=None,center_index=0,show=False,offset=None,padding=1,zeroaxis=None,frame=False,labels=True,textdict={"horizontalalignment":"center","verticalalignment":"center"}):
+		"""Render the system with matplotlib"""
+
+		import numpy as np
+		from ase.visualize.plot import plot_atoms
+
+		# copy the system so as not to alter it
+		copy = self.copy()
+
+		# create new axes if none provided
+		if ax is None:
+			import matplotlib.pyplot as plt
+			fig,ax = plt.subplots()
+
+		# create colours list
+		if color is not None:
+			color = [color for a in copy.atoms]
+
+		# create the canvas unit size from bounding box
+		canvas = np.array(self.bbox_sides)*1.5
+
+		# center the render if needed
+		if offset is None:
+			offset=[0,0]
+			if center_index is not None:
+				vec = - copy.atoms[center_index].np_pos + canvas
+				copy.CoM(shift=vec,verbosity=0)
+
+		# use ASE to render the atoms
+		plot_atoms(copy.ase_atoms,ax,colors=color,offset=offset,bbox=[0,0,canvas[0]*2,canvas[1]*2])
+
+		# do the labels
+		if labels:
+			for atom in copy.atoms:
+				if atom.species != 'H':
+					ax.text(atom.position[0],atom.position[1],atom.name,**textdict)
+
+		# crop the plot
+		xmax = copy.bbox[0][1] + padding
+		xmin = copy.bbox[0][0] - padding
+		ymax = copy.bbox[1][1] + padding
+		ymin = copy.bbox[1][0] - padding
+		ax.set_xlim(xmin,xmax)
+		ax.set_ylim(ymin,ymax)
+
+		# render the centering axes
+		if zeroaxis is not None:
+			ax.axvline(canvas[0],color=zeroaxis)
+			ax.axhline(canvas[1],color=zeroaxis)
+
+		if not frame:
+			ax.axis('off')
+
+		if show:
+			plt.show()
+
+		return ax, copy
+
+	def plot3d(self,extra=[],alpha=1.0,bonds=True,velocity=False,v_scale=1.0,fig=None,flat=False,show=True):
 		"""Render the atoms with plotly graph objects. 
 		extra can contain pairs of coordinates to be shown as vectors."""
 
@@ -293,22 +470,31 @@ class AtomGroup():
 			bonds = []
 
 		from .go import plot3d
-		return plot3d(self.atoms,extra,bonds,alpha)
+		return plot3d(self.atoms,extra,bonds,alpha,velocity=velocity,v_scale=v_scale,fig=fig,flat=flat,show=show)
 
-	def set_coordinates(self,reference):
-	    """Set all coordinates according to a reference ase.Atoms object"""
-	    if type(reference) is str:
-	      from ase.io import read
-	      atoms = read(reference)
-	    elif isinstance(reference,list):
-	      for index,atom in enumerate(self.atoms):
-	        atom.position = reference[index]
-	      return
-	    else:
-	      atoms = reference
+	def set_coordinates(self,reference,velocity=False):
+		"""Set all coordinates according to a reference ase.Atoms object"""
+		if type(reference) is str:
+			if velocity:
+				from .io import parse
+				sys = parse(reference)
+				atoms = sys.atoms
+			else:
+				from ase.io import read
+				atoms = read(reference)
+		elif isinstance(reference,list):
+			if velocity:
+				mout.errorOut("Not supported (group.set_coordinates)",fatal=True)
+			for index,atom in enumerate(self.atoms):
+				atom.position = reference[index]
+			return
+		else:
+			atoms = reference
 
-	    for index,atom in enumerate(self.atoms):
-	      atom.position = atoms[index].position
+		for index,atom in enumerate(self.atoms):
+			atom.position = atoms[index].position
+			if velocity:
+				atom.velocity = atoms[index].velocity
 
 	def rotate(self,angle,vector,center=(0,0,0)):
 		"""Rotate the system (see ase.Atoms.rotate)"""
@@ -376,6 +562,10 @@ class AtomGroup():
 	    # extra stuff for plotly
 	    extra = [[A.np_pos,A.np_pos+v_ad]]
 	    return extra
+
+	def copy(self):
+		import copy
+		return copy.deepcopy(self)
 
 ### GUI THINGS
 
