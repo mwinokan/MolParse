@@ -33,6 +33,9 @@ def parseNDX(file):
 
 			else:
 				print(line)
+			
+			if group_name:
+				index_dict[group_name] = group_indices
 
 	return index_dict
 
