@@ -860,9 +860,9 @@ def writeGRO(filename,system,verbosity=1,printScript=False):
           y_str = '{:.4f}'.format(0.0).rjust(8)
           z_str = '{:.4f}'.format(0.0).rjust(8)
         else:
-          x_str = '{:.4f}'.format(atom.velocity[0]/10.0).rjust(8)
-          y_str = '{:.4f}'.format(atom.velocity[1]/10.0).rjust(8)
-          z_str = '{:.4f}'.format(atom.velocity[2]/10.0).rjust(8)
+          x_str = '{:.4f}'.format(atom.velocity[0]*100.0).rjust(8)
+          y_str = '{:.4f}'.format(atom.velocity[1]*100.0).rjust(8)
+          z_str = '{:.4f}'.format(atom.velocity[2]*100.0).rjust(8)
         strbuff += x_str+y_str+z_str
 
         strbuff += end
