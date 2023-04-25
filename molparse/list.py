@@ -23,7 +23,7 @@ class NamedList(UserList):
 		assert any([name,number is not None])
 
 		# name only
-		if name and number is not None:
+		if name and number is None:
 			matches = [obj for obj in self.data if obj.name == name]
 			return matches
 		
