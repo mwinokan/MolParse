@@ -549,7 +549,7 @@ class XVGCollection():
 			
 			xvg.columns['x'] = mapped
 
-	def plotly(self,show=False,fig=None,statistics=False,stationary_points=False,color=None,group_from_title=False):
+	def plotly(self,show=False,fig=None,statistics=False,stationary_points=False,color=None,group_from_title=False,no_layout=False):
 		"""Use plotly to plot the XVG collection"""
 
 		import plotly.graph_objects as go
@@ -557,13 +557,14 @@ class XVGCollection():
 		if fig is None:
 			fig = go.Figure()
 
-		fig.update_layout(
-			title=self.title,
-			xaxis_title=self.children[0].xlabel,
-			yaxis_title=self.children[0].ylabel,
-			legend=dict(groupclick="toggleitem"),
-			font=dict(family="Helvetica Neue",size=18)
-		)
+		if not no_layout:
+			fig.update_layout(
+				title=self.title,
+				xaxis_title=self.children[0].xlabel,
+				yaxis_title=self.children[0].ylabel,
+				legend=dict(groupclick="toggleitem"),
+				font=dict(family="Helvetica Neue",size=18)
+			)
 
 		if not statistics:
 
