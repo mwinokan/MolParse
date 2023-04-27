@@ -6,7 +6,7 @@ class Atom:
   but constructed automatically when parsing a 
   coordinate file via amp.parsePDB or otherwise"""
   
-  name_symbol_dict = {'MG': 'Mg','Mg': 'Mg'}
+  name_symbol_dict = {'MG': 'Mg','Mg': 'Mg', 'LIT': 'Li', 'Li': 'Li'}
 
   def __init__(self,name,index=None,pdb_index=None,position=None,residue=None,chain=None,res_number=None,charge=None,FF_atomtype=None,mass=None,LJ_sigma=None,LJ_epsilon=None,occupancy=None,temp_factor=None,heterogen=None,charge_str=None,velocity=None,alternative_site=None,res_index=None):
 
