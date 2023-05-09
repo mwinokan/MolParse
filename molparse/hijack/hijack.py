@@ -5,6 +5,9 @@ from ase import Atoms
 import mout
 import mcol
 
+class NaNEncounteredInPmfError(Exception):
+	pass
+
 class FakeAtoms(Atoms):
 
 	"""This class creates an object resembling ase.Atoms that encodes any number (N) of reaction coordinates into the x-positions of ase.Atom objects. Use this class together with FakeSurfaceCalculator to perform optimisations inside an N-dimensional PMF.
@@ -124,8 +127,8 @@ class FakeSurfaceCalculator(Calculator):
 		e = self._pmf(arg)
 
 		if np.isnan(e):
-
-			mout.errorOut(f"NaN detected in PMF! {arg=}",fatal=True)
+			mout.errorOut(f"NaN detected in PMF! {arg=}")
+			raise NaNEncounteredInPmfError
 
 		return self._pmf(arg)
 
