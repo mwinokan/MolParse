@@ -456,7 +456,7 @@ class AtomGroup():
 
 		return ax, copy
 
-	def plot3d(self,extra=[],alpha=1.0,bonds=True,velocity=False,v_scale=1.0,fig=None,flat=False,show=True):
+	def plot3d(self,extra=[],alpha=1.0,bonds=True,velocity=False,v_scale=1.0,fig=None,flat=False,show=True,transform=None):
 		"""Render the atoms with plotly graph objects. 
 		extra can contain pairs of coordinates to be shown as vectors."""
 
@@ -470,7 +470,7 @@ class AtomGroup():
 			bonds = []
 
 		from .go import plot3d
-		return plot3d(self.atoms,extra,bonds,alpha,velocity=velocity,v_scale=v_scale,fig=fig,flat=flat,show=show)
+		return plot3d(self.atoms,extra,bonds,alpha,velocity=velocity,v_scale=v_scale,fig=fig,flat=flat,show=show,transform=transform)
 
 	def set_coordinates(self,reference,velocity=False):
 		"""Set all coordinates according to a reference ase.Atoms object"""
