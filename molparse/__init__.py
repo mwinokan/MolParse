@@ -182,6 +182,7 @@ from . import units
 from . import dna
 from . import signal
 from . import tunnel
+from . import mutate
 
 from .amino import alphabet as amino_alphabet
 from .amino import longname as amino_longname
