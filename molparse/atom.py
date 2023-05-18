@@ -13,7 +13,10 @@ class Atom:
     # necessary upon init
     self._name = name
     self.index = index
-    self._number = int(pdb_index)
+    if pdb_index is not None:
+      self._number = int(pdb_index)
+    else:
+      self._number = None
     self._position = position
     self.residue = residue
 

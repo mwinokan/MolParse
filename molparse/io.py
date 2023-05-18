@@ -675,9 +675,9 @@ def writePDB(filename,system,verbosity=1,printScript=False,append=False,model=1)
 
   strbuff += "MODEL "+str(model)+end
 
-  for atom in system.atoms:
+  for i,atom in enumerate(system.atoms):
 
-    atomline = constructPDBAtomLine(atom)
+    atomline = constructPDBAtomLine(atom,i)
 
     strbuff += atomline
 
@@ -740,14 +740,24 @@ def modifyPDB(filename,atoms,copy_from=None):
 
     print(line,end='')
 
-def constructPDBAtomLine(atom):
+def constructPDBAtomLine(atom,index):
+
+  import mout
+  import mcol
 
   end = '\n'
 
   strlist = []
 
-  atom_serial = atom.index
+  atom_serial = atom.number or atom.index
   residue_serial = atom.res_number
+
+  if atom_serial is None:
+    mout.warningOut(f"{mcol.varName}atom_serial{mcol.clear}{mcol.warning} is None",code=f'mp.io.constructPDBAtomLine({atom},{index})')
+    atom_serial = index
+  if residue_serial is None:
+    mout.errorOut(f"{mcol.varName}residue_serial{mcol.clear}{mcol.warning} is None",code=f'mp.io.constructPDBAtomLine({atom},{index})')
+    residue_serial = "    "
 
   if not atom.heterogen:
     strlist.append("ATOM  ")
@@ -770,10 +780,16 @@ def constructPDBAtomLine(atom):
   else:
     strlist.append(" ")
   # strlist.append(" ")
-  strlist.append(str(atom.residue).ljust(4))
-  # assert len(chain.name) == 1
-  # strlist.append(str(chain.name))
-  strlist.append(str(atom.chain))
+  if atom.residue is None:
+    mout.errorOut(f"{mcol.varName}atom.residue{mcol.clear}{mcol.warning} is None",code=f'mp.io.constructPDBAtomLine({atom},{index})')
+    strlist.append("    ".ljust(4))
+  else:
+    strlist.append(str(atom.residue).ljust(4))
+  if atom.chain is None:
+    mout.errorOut(f"{mcol.varName}atom.chain{mcol.clear}{mcol.warning} is None",code=f'mp.io.constructPDBAtomLine({atom},{index})')
+    strlist.append(" ")
+  else:
+    strlist.append(str(atom.chain))
   strlist.append(residue_serial_str)
   strlist.append("    ")
 
