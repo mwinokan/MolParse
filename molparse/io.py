@@ -150,185 +150,192 @@ def parse(file,verbosity=1):
     return read(file,verbosity=verbosity)
 
 def parsePDB(pdb,systemName=None,index=1,fix_indices=True,fix_atomnames=True,autoname_chains=False,prune_alternative_sites=True,verbosity=1,debug=False,dry=False):
-  from .system import System
-  from .chain import Chain
-  from .residue import Residue
-  import mout
-  import mcol
-
-  assert pdb.endswith(".pdb")
-
+  
   try:
-    index = int(index)
-  except:
+
+    from .system import System
+    from .chain import Chain
+    from .residue import Residue
+    import mout
+    import mcol
+
+    assert pdb.endswith(".pdb")
+
+    try:
+      index = int(index)
+    except:
+      if index == ":":
+        if verbosity > 0:
+          mout.warningOut("Parsing all models in "+mcol.file+pdb)
+      else:
+        mout.errorOut("Unsupported index: '"+str(index)+"'",fatal=True)
+
     if index == ":":
-      if verbosity > 0:
-        mout.warningOut("Parsing all models in "+mcol.file+pdb)
-    else:
-      mout.errorOut("Unsupported index: '"+str(index)+"'",fatal=True)
 
-  if index == ":":
+      all_systems = []
 
-    all_systems = []
+      import subprocess
+      
+      last_model_line = subprocess.check_output("grep MODEL "+pdb+" | tail -n1 ", shell=True)
+      
+      for i in range(1,int(last_model_line.split()[-1])+1):
 
-    import subprocess
-    
-    last_model_line = subprocess.check_output("grep MODEL "+pdb+" | tail -n1 ", shell=True)
-    
-    for i in range(1,int(last_model_line.split()[-1])+1):
+        if (verbosity > 0):
+          mout.out("\rparsing "+mcol.file+
+                   pdb+
+                   mcol.clear+" (model "+str(i)+") ... ",
+                   end='') # user output
+
+        all_systems.append(parsePDB(pdb,
+                                    systemName=systemName,
+                                    index=i,
+                                    fix_indices=fix_indices,
+                                    fix_atomnames=fix_atomnames,
+                                    verbosity=verbosity-1,
+                                    debug=debug,dry=dry))
 
       if (verbosity > 0):
         mout.out("\rparsing "+mcol.file+
+                   pdb+
+                   mcol.clear+" (models 1-"+str(i)+") ... Done.") # user output
+
+      return all_systems
+
+    else:
+
+      if (verbosity > 0):
+        mout.out("parsing "+mcol.file+
                  pdb+
-                 mcol.clear+" (model "+str(i)+") ... ",
+                 mcol.clear+" ... ",
                  end='') # user output
 
-      all_systems.append(parsePDB(pdb,
-                                  systemName=systemName,
-                                  index=i,
-                                  fix_indices=fix_indices,
-                                  fix_atomnames=fix_atomnames,
-                                  verbosity=verbosity-1,
-                                  debug=debug,dry=dry))
+      if debug:
+        mout.warningOut("Debug mode active!")
 
-    if (verbosity > 0):
-      mout.out("\rparsing "+mcol.file+
-                 pdb+
-                 mcol.clear+" (models 1-"+str(i)+") ... Done.") # user output
+      import os
 
-    return all_systems
+      # file  = open(pdb, 'r').read()
+      # if file.count("MODEL") == 0:
+      #   mout.errorOut("PDB has no MODELs",fatal=True)
+      # file.close()
 
-  else:
+      residue = None
+      chain = None
+      last_residue_name = None
+      last_residue_number = None
+      last_chain_name = None
+      res_counter = 0
+      chain_counter = 0
+      atom_counter = 1
+      was_terminal = False
 
-    if (verbosity > 0):
-      mout.out("parsing "+mcol.file+
-               pdb+
-               mcol.clear+" ... ",
-               end='') # user output
+      if systemName is None:
+        systemName = os.path.splitext(pdb)[0]
+      system = System(name = systemName)
 
-    if debug:
-      mout.warningOut("Debug mode active!")
+      try: 
+        with open(pdb,"r") as input_pdb:
+          searching = True
+          for line in input_pdb:
+            if searching:
+              if line.startswith("MODEL"):
 
-    import os
-
-    # file  = open(pdb, 'r').read()
-    # if file.count("MODEL") == 0:
-    #   mout.errorOut("PDB has no MODELs",fatal=True)
-    # file.close()
-
-    residue = None
-    chain = None
-    last_residue_name = None
-    last_residue_number = None
-    last_chain_name = None
-    res_counter = 0
-    chain_counter = 0
-    atom_counter = 1
-    was_terminal = False
-
-    if systemName is None:
-      systemName = os.path.splitext(pdb)[0]
-    system = System(name = systemName)
-
-    try: 
-      with open(pdb,"r") as input_pdb:
-        searching = True
-        for line in input_pdb:
-          if searching:
-            if line.startswith("MODEL"):
-
-              if index == 1:
+                if index == 1:
+                  searching = False
+                elif " "+str(index) in line:
+                  searching = False
+          
+              elif (index == 1 and line.startswith("ATOM")) or not searching:
                 searching = False
-              elif " "+str(index) in line:
-                searching = False
-        
-            elif (index == 1 and line.startswith("ATOM")) or not searching:
-              searching = False
-              #### PARSELINE
-              atom = parsePDBAtomLine(line,res_counter,atom_counter,chain_counter,debug=debug)
-              chain = Chain(atom.chain)
-              residue = new_residue(atom.residue,res_counter,atom.res_number,atom.chain)
-              residue.addAtom(atom)
-              last_residue_name = atom.residue
-              last_residue_number = atom.res_number
-              last_chain_name = atom.chain
-          else:
-            if line.startswith("ENDMDL") and not searching:
-              break
-            elif line.startswith("END") and not searching:
-              break
-            elif line.startswith("# All scores below are weighted scores, not raw scores.") and not searching:
-              break
-            elif line.startswith("TER"):
-              if verbosity > 1:
-                mout.warningOut("Terminal added to "+mcol.arg+chain.name+":"+residue.name)
-              residue.atoms[-1].terminal = True
-              was_terminal = True
-              continue
-            elif line.startswith("CONECT"):
-              continue
-            elif line.startswith("MASTER"):
-              continue
-            elif line.startswith("ANISOU"):
-              continue
-            elif dry and any(res in line for res in ["WAT","SOL","HOH","H2O"]):
-              continue
-            else:
-              ### PARSELINE
-              atom = parsePDBAtomLine(line,res_counter,atom_counter,chain_counter,debug=debug)
-              
-              make_new_res = False
-              if residue is None: make_new_res = True
-              if last_residue_name != atom.residue: make_new_res = True
-              if last_residue_number != atom.res_number: make_new_res = True
-
-              make_new_chain = False
-              if residue is None: make_new_chain = True
-              if last_chain_name != atom.chain: make_new_chain = True
-              if was_terminal: make_new_chain = True
-
-              if make_new_res:
-                if residue is not None: 
-                  chain.add_residue(residue)
-                  res_counter = res_counter+1
+                #### PARSELINE
+                atom = parsePDBAtomLine(line,res_counter,atom_counter,chain_counter,debug=debug)
+                chain = Chain(atom.chain)
                 residue = new_residue(atom.residue,res_counter,atom.res_number,atom.chain)
-                if make_new_chain:
-                  if chain is not None:
-                    system.add_chain(chain)
-                    chain_counter += 1
-                  chain = Chain(atom.chain)
+                residue.addAtom(atom)
+                last_residue_name = atom.residue
+                last_residue_number = atom.res_number
+                last_chain_name = atom.chain
+            else:
+              if line.startswith("ENDMDL") and not searching:
+                break
+              elif line.startswith("END") and not searching:
+                break
+              elif line.startswith("# All scores below are weighted scores, not raw scores.") and not searching:
+                break
+              elif line.startswith("TER"):
+                if verbosity > 1:
+                  mout.warningOut("Terminal added to "+mcol.arg+chain.name+":"+residue.name)
+                residue.atoms[-1].terminal = True
+                was_terminal = True
+                continue
+              elif line.startswith("CONECT"):
+                continue
+              elif line.startswith("MASTER"):
+                continue
+              elif line.startswith("ANISOU"):
+                continue
+              elif dry and any(res in line for res in ["WAT","SOL","HOH","H2O"]):
+                continue
+              else:
+                ### PARSELINE
+                atom = parsePDBAtomLine(line,res_counter,atom_counter,chain_counter,debug=debug)
+                
+                make_new_res = False
+                if residue is None: make_new_res = True
+                if last_residue_name != atom.residue: make_new_res = True
+                if last_residue_number != atom.res_number: make_new_res = True
 
-              residue.addAtom(atom)
+                make_new_chain = False
+                if residue is None: make_new_chain = True
+                if last_chain_name != atom.chain: make_new_chain = True
+                if was_terminal: make_new_chain = True
 
-              atom_counter += 1
+                if make_new_res:
+                  if residue is not None: 
+                    chain.add_residue(residue)
+                    res_counter = res_counter+1
+                  residue = new_residue(atom.residue,res_counter,atom.res_number,atom.chain)
+                  if make_new_chain:
+                    if chain is not None:
+                      system.add_chain(chain)
+                      chain_counter += 1
+                    chain = Chain(atom.chain)
 
-              last_residue_number = atom.res_number
-              last_residue_name = atom.residue
-              last_chain_name = atom.chain
-              was_terminal = False
+                residue.addAtom(atom)
 
-    except FileNotFoundError:
-      mout.errorOut("File "+mcol.file+pdb+mcol.error+" not found",fatal=True)
+                atom_counter += 1
 
-    chain.add_residue(residue)
-    system.add_chain(chain)
+                last_residue_number = atom.res_number
+                last_residue_name = atom.residue
+                last_chain_name = atom.chain
+                was_terminal = False
 
-    if prune_alternative_sites:
-      system.prune_alternative_sites()
+      except FileNotFoundError:
+        mout.errorOut("File "+mcol.file+pdb+mcol.error+" not found",fatal=True)
 
-    if fix_indices:
-      system.fix_indices()
+      chain.add_residue(residue)
+      system.add_chain(chain)
 
-    if fix_atomnames:
-      system.fix_atomnames()
+      if prune_alternative_sites:
+        system.prune_alternative_sites()
 
-    if autoname_chains:
-      system.autoname_chains()
+      if fix_indices:
+        system.fix_indices()
 
-    if (verbosity > 0):
-      mout.out("Done.") # user output
+      if fix_atomnames:
+        system.fix_atomnames()
 
-    return system
+      if autoname_chains:
+        system.autoname_chains()
+
+      if (verbosity > 0):
+        mout.out("Done.") # user output
+
+      return system
+
+  except KeyboardInterrupt:
+    mout.errorOut("KeyboardInterrupt")
+    exit()
 
 def parsePDBAtomLine(line,res_index,atom_index,chain_counter,debug=False,alternative_site_warnings=True):
   from .atom import Atom
@@ -402,8 +409,9 @@ def parsePDBAtomLine(line,res_index,atom_index,chain_counter,debug=False,alterna
 
     return atom
 
-  except:
+  except Exception as e:
     mout.errorOut(line)
+    mout.errorOut(e)
     mout.errorOut("Unsupported PDB line shown above",fatal=True)
 
 # def parseGRO(gro,systemName=None,fix_indices=True,fix_atomnames=True,verbosity=1,auto_ter=None):
