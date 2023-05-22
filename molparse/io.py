@@ -12,7 +12,6 @@ def write(filename,image,verbosity=1,printScript=False,**parameters):
     mout.out("writing "+mcol.file+
              filename+
              mcol.clear+" ... ",
-             printScript=printScript,
              end='') # user output
 
   # Different behaviour depending on format:
