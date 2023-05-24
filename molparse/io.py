@@ -372,7 +372,7 @@ def parsePDBAtomLine(line,res_index,atom_index,chain_counter,debug=False,alterna
       alt_site_str = line[16:17]
 
     position = []
-    position.append(float(line[31:39].strip()))
+    position.append(float(line[30:39].strip()))
     position.append(float(line[39:47].strip()))
     position.append(float(line[47:55].strip()))
     if debug: print(str(atom_index) + ".position: OK")
