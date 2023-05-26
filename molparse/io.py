@@ -52,6 +52,9 @@ def write(filename,image,verbosity=1,printScript=False,**parameters):
       if filename.endswith('.html'):
         image.write_html(filename)
       else:
+        if filename.endswith('.pdf'):
+          import plotly.io as pio   
+          pio.kaleido.scope.mathjax = None
         image.write_image(filename)
 
     # Others:
