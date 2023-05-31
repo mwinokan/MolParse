@@ -105,6 +105,7 @@ from .chain import Chain
 from .residue import Residue
 from .atom import Atom
 from .restraint import Restraint
+from .network import Network
 
 # ase.visualize wrappers
 from .gui import view
