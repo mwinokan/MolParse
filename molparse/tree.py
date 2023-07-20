@@ -71,26 +71,32 @@ class TreeViewer(CursesApp):
 				
 		except KeyboardInterrupt:
 			pass
-		except curses.error:
+		except curses.error as e:
 			self.close()
 			print()
 			import mout
 			mout.errorOut("TreeViewer exited due to a curses error.")
-		except KeyError:
+			if 'prefresh() returned ERR' in str(e):
+				mout.error('Maybe you resized the terminal window?')
+			mout.error(e)
+		except KeyError as e:
 			self.close()
 			print()
 			import mout
 			mout.errorOut("TreeViewer exited due to a KeyError (maybe plot3d?).")
-		except AttributeError:
+			mout.error(e)
+		except AttributeError as e:
 			self.close()
 			print()
 			import mout
-			mout.errorOut("TreeViewer exited due to an AttributeError (maybe outdated MPyTools?).")
-		except:
+			mout.error("TreeViewer exited due to an AttributeError (maybe outdated MPyTools?).")
+			mout.error(e)
+		except Exception as e:
 			self.close()
 			print()
 			import mout
 			mout.errorOut("TreeViewer exited due to an error.")
+			mout.error(e)
 
 		self.close()
 
