@@ -106,16 +106,20 @@ class TreeViewer(CursesApp):
 
 	def drawtree(self):
 		max_index = self.obj.children[-1].index
-		self.recursive_tree(self.obj,0,max_index,0)
+		if self.type_str(self.obj.children[-1]) not in ['System','AtomGroup','Chain']:
+			max_number = self.obj.children[-1].number
+		else:
+			max_number = None
+		self.recursive_tree(self.obj,0,max_index,max_number,0)
 			
-	def recursive_tree(self,parent,line,max_index,depth=0):
+	def recursive_tree(self,parent,line,max_index,max_number,depth=0):
 
-		line = self.object_line(parent, line, max_index, depth)
+		line = self.object_line(parent, line, max_index, max_number, depth)
 		
 		if parent.children and parent._expand:
 			max_index = parent.children[-1].index
 			for child in parent.children:
-				line = self.recursive_tree(child,line,max_index,depth+1,)
+				line = self.recursive_tree(child,line,max_index,max_number,depth+1,)
 
 		return line
 
@@ -156,7 +160,7 @@ class TreeViewer(CursesApp):
 
 		self.context_menu(line,col,widgets)
 
-	def object_line(self,obj,line,max_index,depth):
+	def object_line(self,obj,line,max_index,max_number,depth):
 
 		col = 4*depth
 
@@ -195,8 +199,16 @@ class TreeViewer(CursesApp):
 
 		# object index
 		if self.type_str(obj) not in ['System','AtomGroup']:
+
+			# index
 			width = len(str(max_index))
 			text = Text(f'{str(obj.index).rjust(width)} ',line,text.endcol,color_pair=self.GREEN,bold=True)
+			self.add_text(text)
+
+		if self.type_str(obj) not in ['System','AtomGroup','Chain']:
+			# number
+			width = len(str(max_number))
+			text = Text(f'{str(obj.number).rjust(width)} ',line,text.endcol,color_pair=self.GREEN,bold=True)
 			self.add_text(text)
 
 		# object name is also a button:
