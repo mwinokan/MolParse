@@ -151,7 +151,24 @@ def parse(file,verbosity=1):
     mout.errorOut("Unsupported file type for MolParse parsing, using ASE.io.read")
     return read(file,verbosity=verbosity)
 
-def parsePDB(pdb,systemName=None,index=1,fix_indices=True,fix_atomnames=True,autoname_chains=False,prune_alternative_sites=True,verbosity=1,debug=False,dry=False):
+def parsePDB(pdb,
+  systemName=None,
+  index=1,
+  fix_indices=True,
+  fix_atomnames=True,
+  autoname_chains=False,
+  prune_alternative_sites=True,
+  verbosity=1,
+  debug=False,
+  dry=False,
+  resfilter=[],
+  alternative_site_warnings=True,
+  split_chains_by_type=True,
+  remove_empty_chains=True,
+  num_appended_hydrogen_chains=False,
+  detect_misordered_chains=True,
+  reordering_warnings=True,
+):
   
   try:
 
@@ -216,16 +233,12 @@ def parsePDB(pdb,systemName=None,index=1,fix_indices=True,fix_atomnames=True,aut
 
       import os
 
-      # file  = open(pdb, 'r').read()
-      # if file.count("MODEL") == 0:
-      #   mout.errorOut("PDB has no MODELs",fatal=True)
-      # file.close()
-
       residue = None
       chain = None
       last_residue_name = None
       last_residue_number = None
       last_chain_name = None
+      last_residue_type = None
       res_counter = 0
       chain_counter = 0
       atom_counter = 1
@@ -280,8 +293,8 @@ def parsePDB(pdb,systemName=None,index=1,fix_indices=True,fix_atomnames=True,aut
                 continue
               else:
                 ### PARSELINE
-                atom = parsePDBAtomLine(line,res_counter,atom_counter,chain_counter,debug=debug)
-                
+                atom = parsePDBAtomLine(line,res_counter,atom_counter,chain_counter,debug=debug,alternative_site_warnings=alternative_site_warnings)
+
                 make_new_res = False
                 if residue is None: make_new_res = True
                 if last_residue_name != atom.residue: make_new_res = True
@@ -294,9 +307,12 @@ def parsePDB(pdb,systemName=None,index=1,fix_indices=True,fix_atomnames=True,aut
 
                 if make_new_res:
                   if residue is not None: 
-                    chain.add_residue(residue)
-                    res_counter = res_counter+1
+                    if not resfilter or residue.name in resfilter:
+                      chain.add_residue(residue)
+                      res_counter = res_counter+1
                   residue = new_residue(atom.residue,res_counter,atom.res_number,atom.chain)
+                  if split_chains_by_type and last_residue_type != residue.type: 
+                    make_new_chain = True
                   if make_new_chain:
                     if chain is not None:
                       system.add_chain(chain)
@@ -307,6 +323,7 @@ def parsePDB(pdb,systemName=None,index=1,fix_indices=True,fix_atomnames=True,aut
 
                 atom_counter += 1
 
+                last_residue_type = residue.type
                 last_residue_number = atom.res_number
                 last_residue_name = atom.residue
                 last_chain_name = atom.chain
@@ -318,17 +335,47 @@ def parsePDB(pdb,systemName=None,index=1,fix_indices=True,fix_atomnames=True,aut
       chain.add_residue(residue)
       system.add_chain(chain)
 
+      if remove_empty_chains:
+        system.chains = [c for c in system.chains if c.residues]
+
       if prune_alternative_sites:
         system.prune_alternative_sites()
-
-      if fix_indices:
-        system.fix_indices()
 
       if fix_atomnames:
         system.fix_atomnames()
 
       if autoname_chains:
         system.autoname_chains()
+
+      if num_appended_hydrogen_chains:
+        hydrogen_chains = []
+        for i in range(num_appended_hydrogen_chains):
+          hydrogen_chains.append(system.chains.pop(-1))
+
+        for h_chain in hydrogen_chains:
+          for atom in h_chain.atoms:
+
+            # chain = system.get_chain(atom.chain)
+            chains = [c for c in system.chains if c.name == atom.chain]
+            for chain in chains:
+              residue = chain.residues[f'n{atom.res_number}']
+              if residue is not None:
+                break
+            
+            if reordering_warnings:
+              mout.warning(f'Moving atom {atom} {atom.number} to {residue} {residue.number} ({atom.res_index}-->{residue.index})')
+              
+            residue.add_atom(atom)
+
+      if detect_misordered_chains:
+        for chain in system.chains:
+          for i,res in enumerate(chain.residues):
+
+            if res.number in [r.number for r in chain.residues[:i]]:
+              mout.warning(f'{res} {res.number} has already appeared in chain {chain} {chain.index}')
+
+      if fix_indices:
+        system.fix_indices()
 
       if (verbosity > 0):
         mout.out("Done.") # user output
@@ -1042,3 +1089,4 @@ def parseXYZAtomLine(line,atom_index):
   atom = Atom(s,index=atom_index,position=[x,y,z])
 
   return atom
+
