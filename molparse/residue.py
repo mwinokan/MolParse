@@ -165,7 +165,7 @@ class Residue(AtomGroup):
   def get_atom(self,name,verbosity=1):
     """Get a child Atom by name"""
     if isinstance(name,list):
-      return [self.get_atom(n) for n in name]
+      return [self.get_atom(n,verbosity=verbosity-1) for n in name]
 
     for atom in self._atoms:
       if atom.name == name: return atom
@@ -323,7 +323,7 @@ def res_type(resname):
   if resname.startswith(('DA','DT','DC','DG','ADE9','THMN','GUA9','CTSN')):
     this_type = "DNA"
   # solvents
-  elif resname.startswith(('SOL','WAT','TIP','T3P','HOH','PEG','SO4')):
+  elif resname.startswith(('SOL','WAT','TIP','T3P','HOH','PEG','SO4','DMS')):
     this_type = "SOL"
   # ions
   elif resname.startswith(('ION','MG','CL','NA','SOD','POT','CAL','LIT','Na+','Cl-','CA')):
@@ -332,7 +332,7 @@ def res_type(resname):
   elif resname.startswith(('DPPC','POPC','DAG','TAG')):
     this_type = "LIP"
   # ligands
-  elif resname.startswith(('ATP','GTP')):
+  elif resname.startswith(('ATP','GTP','LIG')):
     this_type = "LIG"
   elif resname.startswith(('QM','MM')):
     this_type = "N/A"
