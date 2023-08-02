@@ -262,8 +262,14 @@ def parsePDB(pdb,
           
               elif (index == 1 and line.startswith("ATOM")) or not searching:
                 searching = False
+
                 #### PARSELINE
-                atom = parsePDBAtomLine(line,res_counter,atom_counter,chain_counter,debug=debug)
+                try:
+                  atom = parsePDBAtomLine(line,res_counter,atom_counter,chain_counter,debug=debug)
+                except Exception as e:
+                  mout.error(f'{pdb=} {index=}')
+                  raise Exception(e)
+
                 chain = Chain(atom.chain)
                 residue = new_residue(atom.residue,res_counter,atom.res_number,atom.chain)
                 residue.addAtom(atom)
@@ -292,8 +298,13 @@ def parsePDB(pdb,
               elif dry and any(res in line for res in ["WAT","SOL","HOH","H2O"]):
                 continue
               else:
+
                 ### PARSELINE
-                atom = parsePDBAtomLine(line,res_counter,atom_counter,chain_counter,debug=debug,alternative_site_warnings=alternative_site_warnings)
+                try:
+                  atom = parsePDBAtomLine(line,res_counter,atom_counter,chain_counter,debug=debug,alternative_site_warnings=alternative_site_warnings)
+                except Exception as e:
+                  mout.error(f'{pdb=} {index=}')
+                  raise Exception(e)
 
                 make_new_res = False
                 if residue is None: make_new_res = True
@@ -421,9 +432,9 @@ def parsePDBAtomLine(line,res_index,atom_index,chain_counter,debug=False,alterna
       alt_site_str = line[16:17]
 
     position = []
-    position.append(float(line[30:39].strip()))
-    position.append(float(line[39:47].strip()))
-    position.append(float(line[47:55].strip()))
+    position.append(float(line[30:38].strip()))
+    position.append(float(line[38:46].strip()))
+    position.append(float(line[46:54].strip()))
     if debug: print(str(atom_index) + ".position: OK")
 
     try:
@@ -459,9 +470,10 @@ def parsePDBAtomLine(line,res_index,atom_index,chain_counter,debug=False,alterna
     return atom
 
   except Exception as e:
-    mout.errorOut(line)
-    mout.errorOut(e)
-    mout.errorOut("Unsupported PDB line shown above",fatal=True)
+    mout.error(e)
+    mout.error("Unsupported PDB line shown below:")
+    mout.error(line)
+    raise Exception("Unsupported PDB line shown above")
 
 # def parseGRO(gro,systemName=None,fix_indices=True,fix_atomnames=True,verbosity=1,auto_ter=None):
 def parseGRO(gro,systemName=None,fix_indices=True,fix_atomnames=True,autoname_chains=True,verbosity=1,auto_ter=["DA3","DT3","DG3","DC3"]):
