@@ -480,7 +480,7 @@ class AtomGroup():
 			bonds = []
 
 		from .go import plot3d
-		return plot3d(self.atoms,extra,bonds,alpha,velocity=velocity,v_scale=v_scale,fig=fig,flat=flat,show=show,transform=transform)
+		return plot3d(self.atoms,extra,bonds,alpha,velocity=velocity,v_scale=v_scale,fig=fig,flat=flat,show=show,transform=transform,title=self.name)
 
 	def set_coordinates(self,reference,velocity=False):
 		"""Set all coordinates according to a reference ase.Atoms object"""
