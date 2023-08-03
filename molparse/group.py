@@ -243,25 +243,29 @@ class AtomGroup():
 	def bbox(self):
 		"""Bounding box of the AtomGroup"""
 		import numpy as np
-		x = [min([a.np_pos[0] for a in self.atoms]),max([a.np_pos[0] for a in self.atoms])]
-		y = [min([a.np_pos[1] for a in self.atoms]),max([a.np_pos[1] for a in self.atoms])]
-		z = [min([a.np_pos[2] for a in self.atoms]),max([a.np_pos[2] for a in self.atoms])]
+		atoms = self.atoms
+		x_coords = [a.np_pos[0] for a in atoms]
+		y_coords = [a.np_pos[1] for a in atoms]
+		z_coords = [a.np_pos[2] for a in atoms]
+		x = [min(x_coords),max(x_coords)]
+		y = [min(y_coords),max(y_coords)]
+		z = [min(z_coords),max(z_coords)]
 		return [x,y,z]
+
+	@property
+	def bbox_center(self):
+		"""Center of the AtomGroups' bounding box"""
+		return self._bbox_center()
 
 	@property
 	def bbox_sides(self):
 		"""Bounding box sides of the Atomgroup"""
-		import numpy as np
-		x = max([a.np_pos[0] for a in self.atoms])-min([a.np_pos[0] for a in self.atoms])
-		y = max([a.np_pos[1] for a in self.atoms])-min([a.np_pos[1] for a in self.atoms])
-		z = max([a.np_pos[2] for a in self.atoms])-min([a.np_pos[2] for a in self.atoms])
-		return [x,y,z]
+		return self._bbox_sides()
 
 	@property
 	def bbox_norm(self):
 		"""Length of bounding box diagonal"""
-		import numpy as np
-		return np.linalg.norm([x[1]-x[0] for x in self.bbox])
+		return self._bbox_norm()
 
 	@property
 	def ase_atoms(self):
@@ -281,6 +285,25 @@ class AtomGroup():
 			radii.append(covalent_radii[atom.atomic_number])
 
 		return radii
+
+### INTERNAL METHODS
+
+	def _bbox_center(self,bbox=None):
+		import numpy as np
+		if bbox is None:
+			bbox = self.bbox
+		return np.array([np.mean(bbox[0]),np.mean(bbox[1]),np.mean(bbox[2])])
+
+	def _bbox_norm(self,bbox=None):
+		import numpy as np
+		if bbox is None:
+			bbox = self.bbox
+		return np.linalg.norm([x[1]-x[0] for x in bbox])
+
+	def _bbox_sides(self,bbox=None):
+		if bbox is None:
+			bbox = self.bbox
+		return [bbox[0][1]-bbox[0][0],bbox[1][1]-bbox[1][0],bbox[2][1]-bbox[2][0]]
 
 ### METHODS
 
