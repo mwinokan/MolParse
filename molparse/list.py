@@ -80,8 +80,8 @@ class NamedList(UserList):
 					number = int(key[1:])
 				except ValueError:
 					import mout
-					mout.errorOut(f"Could not convert {key[1:]} to int")
-					mout.errorOut("Lookup key should be in the form 'n'INDEX for a specific lookup")
+					mout.error(f"Could not convert {key[1:]} to int")
+					mout.error("Lookup key should be in the form 'n'INDEX for a specific lookup")
 					return None
 
 				# find matches
@@ -106,8 +106,8 @@ class NamedList(UserList):
 						number = int(split_key[1][1:])
 					except ValueError:
 						import mout
-						mout.errorOut(f"Could not convert {key[1:]} to int")
-						mout.errorOut("Lookup key should be in the form NAME' n'INDEX for a specific lookup")
+						mout.error(f"Could not convert {key[1:]} to int")
+						mout.error("Lookup key should be in the form NAME' n'INDEX for a specific lookup")
 						return None
 
 					# find matches
@@ -121,8 +121,8 @@ class NamedList(UserList):
 						index = int(split_key[1])
 					except ValueError:
 						import mout
-						mout.errorOut(f"Could not convert {split_key[1]} to int")
-						mout.errorOut("Lookup key should be in the form NAME' 'INDEX for a specific lookup")
+						mout.error(f"Could not convert {split_key[1]} to int")
+						mout.error("Lookup key should be in the form NAME' 'INDEX for a specific lookup")
 						return None
 
 				match = self.data[index]
@@ -133,5 +133,5 @@ class NamedList(UserList):
 
 			else:
 				import mout
-				mout.errorOut("key must be an integer, object name or 'obj_name index'")
+				mout.error("key must be an integer, object name or 'obj_name index'")
 				return None
