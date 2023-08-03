@@ -600,6 +600,64 @@ class AtomGroup():
 		import copy
 		return copy.deepcopy(self)
 
+	def get_nearby(self,candidates,cutoff):
+
+		"""Get a subset of <candidates> that have at least one atom within <cutoff> of any atom in this AtomGroup."""
+
+		import numpy as np
+
+		# precompute properties of self
+		self_atoms = self.atoms
+		self_bbox = self.bbox
+		self_bbox_halfnorm = self._bbox_norm(self_bbox)/2
+		self_bbox_center = self._bbox_center(self_bbox)
+
+		def is_intersecting():
+
+			for self_atom in self_atoms:
+
+				d = np.linalg.norm(self_atom.np_pos - group_bbox_center)
+
+				# skip if atom is not within bbox_halfnorm + cutoff of the group
+				if d > cutoff + group_bbox_halfnorm:
+					continue
+
+				self_atom_np_pos = self_atom.np_pos
+
+				for group_atom in group.atoms:
+
+					d = np.linalg.norm(self_atom_np_pos - group_atom.np_pos)
+
+					# actually test for inter-atomic distance
+					if d <= cutoff:
+						return True
+
+		# go through list of candidates
+		nearby = []
+		for group in candidates:
+
+			# precompute properties of self
+			group_bbox = group.bbox
+			group_bbox_halfnorm = group._bbox_norm(group_bbox)/2
+			group_bbox_center = group._bbox_center(group_bbox)
+
+			center_delta = np.linalg.norm(self_bbox_center - group_bbox_center)
+			if center_delta == 0.0:
+				continue
+			min_bbox_separation = center_delta - self_bbox_halfnorm - group_bbox_halfnorm
+
+			# discard any candidate where the boundingboxes are definitely more than cutoff apart
+			if min_bbox_separation > cutoff:
+				continue
+
+			# check for intersection
+			intersects = is_intersecting()
+
+			if intersects:
+				nearby.append(group)
+
+		return nearby
+
 ### GUI THINGS
 
 	# open GUI tree viewer
