@@ -1,5 +1,5 @@
 
-def write(filename,image,verbosity=1,printScript=False,**parameters):
+def write(filename,image,verbosity=1,**parameters):
   from ase import io
   from ase import atoms as aseatoms
   import mcol
@@ -60,15 +60,16 @@ def write(filename,image,verbosity=1,printScript=False,**parameters):
     # Others:
     else:
       io.write(filename,image,**parameters)
-  except TypeError:
+  except TypeError as e:
     mout.out("Fail.")
-    mout.errorOut(f"{type(image)} could not be written to "+mcol.file+filename,code="amp.io.write[1]")
+    mout.error(e)
+    mout.error(f"{type(image)} could not be written to "+mcol.file+filename,code="amp.io.write[1]")
     return None
 
   if (verbosity > 0):
     mout.out("Done.") # user output
 
-def read(filename,index=None,printScript=False,verbosity=1,tagging=True,tagByResidue=False,**parameters):
+def read(filename,index=None,verbosity=1,tagging=True,tagByResidue=False,**parameters):
   from ase import io
   import mcol
   import mout
@@ -77,7 +78,6 @@ def read(filename,index=None,printScript=False,verbosity=1,tagging=True,tagByRes
     mout.out("reading "+mcol.file+
              filename+
              mcol.clear+" ... ",
-             printScript=printScript,
              end='') # user output
 
   try:
@@ -161,14 +161,18 @@ def parsePDB(pdb,
   verbosity=1,
   debug=False,
   dry=False,
-  resfilter=[],
+  resfilter=None,
   alternative_site_warnings=True,
   split_chains_by_type=True,
   remove_empty_chains=True,
   num_appended_hydrogen_chains=False,
   detect_misordered_chains=True,
   reordering_warnings=True,
+  skipping_residue_warning=True,
 ):
+
+  if resfilter is None:
+    resfilter = []
   
   try:
 
@@ -260,8 +264,11 @@ def parsePDB(pdb,
                 elif " "+str(index) in line:
                   searching = False
           
-              elif (index == 1 and line.startswith("ATOM")) or not searching:
+              elif (index == 1 and line[0:6] in ['ATOM  ','HETATM']) or not searching:
                 searching = False
+
+                if debug:
+                  mout.debug(line)
 
                 #### PARSELINE
                 try:
@@ -299,6 +306,9 @@ def parsePDB(pdb,
                 continue
               else:
 
+                if debug:
+                  mout.debug(line)
+
                 ### PARSELINE
                 try:
                   atom = parsePDBAtomLine(line,res_counter,atom_counter,chain_counter,debug=debug,alternative_site_warnings=alternative_site_warnings)
@@ -321,6 +331,8 @@ def parsePDB(pdb,
                     if not resfilter or residue.name in resfilter:
                       chain.add_residue(residue)
                       res_counter = res_counter+1
+                    elif skipping_residue_warning:
+                      mout.warning(f'Skipping residue {residue} {residue.number}')
                   residue = new_residue(atom.residue,res_counter,atom.res_number,atom.chain)
                   if split_chains_by_type and last_residue_type != residue.type: 
                     make_new_chain = True
@@ -343,7 +355,11 @@ def parsePDB(pdb,
       except FileNotFoundError:
         mout.errorOut("File "+mcol.file+pdb+mcol.error+" not found",fatal=True)
 
-      chain.add_residue(residue)
+      if not resfilter or residue.name in resfilter:
+        chain.add_residue(residue)
+      elif skipping_residue_warning:
+        mout.warning(f'Skipping residue {residue} {residue.number}')
+
       system.add_chain(chain)
 
       if remove_empty_chains:
@@ -361,7 +377,10 @@ def parsePDB(pdb,
       if num_appended_hydrogen_chains:
         hydrogen_chains = []
         for i in range(num_appended_hydrogen_chains):
-          hydrogen_chains.append(system.chains.pop(-1))
+          chain = system.chains.pop(-1)
+          if reordering_warnings:
+            mout.warning(f'Re-ordering atoms in {chain=}')
+          hydrogen_chains.append(chain)
 
         for h_chain in hydrogen_chains:
           for atom in h_chain.atoms:
@@ -375,8 +394,14 @@ def parsePDB(pdb,
             
             if reordering_warnings:
               mout.warning(f'Moving atom {atom} {atom.number} to {residue} {residue.number} ({atom.res_index}-->{residue.index})')
-              
-            residue.add_atom(atom)
+            
+            if residue is not None:
+              residue.add_atom(atom)
+            else:
+              mout.warning(f"Didn't find a home for {atom} {atom.number} ({pdb=})")
+              mout.warning(f"Skipping what appears to be a normal chain")
+              system.add_chain(h_chain)
+              break
 
       if detect_misordered_chains:
         for chain in system.chains:
@@ -657,13 +682,12 @@ def parseGROAtomLine(line,res_index,atom_index,chain_counter):
 
   return atom
 
-def writeCJSON(filename,system,use_atom_types=False,gulp_names=False,noPrime=False,printScript=False,verbosity=1):
+def writeCJSON(filename,system,use_atom_types=False,gulp_names=False,noPrime=False,verbosity=1):
 
   if (verbosity > 0):
     mout.out("writing "+mcol.file+
              filename+
              mcol.clear+" ... ",
-             printScript=printScript,
              end='') # user output
 
   # Check that the input is the correct class
@@ -707,7 +731,7 @@ def writeCJSON(filename,system,use_atom_types=False,gulp_names=False,noPrime=Fal
   if (verbosity > 0):
     mout.out("Done.") # user outpu
 
-def writePDB(filename,system,verbosity=1,printScript=False,append=False,model=1):
+def writePDB(filename,system,verbosity=1,append=False,model=1):
   import mcol
   import mout
   from .system import System
@@ -717,7 +741,6 @@ def writePDB(filename,system,verbosity=1,printScript=False,append=False,model=1)
     mout.out("writing "+mcol.file+
              filename+
              mcol.clear+" ... ",
-             printScript=printScript,
              end='') # user output
 
   # Check that the input is the correct class
@@ -892,7 +915,7 @@ def constructPDBAtomLine(atom,index):
 
   return ''.join(strlist)
 
-def writeGRO(filename,system,verbosity=1,printScript=False):
+def writeGRO(filename,system,verbosity=1):
   import mcol
   import mout
   from .system import System
@@ -901,7 +924,6 @@ def writeGRO(filename,system,verbosity=1,printScript=False):
     mout.out("writing "+mcol.file+
              filename+
              mcol.clear+" ... ",
-             printScript=printScript,
              end='') # user output
 
   # Check that the input is the correct class
