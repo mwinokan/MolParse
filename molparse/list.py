@@ -34,7 +34,8 @@ class NamedList(UserList):
 			if not matches:
 				return None
 			elif len(matches) > 1:
-				mout.errorOut("Multiple matches to a supposedly unique object!",fatal=True)
+				import mout
+				mout.error("Multiple matches to a supposedly unique query!",fatal=True)
 			else:
 				return matches[0]
 
@@ -45,7 +46,8 @@ class NamedList(UserList):
 			if not matches:
 				return None
 			elif len(matches) > 1:
-				mout.errorOut("Multiple matches to a supposedly unique object!",fatal=True)
+				import mout
+				mout.error("Multiple matches to a supposedly unique query!",fatal=True)
 			else:
 				return matches[0]
 
