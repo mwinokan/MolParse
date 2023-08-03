@@ -352,7 +352,7 @@ class AtomGroup():
 		"""Move the system's CoM to the origin"""
 		return self.CoM(set=[0,0,0])
 
-	def CoM(self,set=None,shift=None,verbosity=1):
+	def CoM(self,set=None,shift=None,verbosity=0):
 		"""Calculate or manipulate the system's centre of mass. 
 
 		if not set and not shift: return CoM
