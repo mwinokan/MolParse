@@ -234,7 +234,7 @@ class AminoAcid(Residue):
 		import numpy as np
 		from collections import namedtuple
 		
-		Site = namedtuple('Site',['type','atoms','np_pos','sidechain','res_name','res_number'])
+		Site = namedtuple('Site',['types','atoms','position','sidechain','res_name','res_number'])
 
 		sites = []
 
@@ -243,16 +243,25 @@ class AminoAcid(Residue):
 			atoms = interaction['atoms']
 
 			if len(atoms) == 1:
-				atom = self.get_atom(atoms[0])
-				sidechain = atom.name in self.sidechain_names
-				site = Site(interaction['type'],[atom],atom.np_pos,sidechain,self.name,self.number)
-				sites.append(site)
+				atoms = [self.get_atom(atoms[0])]
+				position = atoms[0].np_pos
 			else:
 				atoms = self.get_atom(atoms)
-				sidechain = atoms[0].name in self.sidechain_names
 				position = np.mean([a.np_pos for a in atoms],axis=0).round(3)
-				site = Site(interaction['type'],atoms,position,sidechain,self.name,self.number)
+
+			# check if an equivalent site exists
+
+			matches = [s for s in sites if np.linalg.norm(s.position - position) < 0.1]
+			if len(matches) == 1:
+				matches[0].types.append(interaction['type'])
+				
+			elif len(matches) == 0:
+				sidechain = atoms[0].name in self.sidechain_names
+				site = Site([interaction['type']],atoms,position,sidechain,self.name,self.number)
 				sites.append(site)
+
+			else:
+				raise Exception("Should never have multiple sites with the same position")
 
 		return sites
 
