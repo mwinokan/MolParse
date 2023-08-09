@@ -375,7 +375,7 @@ def res_type(resname):
   if resname.startswith(('DA','DT','DC','DG','ADE9','THMN','GUA9','CTSN')):
     this_type = "DNA"
   # solvents
-  elif resname.startswith(('SOL','WAT','TIP','T3P','HOH','PEG','SO4','DMS')):
+  elif resname.startswith(('SOL','WAT','TIP','T3P','HOH','PEG','SO4','DMS','H2S')):
     this_type = "SOL"
   # ions
   elif resname.startswith(('ION','MG','CL','NA','SOD','POT','CAL','LIT','Na+','Cl-','CA')):
