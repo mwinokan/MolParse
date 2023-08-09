@@ -84,8 +84,8 @@ class NamedList(UserList):
 					import mout
 					mout.error(f"Could not convert {key[1:]} to int")
 					mout.error("Lookup key should be in the form 'n'INDEX for a specific lookup")
-					return None
-
+					raise ValueError('Could not convert {key[1:]} to int')
+					
 				# find matches
 				matches = self.get_matches(number=number)
 				return matches
