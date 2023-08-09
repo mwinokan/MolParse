@@ -173,7 +173,7 @@ class AminoAcid(Residue):
 			import numpy as np
 			vec_CB_CA = res.CA - res.CB
 			unit_CB_CA = vec_CB_CA/np.linalg.norm(vec_CB_CA)
-			target_length = COVALENT_RADII['H'] + COVALENT_RADII['C']
+			target_length = 1.07 # from ase covalent radii
 			res.CA.position = res.CB.np_pos + target_length * unit_CB_CA
 			res.CA.set_name('HLNK',verbosity=verbosity-1)
 
