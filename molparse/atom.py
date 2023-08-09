@@ -30,7 +30,7 @@ class Atom:
     self.chain=chain
     self.chain_number = None
     self._atomic_number = None
-    if res_number:
+    if res_number is not None:
       self._res_number = int(res_number)
     else:
       self._res_number = None
