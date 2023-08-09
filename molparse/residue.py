@@ -1,6 +1,11 @@
 
 from .group import AtomGroup
 
+from enum import Enum
+class UnknownSiteHandlingMethod(Enum):
+  IGNORE = 0 # atoms with no alternative sites are ignored when separating
+  UNION = 1  # all atoms with no alternative sites are added to each separated residue     
+
 class Residue(AtomGroup):
   """Class for chemical Residue
 
@@ -27,6 +32,53 @@ class Residue(AtomGroup):
         self.add_atom(Atom(name=atom.symbol,position=atom.position,residue=self.name))
 
     self._parent = None
+
+  @property
+  def alternative_sites(self):
+    if self.contains_alternative_sites:
+
+      if self.name == 'LIG':
+        import mout
+        atoms_w_alt_site = [a.alternative_site for a in self.atoms if a.alternative_site is not None]
+        # mout.debug(f'{atoms_w_alt_site=}')
+        # mout.debug(f'{list(set(atoms_w_alt_site))=}')
+
+      return list(set([a.alternative_site for a in self.atoms if a.alternative_site is not None]))
+
+    return []
+
+  def split_by_site(self,unknown_site_handling=UnknownSiteHandlingMethod.IGNORE):
+    """return a list of Residue objects, one for each site"""
+    if self.contains_alternative_sites:
+      ignore_count = 0
+      separated_residues = []
+      import mout
+      # mout.debug(f'{self.alternative_sites=}')
+      for site in self.alternative_sites:
+        
+        res = Residue(self.name, index=self.index, number=self.number, chain=self.chain)
+        for atom in self.atoms:
+          if atom.alternative_site == site:
+            res.add_atom(atom)
+          elif atom.alternative_site is None:
+            if unknown_site_handling == UnknownSiteHandlingMethod.UNION:
+              res.add_atom(atom)  
+            else:
+              ignore_count += 1
+
+        separated_residues.append(res)
+
+      if ignore_count:
+        import mout
+        mout.warning(f'Ignored {ignore_count} atoms with no alternative site [{self.name_number_str}]')
+
+      return separated_residues
+    else:
+      return [self]
+
+  @property
+  def name_number_str(self):
+    return f'{self.name} {self.number}'
 
   @property
   def parent(self):
@@ -294,9 +346,9 @@ class Residue(AtomGroup):
     import mcol
     mout.headerOut(f'\nResidue {self.name}, index={self.index}, number={self.number}, chain={self.chain}, #atoms={self.num_atoms}')
 
-    print(f"{mcol.underline}{'NAME':4} {'INDEX':>6} {'NUMBER':>6} {'X':>7} {'Y':>7} {'Z':>7}{mcol.clear}")
+    mout.out(f"{mcol.underline}{'NAME':4} {'INDEX':>6} {'NUMBER':>6} {'X':>7} {'Y':>7} {'Z':>7} {'Alt.':>4}{mcol.clear} ")
     for atom in self.atoms:
-      print(f'{atom.name:4} {atom.index:>6} {atom.number:>6} {atom.x:>7.2f} {atom.y:>7.2f} {atom.z:>7.2f}')
+      mout.out(f'{atom.name:4} {atom.index:>6} {atom.number:>6} {atom.x:>7.2f} {atom.y:>7.2f} {atom.z:>7.2f} {atom.alternative_site or " ":>4}')
     
   def is_same_as(self,residue):
     assert isinstance(residue, Residue)

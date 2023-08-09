@@ -14,9 +14,9 @@ class Atom:
     self._name = name
     self.index = index
     if pdb_index is not None:
-      self._number = int(pdb_index)
+      self._NUMBER = int(pdb_index)
     else:
-      self._number = None
+      self._NUMBER = None
     self._position = position
     self.residue = residue
 
@@ -61,11 +61,15 @@ class Atom:
     self.charge_str = charge_str
     self.ter_line = None
     self.terminal = None
-    self.alternative_site = alternative_site
+    self._alternative_site = alternative_site
     self._velocity = velocity
 
     self._parent = None
 
+  @property
+  def alternative_site(self):
+    return self._alternative_site
+  
   @property
   def parent(self):
     return self._parent
@@ -87,6 +91,7 @@ class Atom:
     copy_object.charge = self.charge
     copy_object.velocity = self.velocity
     copy_object.chain_number = self.chain_number
+    copy_object._alternative_site = self.alternative_site
 
     return copy_object
 
@@ -143,12 +148,12 @@ class Atom:
   @property
   def number(self):
     """number or pdb_index are the fixed atom index from the original structure file"""
-    return self._number
+    return self._NUMBER
   
   @property
   def pdb_index(self):
     """number or pdb_index are the fixed atom index from the original structure file"""
-    return self._number
+    return self._NUMBER
 
   @property
   def name(self):
