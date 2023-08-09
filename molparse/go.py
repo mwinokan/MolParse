@@ -1,5 +1,5 @@
 
-def plot3d(atoms,extra=[],bonds=[],alpha=1.0,velocity=False,v_scale=1.0,fig=None,flat=False,show=True,transform=None,title=None):
+def plot3d(atoms,extra=[],bonds=[],alpha=1.0,velocity=False,v_scale=1.0,fig=None,flat=False,show=True,transform=None,title=None,plot_atoms=True):
 	"""Render the atoms with plotly graph objects. 
 	extra can contain pairs of coordinates to be shown as vectors."""
 
@@ -10,7 +10,7 @@ def plot3d(atoms,extra=[],bonds=[],alpha=1.0,velocity=False,v_scale=1.0,fig=None
 	from .group import AtomGroup
 
 	import mout
-	
+
 	group = AtomGroup.from_any("Compound AtomGroup", atoms)
 	atoms = group.atoms
 
@@ -79,49 +79,50 @@ def plot3d(atoms,extra=[],bonds=[],alpha=1.0,velocity=False,v_scale=1.0,fig=None
 
 		fig.add_trace(trace)
 
-	for s in species:
+	if plot_atoms:
+		for s in species:
 
-		atom_subset = [a for a in atoms if a.symbol == s]
+			atom_subset = [a for a in atoms if a.symbol == s]
 
-		data = {}
+			data = {}
 
-		positions = [a.np_pos for a in atom_subset]
-		x = [p[0] for p in positions]
-		y = [p[1] for p in positions]
-		z = [p[2] for p in positions]
+			positions = [a.np_pos for a in atom_subset]
+			x = [p[0] for p in positions]
+			y = [p[1] for p in positions]
+			z = [p[2] for p in positions]
 
-		if transform and flat:
-			p = [[a,b] for a,b in zip(x,y)]
-			p = transform(p)
-			x = [v[0] for v in p]
-			y = [v[1] for v in p]
-		
-		data['x'] = x
-		data['y'] = y
-		data['z'] = z
+			if transform and flat:
+				p = [[a,b] for a,b in zip(x,y)]
+				p = transform(p)
+				x = [v[0] for v in p]
+				y = [v[1] for v in p]
+			
+			data['x'] = x
+			data['y'] = y
+			data['z'] = z
 
-		atomic_number = atomic_numbers[s]
-		size = vdw_radii[atomic_number] * 15
-		color = jmol_colors[atomic_number]
-		color = (color[0]*256,color[1]*256,color[2]*256,alpha)
-		
-		data['index'] = [a.index for a in atom_subset]
-		data['residue'] = [a.residue for a in atom_subset]
-		data['res_number'] = [a.res_number for a in atom_subset]
-		data['name'] = [a.name for a in atom_subset]
+			atomic_number = atomic_numbers[s]
+			size = vdw_radii[atomic_number] * 15
+			color = jmol_colors[atomic_number]
+			color = (color[0]*256,color[1]*256,color[2]*256,alpha)
+			
+			data['index'] = [a.index for a in atom_subset]
+			data['residue'] = [a.residue for a in atom_subset]
+			data['res_number'] = [a.res_number for a in atom_subset]
+			data['name'] = [a.name for a in atom_subset]
 
-		customdata = []
+			customdata = []
 
-		for a in atom_subset:
-			customstr = f'name={a.name}<br>index={a.index}<br>number={a.number}<br>residue={a.residue}<br>res_index={a.res_index}<br>res_number={a.res_number}<br>x={a.x:.3f}<br>y={a.y:.3f}<br>z={a.z:.3f}'
-			customdata.append(customstr)
+			for a in atom_subset:
+				customstr = f'name={a.name}<br>chain={a.chain}<br>index={a.index}<br>number={a.number}<br>residue={a.residue}<br>res_index={a.res_index}<br>res_number={a.res_number}<br>x={a.x:.3f}<br>y={a.y:.3f}<br>z={a.z:.3f}'
+				customdata.append(customstr)
 
-		if flat:
-			trace = go.Scatter(x=x,y=y,mode='markers',name=s,marker=dict(size=size,color=f'rgba{color}',line=dict(color='black',width=2)),customdata=customdata,hovertemplate="%{customdata}<extra></extra>")
-		else:
-			trace = go.Scatter3d(x=x,y=y,z=z,mode='markers',name=s,marker=dict(size=size,color=f'rgba{color}',line=dict(color='black',width=2)),customdata=customdata,hovertemplate="%{customdata}<extra></extra>")
+			if flat:
+				trace = go.Scatter(x=x,y=y,mode='markers',name=s,marker=dict(size=size,color=f'rgba{color}',line=dict(color='black',width=2)),customdata=customdata,hovertemplate="%{customdata}<extra></extra>")
+			else:
+				trace = go.Scatter3d(x=x,y=y,z=z,mode='markers',name=s,marker=dict(size=size,color=f'rgba{color}',line=dict(color='black',width=2)),customdata=customdata,hovertemplate="%{customdata}<extra></extra>")
 
-		fig.add_trace(trace)
+			fig.add_trace(trace)
 
 	if not flat:
 		for i,(a,b) in enumerate(extra):
