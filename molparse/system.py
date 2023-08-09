@@ -283,14 +283,15 @@ class System(AtomGroup):
     import mcol
     import mout
     count=0
+    if not isinstance(old,list):
+      old = [old]
     for residue in self.residues:
-      if residue.name == old:
+      if residue.name in old:
         # residue.name = new
         residue.rename(new,verbosity=verbosity-1)
         count += 1
     if verbosity > 0:
-      mout.warningOut("Renamed "+mcol.result+str(count)+mcol.warning+" residues from "+mcol.arg+old+
-                      mcol.warning+" to "+mcol.arg+new)
+      mout.warningOut(f"Renamed {mcol.result}{count}{mcol.warning} residues from {mcol.arg}{old}{mcol.warning} to {new}")
     return count
 
   def get_chain(self,name:str):
@@ -660,7 +661,7 @@ class System(AtomGroup):
         if not atom.alternative_site:
           continue
         elif atom.alternative_site == site:
-          atom.alternative_site = None
+          atom._alternative_site = None
         elif atom.alternative_site != site:
           delete_list.append(index)
           count += 1
