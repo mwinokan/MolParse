@@ -276,6 +276,7 @@ class AtomGroup():
 
 	@property
 	def covalent_radii(self):
+		"""Get a list of covalent radii"""
 		
 		from ase.data import covalent_radii
 
