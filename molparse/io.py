@@ -429,55 +429,61 @@ def parsePDBAtomLine(line,res_index,atom_index,chain_counter,debug=False,alterna
   from .atom import Atom
 
   if debug:
-    mout.out("Attempting to parse atom with index: "+str(atom_index))
+    mout.debug("Attempting to parse atom with index: "+str(atom_index))
+    print(line.strip())
 
   charge = None
 
   try:
     atom_name = line[12:16].strip()
+    if debug: mout.var(f'{atom_index}.name',atom_name)
 
-    if debug: print(str(atom_index) + ".name: OK")
     residue = line[17:21].strip()
-    if debug: print(str(atom_index) + ".residue: OK")
+    if debug: mout.var(f'{atom_index}.residue',residue)
+
     try:
       pdb_index = int(line[6:12].strip())
     except:
       pdb_index = atom_index
-    if debug: print(str(atom_index) + ".index: OK")
+    if debug: mout.var(f'{atom_index}.pdb_index',pdb_index)
     chain = line[21:22]
     if chain == ' ':
       chain = string.ascii_uppercase[chain_counter%26]
-    if debug: print(str(atom_index) + ".chain: OK")
+    if debug: mout.var(f'{atom_index}.chain',chain)
     res_number = line[22:26].strip()
-    if debug: print(str(atom_index) + ".res_number: OK")
+    if debug: mout.var(f'{atom_index}.res_number',res_number)
       
-    alt_site_str = None
-    if alternative_site_warnings and len(line[16:17].strip()) > 0:
+    alt_site_str = line[16:17]
+    if len(line[16:17].strip()) == 0:
+      alt_site_str = None
+
+    if alternative_site_warnings and alt_site_str:
       mout.warningOut(f"Alternative site in PDB! res={residue}, atom={atom_name}, res_number={res_number}")
-      alt_site_str = line[16:17]
+    if debug:
+      mout.var(f'{atom_index}.alt_site_str',alt_site_str)
 
     position = []
     position.append(float(line[30:38].strip()))
     position.append(float(line[38:46].strip()))
     position.append(float(line[46:54].strip()))
-    if debug: print(str(atom_index) + ".position: OK")
+    if debug: mout.var(f'{atom_index}.position',position)
 
     try:
       occupancy = float(line[55:61].strip())
     except:
       occupancy = None
-    if debug: print(str(atom_index) + ".occupancy: OK")
+    if debug: mout.var(f'{atom_index}.occupancy',occupancy)
 
     try:
       temp_factor = float(line[61:67].strip())
     except:
       temp_factor = None
-    if debug: print(str(atom_index) + ".temp_factor: OK")
+    if debug: mout.var(f'{atom_index}.temp_factor',temp_factor)
 
     chg_str = line[78:80].rstrip('\n')
     if len(chg_str.strip()) < 1:
       chg_str = None
-    if debug: print(str(atom_index) + ".chg_str: OK")
+    if debug: mout.var(f'{atom_index}.chg_str',chg_str)
 
     end = line[80:].strip()
 
@@ -485,7 +491,7 @@ def parsePDBAtomLine(line,res_index,atom_index,chain_counter,debug=False,alterna
       hetatm=True
     else:
       hetatm=False
-    if debug: print(str(atom_index) + ".hetatm: OK")
+    if debug: mout.var(f'{atom_index}.hetatm',hetatm)
 
     if end:
       charge = float(line[80:89])
