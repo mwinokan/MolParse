@@ -184,6 +184,7 @@ from . import dna
 from . import signal
 from . import tunnel
 from . import mutate
+from . import monte
 
 from .amino import alphabet as amino_alphabet
 from .amino import longname as amino_longname
