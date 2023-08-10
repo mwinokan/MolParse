@@ -167,7 +167,8 @@ def parsePDB(pdb,
   remove_empty_chains=True,
   num_appended_hydrogen_chains=False,
   detect_misordered_chains=True,
-  reordering_warnings=True,
+  reordering_warnings=False,
+  reordering_summary_warnings=True,
   skipping_residue_warning=True,
 ):
 
@@ -369,16 +370,18 @@ def parsePDB(pdb,
         system.prune_alternative_sites()
 
       if fix_atomnames:
-        system.fix_atomnames()
+        system.fix_atomnames(verbosity=1)
 
       if autoname_chains:
         system.autoname_chains()
 
       if num_appended_hydrogen_chains:
+        assert num_appended_hydrogen_chains < len(system.chains), mout.error('num_appended_hydrogen_chains >= len(system.chains)')
+        
         hydrogen_chains = []
         for i in range(num_appended_hydrogen_chains):
           chain = system.chains.pop(-1)
-          if reordering_warnings:
+          if reordering_summary_warnings:
             mout.warning(f'Re-ordering atoms in {chain=}')
           hydrogen_chains.append(chain)
 
