@@ -175,6 +175,18 @@ class Atom:
     return ase_atomic_numbers[self.species]
 
   @property
+  def covalent_radius(self):
+    """Covalent radius (float) property"""
+    from ase.data import covalent_radii as ase_covalent_radii # Atom only
+    return ase_covalent_radii[self.atomic_number]
+
+  @property
+  def vdw_radius(self):
+    """vdW radius (float) property"""
+    from ase.data import vdw_radii as ase_vdw_radii # Atom only
+    return ase_vdw_radii[self.atomic_number]
+
+  @property
   def mass(self):
     """Atomic mass (float) property"""
     if self._mass is None:
