@@ -156,6 +156,10 @@ class Atom:
     return self._NUMBER
 
   @property
+  def name_number_str(self):
+    return f'{self.name} {self.number}'
+
+  @property
   def name(self):
     """Name (str) property"""
     return self.get_name()
