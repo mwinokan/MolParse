@@ -149,9 +149,8 @@ class AminoAcid(Residue):
 			others = [a for a in self.atoms if a.symbol != 'H' and a.index != hydrogen.index]
 
 			if len(others) == 0:
-				mout.var('this_residue',self.number_name_str)
+				mout.var('this_residue',self.name_number_str)
 				self.plot3d()
-				# print(others)
 				raise Exception('No other atoms in residue when guessing hydrogen names')
 			other_index = np.argmin([np.linalg.norm(a - hydrogen) for a in others])
 			other = others[other_index]
