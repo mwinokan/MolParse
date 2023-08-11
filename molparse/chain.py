@@ -49,6 +49,7 @@ class Chain(AtomGroup):
     from .residue import Residue
     assert isinstance(residue,Residue)
     residue.set_chain_number(self.index)
+    residue.set_chain_char(self.name)
     residue.parent = self
 
     # remove any termini
