@@ -365,6 +365,10 @@ class Residue(AtomGroup):
     for atom in self.atoms:
       atom.chain_number = index
 
+  def set_chain_char(self,char):
+    for atom in self.atoms:
+      atom.chain = char
+
   @property
   def children(self):
     return self.atoms
@@ -384,7 +388,7 @@ def res_type(resname):
   elif resname.startswith(('DPPC','POPC','DAG','TAG')):
     this_type = "LIP"
   # ligands
-  elif resname.startswith(('ATP','GTP','LIG')):
+  elif resname.startswith(('ATP','GTP','LIG','UNL')):
     this_type = "LIG"
   elif resname.startswith(('QM','MM')):
     this_type = "N/A"
