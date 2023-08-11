@@ -783,13 +783,6 @@ def writePDB(filename,system,verbosity=1,append=False,model=1):
     strbuff += atomline
 
     if atom.terminal:
-      atom.ter_line =  "TER   "
-      atom.ter_line += atom_serial_str
-      atom.ter_line += "      "
-      atom.ter_line += atom.residue.ljust(4)
-      atom.ter_line += atom.chain
-      atom.ter_line += str(residue_serial).rjust(4)
-      atom.ter_line += end
       strbuff += atom.ter_line
 
   strbuff += "ENDMDL"+end
@@ -921,6 +914,15 @@ def constructPDBAtomLine(atom,index):
     strlist.append(f'{atom.charge:8.6f}')
 
   strlist.append(end)
+
+  if atom.terminal:
+    atom.ter_line =  "TER   "
+    atom.ter_line += atom_serial_str
+    atom.ter_line += "      "
+    atom.ter_line += atom.residue.ljust(4)
+    atom.ter_line += atom.chain
+    atom.ter_line += str(residue_serial).rjust(4)
+    atom.ter_line += end
 
   return ''.join(strlist)
 
