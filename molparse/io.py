@@ -376,14 +376,29 @@ def parsePDB(pdb,
         system.autoname_chains()
 
       if num_appended_hydrogen_chains:
+
+        if reordering_summary_warnings:
+          mout.warning(f'Will try to re-order hydrogens in last {num_appended_hydrogen_chains} chains')
+
         assert num_appended_hydrogen_chains < len(system.chains), mout.error('num_appended_hydrogen_chains >= len(system.chains)')
-        
+
+
         hydrogen_chains = []
+        re_add_chains = []
         for i in range(num_appended_hydrogen_chains):
+          
           chain = system.chains.pop(-1)
+
+          if any([a.symbol != 'H' for a in chain.atoms]):
+            re_add_chains.append(chain)
+            continue
+
           if reordering_summary_warnings:
-            mout.warning(f'Re-ordering atoms in {chain=}')
+            mout.warning(f'Re-ordering hydrogens in {chain=}')
           hydrogen_chains.append(chain)
+
+        for chain in re_add_chains:
+          system.add_chain(chain)
 
         for h_chain in hydrogen_chains:
           for atom in h_chain.atoms:
