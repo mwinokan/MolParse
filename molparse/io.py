@@ -299,6 +299,12 @@ def parsePDB(pdb,
                 continue
               elif line.startswith("CONECT"):
                 continue
+              elif line.startswith("OMPND"):
+                continue
+              elif line.startswith("COMPND"):
+                continue
+              elif line.startswith("AUTHO"):
+                continue
               elif line.startswith("MASTER"):
                 continue
               elif line.startswith("ANISOU"):
@@ -411,7 +417,7 @@ def parsePDB(pdb,
                 break
             
             if reordering_warnings:
-              mout.warning(f'Moving atom {atom} {atom.number} to {residue} {residue.number} ({atom.res_index}-->{residue.index})')
+              mout.warning(f'Moving {atom} {atom.number} (i) to {residue} {residue.number} (res_indices {atom.res_index}-->{residue.index})')
             
             if residue is not None:
               residue.add_atom(atom)
