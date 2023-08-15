@@ -90,6 +90,11 @@ class NamedList(UserList):
 				matches = self.get_matches(number=number)
 				return matches
 
+			# get by type
+			if key.startswith('t'):
+				type_str = key[1:]
+				return [d for d in self.data if d.type == type_str]
+					
 			# key may contain space-separated values
 			split_key = key.split(" ")
 
