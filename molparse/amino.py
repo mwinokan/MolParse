@@ -232,9 +232,9 @@ class AminoAcid(Residue):
 		
 		import numpy as np
 		from collections import namedtuple
-		
-		Site = namedtuple('Site',['types','atoms','position','sidechain','res_name','res_number'])
 
+		from .sites import Site
+		
 		sites = []
 
 		for interaction in BB_INTERACTION_SITES + INTERACTION_SITES[self.name]:
