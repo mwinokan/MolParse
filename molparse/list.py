@@ -7,6 +7,7 @@ class NamedList(UserList):
 
 	key: int 		returns list[int]
 	key: 'n'+int 	returns list[obj.number == int]
+	key: 't'+str 	returns list[obj.type == str]
 	key: str 		returns list[obj.name == str]
 	key: str' 'int  returns list[obj.name == str and obj.index == int]
 	key: str' i'int  returns list[obj.name == str and obj.index == int]
