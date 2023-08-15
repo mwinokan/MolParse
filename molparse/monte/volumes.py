@@ -2,6 +2,7 @@
 import plotly.graph_objects as go
 import mgo
 import numpy as np
+from .rand import random_point_spherical
 
 class CompoundVolume:
 
@@ -12,6 +13,7 @@ class CompoundVolume:
 	# def cull_overlapping_volumes(self):
 
 	def add_volume(self,volume):
+		volume.index = self.num_volumes
 		self.volumes.append(volume)
 
 	def plot(self,distance,fig=None,show=False,samples=20):
@@ -32,28 +34,37 @@ class CompoundVolume:
 
 			if vol.is_inside(point):
 				return True
+		return False
 
+	def is_within(self,point,within):
+		for vol in self.volumes:
+			if vol.is_within(point,within):
+				return True
 		return False
 
 class Sphere:
 
-	def __init__(self,centre,radius):
+	def __init__(self,centre,radius,index=None):
 		
+		self.index = index
 		self.centre = np.array(centre)
 		self.radius = np.array(radius)
 
 	def is_inside(self,point):
 		return np.linalg.norm(point - self.centre) < self.radius
 
+import mout
+
 class CappedCone:
 
-	def __init__(self,origin,target,radius,name=None):
+	def __init__(self,origin,target,radius,name=None,index=None):
 
 		# parameters
 		self.name = name
 		self.origin = np.array(origin)
 		self.target = np.array(target)
 		self.radius = radius
+		self.index = index
 
 		# derived internals
 		self.vec_origin_target = self.target - self.origin
@@ -69,6 +80,8 @@ class CappedCone:
 
 		# plotting variables
 		self.vec_origin_point = None
+		
+		self._expanded_volume = None
 	
 	def is_inside(self,point):
 
@@ -79,6 +92,10 @@ class CappedCone:
 
 		self.vec_origin_point = point - self.origin
 		self.dist_origin_point = np.linalg.norm(self.vec_origin_point)
+
+		if self.dist_origin_point == 0:
+			return False
+
 		self.unit_origin_point = self.vec_origin_point / self.dist_origin_point
 
 		if self.dist_origin_point < self.start:
@@ -92,6 +109,17 @@ class CappedCone:
 			return True
 
 		return False
+
+	def is_within(self,point,within):
+
+		if self._expanded_volume is None or self._expanded_volume._expansion != within:
+
+			new_origin = self.origin - self.unit_origin_target*within/np.sin(self.theta)
+
+			self._expanded_volume = CappedCone(origin=new_origin, target=self.target, radius=self.radius + within, name=self.name + ' expanded')
+			self._expanded_volume._expansion = within
+
+		return self._expanded_volume.is_inside(point)
 
 	def test_random_point(self,n=1,distance=5):
 
@@ -136,5 +164,8 @@ def random_point(origin,radius):
 		y = np.random.uniform(-1.0,1.0)
 		z = np.random.uniform(-1.0,1.0)
 
-		if np.linalg.norm([x,y,z]) < 1:
-			return origin + radius * np.array([x,y,z])
+	def __repr__(self):
+		if self.name:
+			return self.name
+		else:
+			return f'CappedCone index={self.index}'
