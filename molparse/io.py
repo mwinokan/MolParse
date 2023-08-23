@@ -184,7 +184,8 @@ def parsePDB(pdb,
     import mout
     import mcol
 
-    assert pdb.endswith(".pdb")
+    pdb = str(pdb)
+    assert pdb.endswith(".pdb"), f"filename doesn't end with '.pdb': {pdb}"
 
     try:
       index = int(index)
