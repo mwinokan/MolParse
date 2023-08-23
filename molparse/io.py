@@ -140,6 +140,7 @@ def tagFromLine(line,byResidue):
     return 0
 
 def parse(file,verbosity=1):
+  file = str(file)
   if file.split(".")[-1] == "pdb":
     return parsePDB(file,verbosity=verbosity)
   elif file.split(".")[-1] == "gro":
