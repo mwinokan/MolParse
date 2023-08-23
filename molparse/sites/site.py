@@ -12,7 +12,7 @@ class Site:
 	
 	"""Protein Interaction Site"""
 	
-	def __init__(self, interaction_types: list, atoms: list, position: np.ndarray, sidechain: bool, res_name: str, res_number: int):
+	def __init__(self, interaction_types: list, atoms: list, position: np.ndarray, sidechain: bool, res_name: str, res_number: int, res_chain: str):
 			
 		self.types = interaction_types
 		self.atoms = atoms
@@ -20,8 +20,12 @@ class Site:
 		self.sidechain = sidechain
 		self.res_name = res_name
 		self.res_number = res_number
+		self.res_chain = res_chain
 
 		self.atom_numbers = [a.number for a in self.atoms]
+
+		self.accessible = None
+		self.in_screen = None
 
 	@property
 	def type_str(self):
@@ -37,7 +41,7 @@ class Site:
 
 	@property
 	def name(self):
-		return f'{self.res_name} {self.res_number} {self.type_str} {self.atom_str}'
+		return f'{self.res_name} {self.res_number} {self.res_chain} {self.type_str} {self.atom_str}'
 
 	def __repr__(self):
 		return self.name

@@ -256,7 +256,7 @@ class AminoAcid(Residue):
 				
 			elif len(matches) == 0:
 				sidechain = atoms[0].name in self.sidechain_names
-				site = Site([interaction['type']],atoms,position,sidechain,self.name,self.number)
+				site = Site([interaction['type']],atoms,position,sidechain,self.name,self.number,self.chain)
 				sites.append(site)
 
 			else:
