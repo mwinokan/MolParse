@@ -42,6 +42,37 @@ class CompoundVolume:
 				return True
 		return False
 
+	@property
+	def num_volumes(self):
+		return len(self.volumes)
+
+	def simplify(self):
+
+		del_list = []
+
+		for this_volume in self.volumes:
+			for other_volume in self.volumes:
+
+				if this_volume.index == other_volume.index:
+					continue
+
+				if this_volume in del_list:
+					continue
+
+				if other_volume in del_list:
+					continue
+				
+				print(this_volume,this_volume.index,other_volume,other_volume.index)
+
+				if this_volume.always_inside(other_volume):
+					del_list.append(this_volume)
+
+		print(del_list)
+
+		for volume in reversed(self.volumes):
+			if volume in del_list:
+				del volume
+
 class Sphere:
 
 	def __init__(self,centre,radius,index=None):
@@ -156,13 +187,37 @@ class CappedCone:
 
 		return fig
 
-def random_point(origin,radius):
+	@mout.debug_log
+	def always_inside(self,other):
 
-	while True:
+		if isinstance(other,CappedCone):
 
-		x = np.random.uniform(-1.0,1.0)
-		y = np.random.uniform(-1.0,1.0)
-		z = np.random.uniform(-1.0,1.0)
+			assert np.linalg.norm(self.origin - other.origin) == 0
+
+			if other.dist_origin_target - other.cap_radius < self.dist_origin_target - self.cap_radius:
+				print('case1')
+				return False
+
+			# if not other.is_inside(self.target):
+			# 	print(f'{self}.target is not inside {other}')
+			# 	return False
+
+			# print(f'{self}.target is inside {other}')
+
+			if other.theta < self.theta:
+				print('case2')
+				return False
+
+			phi = np.arccos(np.dot(self.unit_origin_target, other.unit_origin_target))
+
+			if other.theta < phi + self.theta:
+				print('case3')
+				return False
+		
+			return True
+
+		else:
+			raise Exception(f'Unsupported: CappedCone.always_inside(self,type({other}))')
 
 	def __repr__(self):
 		if self.name:
