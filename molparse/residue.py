@@ -61,7 +61,7 @@ class Residue(AtomGroup):
           if atom.alternative_site == site:
             res.add_atom(atom)
           elif atom.alternative_site is None:
-            if unknown_site_handling == UnknownSiteHandlingMethod.UNION:
+            if unknown_site_handling == 'union':
               res.add_atom(atom)  
             else:
               ignore_count += 1
