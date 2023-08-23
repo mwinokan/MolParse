@@ -384,9 +384,19 @@ class AtomGroup():
 		self._atoms.append(atom)
 
 	def summary(self):
-		print(self.name)
+		import mcol
+		import mout
+		mout.header(f'{mcol.varType}AtomGroup{mcol.clear}{mcol.bold}: {mcol.func}{self.name}{mcol.clear}')
+
+		mout.out(f'{mcol.underline}{"name"} {"index":>6} {"number":>6} {"res":>4} {"res#":>6} {"chain":<5}')
+
 		for a in self.atoms:
-			print(a,a.position)
+			mout.out(f'{mcol.varName}{a.name:<4}{mcol.clear}',end=' ')
+			mout.out(f'{a.index:>6}',end=' ')
+			mout.out(f'{a.number:>6}',end=' ')
+			mout.out(f'{a.residue:>4}',end=' ')
+			mout.out(f'{a.res_number:>6}',end=' ')
+			mout.out(f'{a.chain:<5}',end='\n')
 
 	def write(self,filename):
 		from .io import write
