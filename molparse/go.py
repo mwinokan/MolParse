@@ -1,5 +1,5 @@
 
-def plot3d(atoms,extra=[],bonds=[],alpha=1.0,velocity=False,v_scale=1.0,fig=None,flat=False,show=True,transform=None,title=None,plot_atoms=True):
+def plot3d(atoms,extra=[],bonds=[],alpha=1.0,velocity=False,v_scale=1.0,fig=None,flat=False,show=True,transform=None,title=None,plot_atoms=True,features=None):
 	"""Render the atoms with plotly graph objects. 
 	extra can contain pairs of coordinates to be shown as vectors."""
 
@@ -19,6 +19,21 @@ def plot3d(atoms,extra=[],bonds=[],alpha=1.0,velocity=False,v_scale=1.0,fig=None
 
 	if fig is None:
 		fig = go.Figure()
+
+	if features:
+		import plotly.express as px
+		px_fig = px.scatter_3d(
+			features,
+			x='x',
+			y='y',
+			z='z',
+			color='family',
+			size_max=100,
+			size=[100]*len(features),
+			opacity=0.5
+		)
+
+		fig.add_trace(px_fig.data[0])
 
 	if bonds:
 

@@ -294,6 +294,43 @@ class AminoAcid(Residue):
 			import mout
 			mout.errorOut("Unsupported mutation!")
 
+	@property
+	def features(self):
+
+		import numpy as np
+		from .rdkit import Feature
+
+		features = []
+
+		for f_dict in BB_FEATURES + FEATURES[self.name]:
+
+			atoms = f_dict['atoms']
+
+			if len(atoms) == 1:
+				atoms = [self.get_atom(atoms[0])]
+				if atoms[0] is None:
+					self.plot3d()
+					mout.error(f'No atom {f_dict["atoms"][0]}',code='AminoAcid.features.0',fatal=True)
+				position = atoms[0].np_pos
+			else:
+				atoms = self.get_atom(atoms)
+				position = np.mean([a.np_pos for a in atoms],axis=0).round(3)
+
+			feature = Feature(
+				family=f_dict['family'], 
+				atoms=atoms,
+				position=position,
+				sidechain=None,
+				res_name=self.name,
+				res_number=self.number,
+				res_chain=self.chain,
+			)
+
+			# print(f_dict)
+			features.append(feature)
+
+		return features
+
 """
 
 	Collate interactions per site
@@ -345,6 +382,205 @@ BB_INTERACTION_SITES = [
 	{"type": "hydrogen_acceptor", "atoms": ["O"], "source": "collated from ZV PLIP"},
 ]
 
+BB_FEATURES = [
+	dict(family="Donor", atoms=["N"], source="collated from ZV PLIP"),
+	dict(family="Acceptor", atoms=["O"], source="collated from ZV PLIP"),
+
+	dict(family="Donor", atoms=["O"], source="unsure"),
+	dict(family="Acceptor", atoms=["N"], source="unsure"),
+]
+
+FEATURES = {
+	"ALA": [
+		dict(family="Hydrophobe", atoms=["CB"], source="ZV PLIP"),
+	],
+
+	"ASN": [
+		dict(family="Acceptor", atoms=["ND2"], source="MPro PLIP"),
+		dict(family="Acceptor", atoms=["OD1"], source="unsure"),
+		dict(family="Donor", atoms=["OD1"], source="MPro PLIP"),
+		dict(family="Hydrophobe", atoms=["CB"], source="MPro PLIP"),
+	],
+
+	"ASP": [
+		dict(family="Acceptor", atoms=["OD1"], source="unsure"),
+		dict(family="Donor", atoms=["OD1"], source="unsure"),
+		dict(family="Acceptor", atoms=["OD2"], source="unsure"),
+		dict(family="NegIonizable", atoms=["OD1","OD2"], source="unsure"),
+	],
+
+	"ASP": [
+		dict(family="Acceptor", atoms=["OD1"], source="ZV PLIP"),
+		dict(family="Donor", atoms=["OD1"], source="ZV PLIP"),
+		dict(family="Acceptor", atoms=["OD2"], source="ZV PLIP"),
+		dict(family="NegIonizable", atoms=["OD1","OD2"], source="ZV PLIP"),
+		dict(family="Hydrophobe", atoms=["CB"], source="ZV PLIP"),
+	],
+
+	"ARG": [
+		dict(family="Donor", atoms=["NH1"], source="unsure"),
+		dict(family="Donor", atoms=["NH2"], source="unsure"),
+		dict(family="Donor", atoms=["NE"], source="unsure"),
+		dict(family="PosIonizable", atoms=["NH1"], source="unsure"),
+		dict(family="PosIonizable", atoms=["NH2"], source="unsure"),
+	],
+
+	"CYS": [
+		dict(family="Hydrophobe", atoms=["CB"], source="unsure"),
+		dict(family="PosIonizable", atoms=["SG"], source="unsure"),
+		dict(family="Donor", atoms=["SG"], source="unsure"),
+	],
+	
+	"GLN": [
+		dict(family="Hydrophobe", atoms=["CG"], source="ZV PLIP"),
+		dict(family="Acceptor", atoms=["NE2"], source="inferred (ASN)"),
+		dict(family="Acceptor", atoms=["OE1"], source="inferred (ASN)"),
+		dict(family="Donor", atoms=["OE1"], source="inferred (ASN)"),
+		dict(family="Hydrophobe", atoms=["CB"], source="inferred (ASN)"),
+	],
+	
+	"GLU": [
+		dict(family="Acceptor", atoms=["OE1"], source="ZV PLIP"),
+		dict(family="Donor", atoms=["OE1"], source="ZV PLIP"),
+		dict(family="Acceptor", atoms=["OE2"], source="ZV PLIP"),
+		dict(family="NegIonizable", atoms=["OE1","OE2"], source="ZV PLIP"),
+		dict(family="Hydrophobe", atoms=["CB"], source="ZV PLIP"),
+		dict(family="Hydrophobe", atoms=["CG"], source="ZV PLIP"),
+	],
+
+	"GLY": [
+	],
+
+	"HIS": [
+		dict(family="Hydrophobe", atoms=["CB"], source="ZV PLIP"),
+		dict(family="Aromatic", atoms=["CG", "ND1", "CE1", "NE2", "CD2"], source="ZV PLIP"),
+		dict(family="Acceptor", atoms=["ND1"], source="unsure"),
+		dict(family="Acceptor", atoms=["NE2"], source="unsure"),
+		dict(family="Donor", atoms=["ND1"], source="unsure"),
+		dict(family="Donor", atoms=["NE2"], source="unsure"),
+	],
+
+	"HSE": [
+		dict(family="Hydrophobe", atoms=["CB"], source="ZV PLIP"),
+		dict(family="Aromatic", atoms=["CG", "ND1", "CE1", "NE2", "CD2"], source="ZV PLIP"),
+		dict(family="Acceptor", atoms=["ND1"], source="unsure"),
+		dict(family="Acceptor", atoms=["NE2"], source="unsure"),
+		dict(family="Donor", atoms=["NE2"], source="unsure"),
+	],
+
+	"HSD": [
+		dict(family="Hydrophobe", atoms=["CB"], source="ZV PLIP"),
+		dict(family="Aromatic", atoms=["CG", "ND1", "CE1", "NE2", "CD2"], source="ZV PLIP"),
+		dict(family="Acceptor", atoms=["ND1"], source="unsure"),
+		dict(family="Acceptor", atoms=["NE2"], source="unsure"),
+		dict(family="Donor", atoms=["ND1"], source="unsure"),
+	],
+
+	"HSP": [
+		dict(family="Hydrophobe", atoms=["CB"], source="ZV PLIP"),
+		dict(family="Aromatic", atoms=["CG", "ND1", "CE1", "NE2", "CD2"], source="ZV PLIP"),
+		dict(family="Acceptor", atoms=["ND1"], source="unsure"),
+		dict(family="Acceptor", atoms=["NE2"], source="unsure"),
+		dict(family="Donor", atoms=["ND1"], source="unsure"),
+		dict(family="Donor", atoms=["NE2"], source="unsure"),
+	],
+
+	"ILE": [
+		dict(family="Hydrophobe", atoms=["CB"], source="ZV PLIP"),
+		dict(family="Hydrophobe", atoms=["CD1"], source="ZV PLIP"),
+		dict(family="Hydrophobe", atoms=["CG1"], source="ZV PLIP"),
+		dict(family="Hydrophobe", atoms=["CG2"], source="ZV PLIP"),
+	],
+
+	"LEU": [
+		dict(family="Hydrophobe", atoms=["CB"], source="unsure"),
+		dict(family="Hydrophobe", atoms=["CD1"], source="unsure"),
+		dict(family="Hydrophobe", atoms=["CD2"], source="unsure"),
+		dict(family="Hydrophobe", atoms=["CG"], source="unsure"),
+	],
+
+	"LYS": [
+		dict(family="Hydrophobe", atoms=["CB"], source="unsure"),
+		dict(family="Hydrophobe", atoms=["CG"], source="unsure"),
+		dict(family="Hydrophobe", atoms=["CD"], source="unsure"),
+		dict(family="Hydrophobe", atoms=["CE"], source="unsure"),
+		dict(family="PosIonizable", atoms=["NZ"], source="unsure"),
+		dict(family="Donor", atoms=["NZ"], source="unsure"),
+	],
+
+	"LYS": [
+		dict(family="Hydrophobe", atoms=["CB"], source="unsure"),
+		dict(family="Hydrophobe", atoms=["CG"], source="unsure"),
+		dict(family="Hydrophobe", atoms=["CD"], source="unsure"),
+		dict(family="Hydrophobe", atoms=["CE"], source="unsure"),
+		dict(family="PosIonizable", atoms=["NZ"], source="unsure"),
+		dict(family="Donor", atoms=["NZ"], source="unsure"),
+	],
+
+	"MET": [
+		dict(family="Hydrophobe", atoms=["CE"], source="unsure"),
+		dict(family="Hydrophobe", atoms=["CG"], source="unsure"),
+		dict(family="PosIonizable", atoms=["SD"], source="unsure"),
+	],
+
+	"PHE": [
+		dict(family="Hydrophobe", atoms=["CB"], source="unsure"),
+		dict(family="Hydrophobe", atoms=["CD1"], source="unsure"),
+		dict(family="Hydrophobe", atoms=["CD2"], source="unsure"),
+		dict(family="Hydrophobe", atoms=["CE1"], source="unsure"),
+		dict(family="Hydrophobe", atoms=["CE2"], source="unsure"),
+		dict(family="Hydrophobe", atoms=["CZ"], source="unsure"),
+		dict(family="Hydrophobe", atoms=["CG","CD1","CD2","CE1","CE2","CZ"], source="unsure"),
+		dict(family="Aromatic", atoms=["CG","CD1","CD2","CE1","CE2","CZ"], source="unsure"),
+	],
+
+	"PRO": [
+		dict(family="Hydrophobe", atoms=["CG"], source="ZV PLIP"),
+		dict(family="Aromatic", atoms=["N","CA","CB","CG","CD"], source="unsure"),
+	],
+
+	"SER": [
+		dict(family="Donor", atoms=["OG"], source="ZV PLIP"),
+		dict(family="Acceptor", atoms=["OG"], source="ZV PLIP"),
+	],
+
+	"THR": [
+		dict(family="Donor", atoms=["OG1"], source="ZV PLIP"),
+		dict(family="Acceptor", atoms=["OG1"], source="ZV PLIP"),
+		dict(family="Hydrophobe", atoms=["CG2"], source="ZV PLIP"),
+	],
+
+	"TRP": [
+		dict(family="Hydrophobe", atoms=["CZ2"], source="ZV PLIP"),
+		dict(family="Hydrophobe", atoms=["CH2"], source="unsure"),
+		dict(family="Hydrophobe", atoms=["CZ3"], source="unsure"),
+		dict(family="Hydrophobe", atoms=["CE3"], source="unsure"),
+		dict(family="Hydrophobe", atoms=["CB"], source="ZV PLIP"),
+		dict(family="Aromatic", atoms=["CG","CD1","NE1","CE2","CD2"], source="unsure"),
+		dict(family="Aromatic", atoms=["CE2","CD2","CZ2","CZ3","CE3","CH2"], source="unsure"),
+		dict(family="Hydrophobe", atoms=["CE2","CD2","CZ2","CZ3","CE3","CH2"], source="unsure"),
+	],
+	
+	"TYR": [
+		dict(family="Aromatic", atoms=["CG", "CD1", "CE1", "CZ", "CE2", "CD2"], source="ZV PLIP"),
+		dict(family="Hydrophobe", atoms=["CG", "CD1", "CE1", "CZ", "CE2", "CD2"], source="ZV PLIP"),
+		dict(family="Hydrophobe", atoms=["CD1"], source="ZV PLIP"),
+		dict(family="Hydrophobe", atoms=["CD2"], source="ZV PLIP"),
+		dict(family="Hydrophobe", atoms=["CE1"], source="ZV PLIP"),
+		dict(family="Hydrophobe", atoms=["CE2"], source="ZV PLIP"),
+		dict(family="Hydrophobe", atoms=["CG"], source="ZV PLIP"),
+		dict(family="Hydrophobe", atoms=["CB"], source="ZV PLIP"),
+		dict(family="Donor", atoms=["OH"], source="ZV PLIP"),
+		dict(family="Acceptor", atoms=["OH"], source="ZV PLIP"),
+	],
+
+	"VAL": [
+		dict(family="Hydrophobe", atoms=["CB"], source="unsure"),
+		dict(family="Hydrophobe", atoms=["CG1"], source="ZV PLIP (inferred)"),
+		dict(family="Hydrophobe", atoms=["CG2"], source="ZV PLIP"),
+	],
+}
+
 INTERACTION_SITES = {
 
 	"ALA": [
@@ -376,7 +612,8 @@ INTERACTION_SITES = {
 		{"type": "hydrogen_donor", "atoms": ["NH2"], "source": "unsure"},
 		{"type": "water_donor", "atoms": ["NH1"], "source": "unsure"},
 		{"type": "water_donor", "atoms": ["NH2"], "source": "unsure"},
-		{"type": "salt_bridge", "atoms": ["NH1","NH2"], "source": "unsure"},
+		{"type": "salt_bridge", "atoms": ["NH1"], "source": "unsure"},
+		{"type": "salt_bridge", "atoms": ["NH2"], "source": "unsure"},
 		{"type": "pi_cation", "atoms": ["NH1"], "source": "unsure"},
 		{"type": "pi_cation", "atoms": ["NH2"], "source": "unsure"},
 	],

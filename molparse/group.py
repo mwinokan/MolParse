@@ -5,6 +5,9 @@ class AtomGroup():
 
 		self._name = name
 
+		# ligand
+		self._smiles = None
+
 		# GUI state variables
 		self._expand = False
 		self._show_context = False
@@ -33,6 +36,7 @@ class AtomGroup():
 			- a list of ase.Atom objects
 			- an ase.Atoms object
 			- a list containing any combination of ase.Atom(s), mp.Atom, mp.Chain, mp.Residue, objects
+			- a string containing a PDB Block
 		"""
 		
 		import mout
@@ -45,8 +49,12 @@ class AtomGroup():
 		from .residue import Residue
 		from .list import NamedList
 
+		# string (PDB Block)
+		if isinstance(source,str):
+			return cls.from_pdb_block(source)
+
 		# mp.AtomGroup subclass
-		if issubclass(source.__class__,cls):
+		elif issubclass(source.__class__,cls):
 			return cls.from_group_subclass(source)
 
 		# mp.AtomGroup
@@ -86,6 +94,33 @@ class AtomGroup():
 
 		else:
 			mout.errorOut(f"Not supported ({source.__class__=})",fatal=True)
+
+	@classmethod
+	def from_pdb_block(cls,pdb_block):
+
+		from .io import parsePDBAtomLine
+		
+		name = None
+		atom_lines = []
+
+		for line in pdb_block.split('\n'):
+			
+			if line.startswith('COMPND'):
+				name = line.split()[1]
+				continue
+
+			if line.startswith('HETATM') or line.startswith('ATOM'):
+				atom_lines.append(line)
+				continue
+
+		atoms = []
+		for i,line in enumerate(atom_lines):
+			atom = parsePDBAtomLine(line,0,i,0)
+			atoms.append(atom)
+
+		group = cls.from_atoms(name,atoms)
+
+		return group
 
 	@classmethod
 	def from_atoms(cls,name,atoms,group=None):
@@ -292,6 +327,27 @@ class AtomGroup():
 		"""Return true if any child atoms have an alternative site defined"""
 		return any([a.alternative_site for a in self.atoms])
 
+	@property
+	def pdb_block(self):
+		from .io import constructPDBAtomLine
+		
+		str_buffer = []
+		for atom in self.atoms:
+			str_buffer.append(constructPDBAtomLine(atom,atom.number))
+		return ''.join(str_buffer)
+
+	@property
+	def rdkit_mol(self):
+		from .rdkit import mol_from_pdb_block
+		return mol_from_pdb_block(self.pdb_block)
+
+	@property
+	def smiles(self):
+		if self._smiles is None:
+			from .rdkit import mol_to_smiles
+			self._smiles = mol_to_smiles(self.rdkit_mol)
+		return self._smiles
+	
 ### INTERNAL METHODS
 
 	def _bbox_center(self,bbox=None):
@@ -495,7 +551,7 @@ class AtomGroup():
 
 		return ax, copy
 
-	def plot3d(self,extra=[],alpha=1.0,bonds=True,atoms=True,velocity=False,v_scale=1.0,fig=None,flat=False,show=True,transform=None):
+	def plot3d(self,extra=[],alpha=1.0,bonds=True,atoms=True,velocity=False,features=False,v_scale=1.0,fig=None,flat=False,show=True,transform=None):
 		"""Render the atoms with plotly graph objects. 
 		extra can contain pairs of coordinates to be shown as vectors."""
 
@@ -508,8 +564,12 @@ class AtomGroup():
 		else:
 			bonds = []
 
+		if features:
+			from .rdkit import features_from_group
+			features = features_from_group(self)
+
 		from .go import plot3d
-		return plot3d(self.atoms,extra,bonds,alpha,plot_atoms=atoms,velocity=velocity,v_scale=v_scale,fig=fig,flat=flat,show=show,transform=transform,title=self.name)
+		return plot3d(self.atoms,extra,bonds,alpha,plot_atoms=atoms,features=features,velocity=velocity,v_scale=v_scale,fig=fig,flat=flat,show=show,transform=transform,title=self.name)
 
 	def set_coordinates(self,reference,velocity=False):
 		"""Set all coordinates according to a reference ase.Atoms object"""

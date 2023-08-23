@@ -672,3 +672,22 @@ class System(AtomGroup):
     if verbosity > 0 and count > 0:
       mout.warningOut(f"Deleted {count} alternative site atoms")
 
+
+
+  def get_protein_interaction_sites(self):
+    sites = []
+    for chain in self.chains:
+      if chain.type != 'PRO':
+        continue
+      for residue in chain.residues:
+        sites += residue.interaction_sites
+    return sites
+
+  def get_protein_features(self):
+    all_features = []
+    for chain in self.chains:
+      if chain.type != 'PRO':
+        continue
+      for residue in chain.residues:
+        all_features += residue.features
+    return all_features
