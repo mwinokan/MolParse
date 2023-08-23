@@ -81,6 +81,10 @@ class Residue(AtomGroup):
     return f'{self.name} {self.number}'
 
   @property
+  def name_number_chain_str(self):
+    return f'{self.name} {self.number} {self.chain}'
+
+  @property
   def parent(self):
     return self._parent
 
