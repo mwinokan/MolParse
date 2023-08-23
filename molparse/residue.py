@@ -1,10 +1,10 @@
 
 from .group import AtomGroup
 
-from enum import Enum
-class UnknownSiteHandlingMethod(Enum):
-  IGNORE = 0 # atoms with no alternative sites are ignored when separating
-  UNION = 1  # all atoms with no alternative sites are added to each separated residue     
+# from enum import Enum
+# class UnknownSiteHandlingMethod(Enum):
+#   IGNORE = 0 # atoms with no alternative sites are ignored when separating
+#   UNION = 1  # all atoms with no alternative sites are added to each separated residue     
 
 class Residue(AtomGroup):
   """Class for chemical Residue
@@ -47,7 +47,7 @@ class Residue(AtomGroup):
 
     return []
 
-  def split_by_site(self,unknown_site_handling=UnknownSiteHandlingMethod.IGNORE):
+  def split_by_site(self,unknown_site_handling='ignore'):
     """return a list of Residue objects, one for each site"""
     if self.contains_alternative_sites:
       ignore_count = 0
