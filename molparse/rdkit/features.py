@@ -3,7 +3,8 @@ import os
 from rdkit import Chem, RDConfig
 from rdkit.Chem import AllChem
 import numpy as np
-
+from .mol import mol_to_pdb_block
+from ..group import AtomGroup
 
 FDEF = AllChem.BuildFeatureFactory(os.path.join(RDConfig.RDDataDir,'BaseFeatures.fdef'))
 FEATURE_FAMILIES = FDEF.GetFeatureFamilies()
