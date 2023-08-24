@@ -21,6 +21,12 @@ def plot3d(atoms,extra=[],bonds=[],alpha=1.0,velocity=False,v_scale=1.0,fig=None
 		fig = go.Figure()
 
 	if features:
+
+		from .rdkit import Feature
+
+		if isinstance(features[0],Feature):
+			features = [dict(family=f.family,position=f.position,indices=None,x=f.x,y=f.y,z=f.z) for f in features]
+
 		import plotly.express as px
 		px_fig = px.scatter_3d(
 			features,
@@ -33,7 +39,8 @@ def plot3d(atoms,extra=[],bonds=[],alpha=1.0,velocity=False,v_scale=1.0,fig=None
 			opacity=0.5
 		)
 
-		fig.add_trace(px_fig.data[0])
+		for trace in px_fig.data:
+			fig.add_trace(trace)
 
 	if bonds:
 

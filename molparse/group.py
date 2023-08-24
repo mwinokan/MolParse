@@ -574,7 +574,7 @@ class AtomGroup():
 		else:
 			bonds = []
 
-		if features:
+		if not isinstance(features,list) and features:
 			from .rdkit import features_from_group
 			features = features_from_group(self)
 
