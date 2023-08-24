@@ -7,6 +7,7 @@ def write(filename,image,verbosity=1,**parameters):
   from .system import System
   from .group import AtomGroup
   import plotly.graph_objects as go
+  import pickle
 
   if (verbosity > 0):
     mout.out("writing "+mcol.file+
@@ -17,7 +18,11 @@ def write(filename,image,verbosity=1,**parameters):
   # Different behaviour depending on format:
   try:
     # CJSON:
-    if filename.endswith(".cjson"):
+    if filename.endswith(".pickle"):
+      with open(filename,'wb') as f:
+        pickle.dump(image,f)
+    # CJSON:
+    elif filename.endswith(".cjson"):
       writeCJSON(filename,image)
     # PBD and amp.System:
     elif (filename.endswith(".pdb") or filename.endswith(".pdb2")) and isinstance(image,System):
@@ -147,10 +152,33 @@ def parse(file,verbosity=1):
     return parseGRO(file,verbosity=verbosity)
   elif file.split(".")[-1] == "xyz":
     return parseXYZ(file,verbosity=verbosity)
+  elif file.split(".")[-1] == "mol":
+    return parseMol(file,verbosity=verbosity)
   else:
     import mout
     mout.errorOut("Unsupported file type for MolParse parsing, using ASE.io.read")
     return read(file,verbosity=verbosity)
+
+def parseMol(mol, verbosity=1):
+    
+    mol = str(mol)
+    assert mol.endswith(".mol"), f"filename doesn't end with '.mol': {mol}"
+
+    if verbosity:
+      import mout
+      import mcol
+      mout.out("parsing "+mcol.file+
+               mol+
+               mcol.clear+" ... ",
+               end='') # user output
+
+    from rdkit.Chem import MolFromMolFile
+    mol = MolFromMolFile(mol)
+
+    if verbosity:
+        mout.out("Done.") # user output
+
+    return mol
 
 def parsePDB(pdb,
   systemName=None,
