@@ -15,6 +15,7 @@ class System(AtomGroup):
 
     self.description = None
     self.remarks = []
+    self._header_data = []
 
     from .list import NamedList
     self.chains = NamedList()
