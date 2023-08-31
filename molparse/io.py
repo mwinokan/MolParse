@@ -145,15 +145,19 @@ def tagFromLine(line,byResidue):
     return 0
 
 def parse(file,verbosity=1):
+  from .ndx import parseNDX
   file = str(file)
-  if file.split(".")[-1] == "pdb":
+  extension = file.split(".")[-1]
+  if extension == "pdb":
     return parsePDB(file,verbosity=verbosity)
-  elif file.split(".")[-1] == "gro":
+  elif extension == "gro":
     return parseGRO(file,verbosity=verbosity)
-  elif file.split(".")[-1] == "xyz":
+  elif extension == "xyz":
     return parseXYZ(file,verbosity=verbosity)
-  elif file.split(".")[-1] == "mol":
+  elif extension == "mol":
     return parseMol(file,verbosity=verbosity)
+  elif extension == "ndx":
+    return parseNDX(file,verbosity=verbosity)
   else:
     import mout
     mout.errorOut("Unsupported file type for MolParse parsing, using ASE.io.read")
