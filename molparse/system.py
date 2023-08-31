@@ -96,6 +96,11 @@ class System(AtomGroup):
     for atom in self.atoms:
       atom.pdb_index = None
 
+  def clear_atom_numbers(self):
+    """Clear all pdb indices from the system"""
+    for atom in self.atoms:
+      atom._NUMBER = None
+
   def fix_atomnames(self,verbosity=1):
     """Attempt to fix all child Atom names"""
     import mout

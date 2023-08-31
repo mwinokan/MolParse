@@ -719,6 +719,9 @@ def new_residue(name,index,number,chain):
   elif res_type(name) == "DNA":
     from .nucleic import NucleicAcid
     return NucleicAcid(name,index,number,chain)
+  elif name in ['ATP','GTP','CTP','TTP','OGTP']:
+    from .ntp import NucleobaseTriPhosphate
+    return NucleobaseTriPhosphate(name,index,number,chain)
   else:
     from .residue import Residue
     return Residue(name,index,number,chain)

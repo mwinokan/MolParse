@@ -29,7 +29,16 @@ class Residue(AtomGroup):
       from .atom import Atom
 
       for atom in atoms:
-        self.add_atom(Atom(name=atom.symbol,position=atom.position,residue=self.name))
+        self.add_atom(
+          Atom(
+            name=atom.name,
+            index=atom.index,
+            pdb_index=atom.number,
+            position=atom.position,
+            residue=self.name,
+            res_number=self.number,
+            chain=self.chain,
+        ))
 
     self._parent = None
 
@@ -190,6 +199,7 @@ class Residue(AtomGroup):
     atom.chain = self.chain
     atom.residue = self.name
     atom.res_index = self.index
+    atom._res_number = self.number
 
     atom.parent = self
 
@@ -352,7 +362,7 @@ class Residue(AtomGroup):
 
     mout.out(f"{mcol.underline}{'NAME':4} {'INDEX':>6} {'NUMBER':>6} {'X':>7} {'Y':>7} {'Z':>7} {'Alt.':>4}{mcol.clear} ")
     for atom in self.atoms:
-      mout.out(f'{atom.name:4} {atom.index:>6} {atom.number:>6} {atom.x:>7.2f} {atom.y:>7.2f} {atom.z:>7.2f} {atom.alternative_site or " ":>4}')
+      mout.out(f'{atom.name:4} {atom.index if atom.index is not None else " ":>6} {atom.number if atom.number is not None else " ":>6} {atom.x:>7.2f} {atom.y:>7.2f} {atom.z:>7.2f} {atom.alternative_site or " ":>4}')
     
   def is_same_as(self,residue):
     assert isinstance(residue, Residue)
@@ -380,7 +390,7 @@ class Residue(AtomGroup):
 def res_type(resname):
   """Guess type from residue name"""
   # DNA
-  if resname.startswith(('DA','DT','DC','DG','ADE9','THMN','GUA9','CTSN')):
+  if resname.startswith(('DA','DT','DC','DG','ADE9','THMN','GUA9','CTSN','DOG')):
     this_type = "DNA"
   # solvents
   elif resname.startswith(('SOL','WAT','TIP','T3P','HOH','PEG','SO4','DMS','H2S')):
@@ -392,7 +402,7 @@ def res_type(resname):
   elif resname.startswith(('DPPC','POPC','DAG','TAG')):
     this_type = "LIP"
   # ligands
-  elif resname.startswith(('ATP','GTP','LIG','UNL')):
+  elif resname.startswith(('ATP','GTP','LIG','UNL','CTP','TTP','OGTP')):
     this_type = "LIG"
   elif resname.startswith(('QM','MM')):
     this_type = "N/A"
