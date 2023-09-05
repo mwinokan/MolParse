@@ -4,6 +4,7 @@ def write(filename,image,verbosity=1,**parameters):
   from ase import atoms as aseatoms
   import mcol
   import mout
+  import json
   from .system import System
   from .group import AtomGroup
   import plotly.graph_objects as go
@@ -19,10 +20,16 @@ def write(filename,image,verbosity=1,**parameters):
 
   # Different behaviour depending on format:
   try:
-    # CJSON:
+    # pickle:
     if filename.endswith(".pickle"):
       with open(filename,'wb') as f:
         pickle.dump(image,f)
+
+    # JSON:
+    elif filename.endswith(".json"):
+      with open(filename,'wt') as f:
+        json.dump(image,f)
+
     # CJSON:
     elif filename.endswith(".cjson"):
       writeCJSON(filename,image)
