@@ -1,79 +1,54 @@
 
-from .residue import Residue, res_type
+from .residue import Residue
 from .group import AtomGroup
 
-def alphabet(name):
-	if name == "DA": return "A" 
-	elif name == "DT": return "T" 
-	elif name == "DG": return "G" 
-	elif name == "DC": return "C" 
-	elif name == "DA3": return "A" 
-	elif name == "DT3": return "T" 
-	elif name == "DG3": return "G" 
-	elif name == "DC3": return "C" 
-	elif name == "DA5": return "A" 
-	elif name == "DT5": return "T" 
-	elif name == "DG5": return "G" 
-	elif name == "DC5": return "C" 
-	else:
-		import mout
-		mout.errorOut(f"Unsupported nucleic acid residue name: {name}")
-		return None
+ALPHABET = {
+	"ATP":"A",
+	"TTP":"T",
+	"GTP":"G",
+	"CTP":"C",
+}
 
-def longname(name):
-	if name == "DA": return "Adenine" 
-	elif name == "DT": return "Thymine" 
-	elif name == "DG": return "Guanine" 
-	elif name == "DC": return "Cytosine" 
-	elif name == "DA3": return "Adenine 3-Terminus" 
-	elif name == "DT3": return "Thymine 3-Terminus" 
-	elif name == "DG3": return "Guanine 3-Terminus" 
-	elif name == "DC3": return "Cytosine 3-Terminus" 
-	elif name == "DA5": return "Adenine 5-Terminus" 
-	elif name == "DT5": return "Thymine 5-Terminus" 
-	elif name == "DG5": return "Guanine 5-Terminus" 
-	elif name == "DC5": return "Cytosine 5-Terminus" 
-	else:
-		import mout
-		mout.errorOut(f"Unsupported nucleic acid residue name: {name}")
-		return None
+LONGNAME = {
+	"ATP": "Adenine Tri-Phosphate",
+	"TTP": "Thymine Tri-Phosphate",
+	"GTP": "Guanine Tri-Phosphate",
+	"CTP": "Cytosine Tri-Phosphate",
+}
 
-class NucleicAcid(Residue):
-	"""Class for Nucleic Acid Residue
+class NucleobaseTriPhosphate(Residue):
+	"""Class for Nucleobase Tri Phosphate Residue
 
 	These objects should not be created by the user, 
 	but constructed automatically when parsing a 
 	coordinate file via amp.parsePDB or otherwise"""
 
 	def __init__(self,name: str,index: int=None, number: int=None,chain: str=None,atoms=None):
-		assert res_type(name) == "DNA"
-		super(NucleicAcid, self).__init__(name,index,number,chain,atoms)
+		super(NucleobaseTriPhosphate, self).__init__(name,index,number,chain,atoms)
 
 		self._backbone = None
 		self._nucleobase = None
 
 	@property
+	def longname(self):
+		return LONGNAME[self.name]
+	
+	@property
+	def letter(self):
+		return ALPHABET[self.name]
+
+	@property
 	def is_purine(self):
-		return self.name in ["DG","DA"]
+		return self.name in ["GTP","ATP"]
 
 	@property
 	def is_pyrimidine(self):
-		return self.name in ["DC","DT"]
-
-	@property
-	def letter(self):
-		"""Nucleic acid alphabet"""
-		return alphabet(self.name)
-
-	@property
-	def longname(self):
-		"""Nucleic acid chemical name"""
-		return longname(self.name)
-
+		return self.name in ["CTP","TTP"]
+	
 	@property
 	def type(self):
 		"""Fixed typing"""
-		return "DNA"
+		return "LIG"
 
 	@property
 	def backbone(self):
@@ -81,17 +56,6 @@ class NucleicAcid(Residue):
 		if not self._backbone:
 			self._backbone = self.get_atom(self.bb_names)
 		return self._backbone
-
-	def remove_backbone(self,add_link=True):
-		"""Remove backbone atoms"""
-
-		if add_link:
-			self.get_atom("C1'").set_name('HLNK')
-
-		for atom in self.backbone:
-			if not atom:
-				continue
-			self.delete_atom(atom.name)
 
 	@property
 	def nucleobase(self):
@@ -102,58 +66,43 @@ class NucleicAcid(Residue):
 
 	@property
 	def bb_names(self):
-		return ["H5T", "O5'", "C5'",  "H5'", "H5''", 
-				"C4'", "H4'", "O4'",  "C1'", "H1'", 
-				"C2'", "H2'", "H2''", "C3'", "H3'", 
-				"O3'", "P",   "O1P",  "O2P", "H3T"]
+		return [
+			"C1'",
+			"H1'",
+			"C2'",
+			"O2'",
+			"H2'",
+			"H2''",
+			"C3'",
+			"H3'",
+			"O3'",
+			"H3T",
+			"HO3'",
+			"C4'",
+			"H4'",
+			"O4'",
+			"C5'",
+			"H5'",
+			"H5''",
+			"O5'",
+			"PA",
+			"O1A",
+			"O2A",
+			"O3A",
+			"PB",
+			"O1B",
+			"O2B",
+			"O3B",
+			"PG",
+			"O1G",
+			"O2G",
+			"O3G",
+		]
 
 	@property
 	def nonbb_names(self):
 		"""Get nucleobase atoms"""
 		return [n for n in self.atom_names() if n not in self.bb_names]
-
-	def make_5ter(residue):
-		"""Create a 5-Terminus"""
-
-		# Append 5 to residue name
-		if not residue.name.endswith("5"):
-			residue.name += "5"
-
-		# Remove HTER/H5T
-		residue.delete_atom("HTER")
-		residue.delete_atom("H5T")
-		residue.delete_atom("HO5'")
-		residue.delete_atom("OXT")
-		residue.delete_atom("O5T")
-		residue.delete_atom("O1P")
-		residue.delete_atom("O2P")
-		residue.delete_atom("OP1")
-		residue.delete_atom("OP2")
-
-		# Rename P->H5T
-		atom = residue.get_atom("P")
-		if atom is not None:
-			atom.name = "H5T"
-
-	def make_3ter(residue):
-		"""Create a 3-Terminus"""
-
-		# Append 3 to residue name
-		if not residue.name.endswith("3"):
-			residue.name += "3"
-
-		# Remove HTER/H3T
-		residue.delete_atom("O1P3")
-		residue.delete_atom("O2P3")
-		residue.delete_atom("O3T")
-		residue.delete_atom("H3T")
-		residue.delete_atom("HO3'")
-		residue.delete_atom("HCAP")
-
-		# Rename P3->H3T
-		atom = residue.get_atom("P3")
-		if atom is not None:
-			atom.name = "H3T"
 
 	def flip(self):
 
@@ -175,29 +124,36 @@ class NucleicAcid(Residue):
 			a1.position = a2.position
 
 	def mutate(self,newname,show=False):
-		""" Mutate this nucleic acid to another"""
+		""" Mutate this nucleic triphosphate to another"""
 
 		import mout
 		import mcol
-		mout.headerOut(f"Mutating {mcol.arg}{self.longname}{mcol.clear+mcol.bold} --> {mcol.arg}{longname(newname)}{mcol.clear+mcol.bold} ({mcol.result}{self.letter}{self.number}{alphabet(newname)}{mcol.clear+mcol.bold})")
+		mout.header(f"Mutating {mcol.arg}{self.longname}{mcol.clear+mcol.bold} --> {mcol.arg}{LONGNAME[newname]}{mcol.clear+mcol.bold} ({mcol.result}{self.letter}{self.number}{ALPHABET[newname]}{mcol.clear+mcol.bold})")
 
 		if self.name == newname:
-			mout.warningOut("Skipping mutation with self == target!")
+			mout.warning("Skipping mutation with self == target!")
 			return
+
+		NEW_ANALOGUE = {
+			"ATP":"DA",
+			"TTP":"DT",
+			"GTP":"DG",
+			"CTP":"DC",
+		}
 
 		import os
 		amp_path = os.path.dirname(__file__)
 
 		from .io import parse
 
-		if newname in ["DA","DT"]:
+		if newname in ["ATP","TTP"]:
 			ref_sys = parse(f"{amp_path}/ref/AT_FLAT.pdb",verbosity=0)
-		elif newname in ["DG","DC"]:
+		elif newname in ["GTP","CTP"]:
 			ref_sys = parse(f"{amp_path}/ref/GC_FLAT.pdb",verbosity=0)
 		else:
-			mout.errorOut("Unsupported target mutation")
+			mout.error("Unsupported target mutation")
 
-		rem = [c for c in ref_sys.chain_names if c not in newname[-1]][0]
+		rem = [c for c in ref_sys.chain_names if c not in NEW_ANALOGUE[newname][-1]][0]
 		ref_sys.remove_chain(rem,verbosity=0)
 		ref_sys.fix_indices()
 		ref_res = ref_sys.residues[0]
@@ -232,7 +188,7 @@ class NucleicAcid(Residue):
 			ref_res.delete_atom("H1",verbosity=0)
 
 		elif self.is_purine and ref_res.is_pyrimidine:
-			mout.warningOut("Purine --> Pyrimidine")
+			mout.warning("Purine --> Pyrimidine")
 
 			# get atoms to align by
 			start = ref_res.get_atom(["C6","C4","C2"])
@@ -248,7 +204,7 @@ class NucleicAcid(Residue):
 			ref_res.delete_atom("H1",verbosity=0)
 
 		elif self.is_pyrimidine and ref_res.is_purine:
-			mout.warningOut("Pyrimidine --> Purine")
+			mout.warning("Pyrimidine --> Purine")
 
 			# get atoms to align by
 			start = ref_res.get_atom(["C4","C6","C2"])
@@ -276,18 +232,11 @@ class NucleicAcid(Residue):
 
 		# add the reference nucleobase
 		for atom in ref_res.atoms:
-			atom._NUMBER = None
 			self.add_atom(atom)
-
-		if self.letter == 'G':
-			from .guanine import Guanine
-			self = Guanine.from_nucleic(self)
-
-		return self
 
 	def oxidise(self):
 
-		assert self.name == 'DG'
+		assert self.name == 'GTP'
 
 		import numpy as np
 		from .atom import Atom
@@ -295,7 +244,7 @@ class NucleicAcid(Residue):
 		import mout
 		import mcol
 
-		mout.header(f"Oxidising {mcol.arg}{self.longname}{mcol.header} --> {mcol.result}{mcol.bold}8-Oxo-7,8-dihydroguanine (DOG)")
+		mout.header(f"Oxidising {mcol.arg}{self.longname}{mcol.header} --> {mcol.result}{mcol.bold}8-Oxo-7,8-dihydroguanine triphosphate (OGTP)")
 
 		# H8 --> O8
 		self.get_atom('H8').name = 'O8'
@@ -328,4 +277,4 @@ class NucleicAcid(Residue):
 		atom.position = N3 + vec
 		self.add_atom(atom)
 
-		self.name = 'DOG'
+		self.name = 'OGTP'

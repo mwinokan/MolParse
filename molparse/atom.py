@@ -274,8 +274,10 @@ class Atom:
     return self.np_pos
 
   def __sub__(self,other):
-    assert isinstance(other,Atom)
-    return self.np_pos - other.np_pos
+    if isinstance(other,Atom):
+      return self.np_pos - other.np_pos
+    else:
+      return self.np_pos - other
 
   def __add__(self,other):
     import numpy as np

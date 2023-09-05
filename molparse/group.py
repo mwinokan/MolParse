@@ -376,11 +376,9 @@ class AtomGroup():
 			atom.chain = self._atoms[-1].chain
 			mout.warningOut('Taking atom chain from last atom in group!')
 		if atom.res_number is None:
-			atom.res_number = self._atoms[-1].res_number
-			mout.warningOut('Taking atom res_number from last atom in group!')
-		if atom.number is None:
-			atom._number = self._atoms[-1].number + 1
-			mout.warningOut('Taking atom number from last atom in group + 1!')
+			if len(self._atoms):
+				atom._res_number = self._atoms[-1].res_number
+				mout.warningOut('Taking atom res_number from last atom in group!')
 		self._atoms.append(atom)
 
 	def summary(self):
