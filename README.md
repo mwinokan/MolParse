@@ -52,11 +52,11 @@ Other options can be found by running `molxvg --help`.
 ### MPyTools
 
 * `git clone https://github.com/mwinokan/MPyTools.git`
-* Add `export MWPYTPATH=/path/to/directory` to your `.bash_profile`
-* Add `export PYTHONPATH=$PYTHONPATH:$MWPYTPATH` to your `.bash_profile`
+* Add `export MPYTOOLS=/path/to/directory` to your `.bash_profile`
+* Add `export PYTHONPATH=$PYTHONPATH:$MPYTOOLS` to your `.bash_profile`
 
 ### MolParse
 
 * `git clone https://github.com/mwinokan/MolParse.git`
-* Add `export MWMPPATH=/path/to/directory` to your `.bash_profile`
-* Add `export PYTHONPATH=$PYTHONPATH:$MWMPPATH` to your `.bash_profile`
+* Add `export MOLPARSE=/path/to/directory` to your `.bash_profile`
+* Add `export PYTHONPATH=$PYTHONPATH:$MOLPARSE` to your `.bash_profile`
