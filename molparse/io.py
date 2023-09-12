@@ -28,7 +28,7 @@ def write(filename,image,verbosity=1,**parameters):
     # JSON:
     elif filename.endswith(".json"):
       with open(filename,'wt') as f:
-        json.dump(image,f)
+        json.dump(image,f,indent=2)
 
     # CJSON:
     elif filename.endswith(".cjson"):
