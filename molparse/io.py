@@ -308,6 +308,8 @@ def parsePDB(pdb,
                 header_data.append(line)
               elif line.startswith('HEADER'):
                 header_data.append(line)
+              elif line.startswith('COMPND'):
+                header_data.append(line)
               elif line.startswith('REMARK'):
                 header_data.append(line)
               elif line.startswith('CRYST'):
