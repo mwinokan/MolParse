@@ -68,7 +68,8 @@ def write(filename,image,verbosity=1,**parameters):
       else:
         if filename.endswith('.pdf'):
           import plotly.io as pio   
-          pio.kaleido.scope.mathjax = None
+          if pio.kaleido.scope is not None:
+            pio.kaleido.scope.mathjax = None
         image.write_image(filename)
 
     # Others:
