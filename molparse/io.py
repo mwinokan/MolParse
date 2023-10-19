@@ -949,7 +949,7 @@ def modifyPDB(filename,atoms,copy_from=None):
       
     # check if the atom index matches a pdb_index in the atoms
     if pdb_index >= min_index and pdb_index <= max_index and pdb_index in pdb_indices:
-      line = constructPDBAtomLine(atoms[pdb_indices.index(pdb_index)])
+      line = constructPDBAtomLine(atoms[pdb_indices.index(pdb_index)],pdb_index)
 
     print(line,end='')
 
