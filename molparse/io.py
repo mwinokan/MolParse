@@ -1033,7 +1033,7 @@ def constructPDBAtomLine(atom,index,charges=True, shift_name=False):
     # strlist.append("  ")
 
   if charges and atom.charge is not None:
-    strlist.append(f'{atom.charge:8.6f}')
+    strlist.append(f'{atom.charge:10.6f}')
 
   strlist.append(end)
 
