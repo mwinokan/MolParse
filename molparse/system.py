@@ -354,13 +354,14 @@ class System(AtomGroup):
                               mcol.arg+residue.name+str([residue.number]))
     return number_deleted
 
-  def remove_residues_by_index(self,del_list:list,verbosity:int=1):
+  def remove_residues_by_index(self,del_list:list,verbosity:int=1,fix_indices=True):
     """Remove Atoms by their index"""
     import mcol
     import mout
 
     number_deleted=0
-    self.fix_indices()
+    if fix_indices:
+      self.fix_indices()
     for chain in self.chains:
       for index,residue in reversed(list(enumerate(chain.residues))):
           if residue.number in del_list:
