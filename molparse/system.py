@@ -334,13 +334,14 @@ class System(AtomGroup):
     if verbosity > 0:
       mout.warningOut("Removed "+mcol.result+str(number_deleted)+mcol.warning+" heterogens")
 
-  def remove_atoms_by_index(self,del_list:list,verbosity:int=1):
+  def remove_atoms_by_index(self,del_list:list,verbosity:int=1,fix_indices=True):
     """Remove Atoms by their index"""
     import mcol
     import mout
 
     number_deleted=0
-    self.fix_indices()
+    if fix_indices:
+      self.fix_indices()
     for chain in self.chains:
       for residue in chain.residues:
         for index,atom in reversed(list(enumerate(residue.atoms))):
