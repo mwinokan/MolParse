@@ -360,9 +360,9 @@ class Residue(AtomGroup):
     import mcol
     mout.headerOut(f'\nResidue {self.name}, index={self.index}, number={self.number}, chain={self.chain}, #atoms={self.num_atoms}')
 
-    mout.out(f"{mcol.underline}{'NAME':4} {'INDEX':>6} {'NUMBER':>6} {'X':>7} {'Y':>7} {'Z':>7} {'Alt.':>4}{mcol.clear} ")
+    mout.out(f"{mcol.underline}{'Sy':2} {'NAME':4} {'INDEX':>6} {'NUMBER':>6} {'X':>7} {'Y':>7} {'Z':>7} {'Alt.':>4}{mcol.clear} ")
     for atom in self.atoms:
-      mout.out(f'{atom.name:4} {atom.index if atom.index is not None else " ":>6} {atom.number if atom.number is not None else " ":>6} {atom.x:>7.2f} {atom.y:>7.2f} {atom.z:>7.2f} {atom.alternative_site or " ":>4}')
+      mout.out(f'{atom.symbol:2} {atom.name:4} {atom.index if atom.index is not None else " ":>6} {atom.number if atom.number is not None else " ":>6} {atom.x:>7.2f} {atom.y:>7.2f} {atom.z:>7.2f} {atom.alternative_site or " ":>4}')
     
   def is_same_as(self,residue):
     assert isinstance(residue, Residue)

@@ -1,4 +1,6 @@
 
+import mout
+
 class Atom:
   """Fundamental unit for molecular systems.
 
@@ -8,7 +10,7 @@ class Atom:
   
   name_symbol_dict = {'MG': 'Mg','Mg': 'Mg', 'LIT': 'Li', 'Li': 'Li', 'SOD': 'Na', 'POT':'K'}
 
-  def __init__(self,name,index=None,pdb_index=None,position=None,residue=None,chain=None,res_number=None,charge=None,FF_atomtype=None,mass=None,LJ_sigma=None,LJ_epsilon=None,occupancy=None,temp_factor=None,heterogen=None,charge_str=None,velocity=None,alternative_site=None,res_index=None):
+  def __init__(self,name,index=None,pdb_index=None,position=None,residue=None,chain=None,res_number=None,charge=None,FF_atomtype=None,mass=None,LJ_sigma=None,LJ_epsilon=None,occupancy=None,temp_factor=None,heterogen=None,charge_str=None,velocity=None,alternative_site=None,res_index=None,element=None):
 
     # necessary upon init
     self._name = name
@@ -20,12 +22,12 @@ class Atom:
     self._position = position
     self.residue = residue
 
-    if name in self.name_symbol_dict.keys():
-      self.species = self.name_symbol_dict[name]
-      self.symbol = self.name_symbol_dict[name]
+    if element:
+      self._element = element
     else:
-      self.species = name[0]
-      self.symbol = name[0]
+      mout.warning('Guessing element from first character of atom name!')
+      self._element = name[0]
+    assert self.symbol is not None
 
     self.chain=chain
     self.chain_number = None
@@ -67,6 +69,18 @@ class Atom:
     self._parent = None
 
   @property
+  def element(self):
+    return self._element
+
+  @property
+  def symbol(self):
+    return self._element
+
+  @property
+  def species(self):
+    return self._element
+
+  @property
   def alternative_site(self):
     return self._alternative_site
   
@@ -82,7 +96,7 @@ class Atom:
     self._parent = obj
 
   def __deepcopy__(self, memodict={}):
-    copy_object = Atom(self.name, self.index, self.pdb_index, self.position, self.residue, res_number=self.res_number, res_index=self.res_index)
+    copy_object = Atom(self.name, self.index, self.pdb_index, self.position, self.residue, res_number=self.res_number, res_index=self.res_index, element=self.element)
     copy_object.chain = self.chain
     copy_object.occupancy = self.occupancy
     copy_object.temp_factor = self.temp_factor
@@ -122,7 +136,7 @@ class Atom:
     else:
       return namestring
 
-  def set_name(self,name,verbosity=1):
+  def set_name(self,name,element=None,verbosity=1):
     """Rename the atom"""
     if verbosity > 0:
       import mout
@@ -132,13 +146,13 @@ class Atom:
                mcol.varName+self.residue+str([self.res_number])+
                mcol.clear+" to "+mcol.arg+name)
     self._name = name
-    # self.species = name[0]
-    if name in self.name_symbol_dict.keys():
-      self.species = self.name_symbol_dict[name]
-      self.symbol = self.name_symbol_dict[name]
+    
+    if element:
+      self._element = element
     else:
-      self.species = name[0]
-      self.symbol = name[0]
+      mout.warning('Guessing element from first character of atom name!')
+      self._element = name[0]
+    assert self.symbol is not None
 
   @property
   def res_number(self):

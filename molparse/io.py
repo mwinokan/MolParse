@@ -578,6 +578,11 @@ def parsePDBAtomLine(line,res_index,atom_index,chain_counter,debug=False,alterna
       temp_factor = None
     if debug: mout.var(f'{atom_index}.temp_factor',temp_factor)
 
+    element = line[76:78].strip()
+    if len(element) > 1:
+      element = f'{element[0]}{element[1:].lower()}'
+    if debug: mout.var(f'{atom_index}.element',f'###{element}###')
+
     chg_str = line[78:80].rstrip('\n')
     if len(chg_str.strip()) < 1:
       chg_str = None
