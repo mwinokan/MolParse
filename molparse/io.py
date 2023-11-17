@@ -850,9 +850,7 @@ def writePDB(filename,system,verbosity=1,append=False,model=1,header=None,title=
   from .group import AtomGroup
 
   if (verbosity > 0):
-    mout.out("writing "+mcol.file+
-             filename+
-             mcol.clear+" ... ",
+    mout.out(f"writing {mcol.file}{filename}{mcol.clear} ... ",
              end='') # user output
 
   # Check that the input is the correct class
