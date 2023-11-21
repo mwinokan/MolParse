@@ -333,7 +333,16 @@ class AtomGroup():
 		
 		str_buffer = []
 		for atom in self.atoms:
-			str_buffer.append(constructPDBAtomLine(atom,atom.number))
+			str_buffer.append(constructPDBAtomLine(atom,atom.number,alt_sites=False))
+		return ''.join(str_buffer)
+
+	@property
+	def pdb_block_with_alt_sites(self):
+		from .io import constructPDBAtomLine
+		
+		str_buffer = []
+		for atom in self.atoms:
+			str_buffer.append(constructPDBAtomLine(atom,atom.number,alt_sites=True))
 		return ''.join(str_buffer)
 
 	@property
