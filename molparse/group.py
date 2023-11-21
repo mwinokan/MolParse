@@ -386,9 +386,10 @@ class AtomGroup():
 		import mout
 		mout.header(f'{mcol.varType}AtomGroup{mcol.clear}{mcol.bold}: {mcol.func}{self.name}{mcol.clear}')
 
-		mout.out(f'{mcol.underline}{"name"} {"index":>6} {"number":>6} {"res":>4} {"res#":>6} {"chain":<5}')
+		mout.out(f'{mcol.underline}Sy name {"index":>6} {"number":>6} {"res":>4} {"res#":>6} {"chain":<5}')
 
 		for a in self.atoms:
+			mout.out(f'{mcol.varName}{a.name:<2}{mcol.clear}',end=' ')
 			mout.out(f'{mcol.varName}{a.name:<4}{mcol.clear}',end=' ')
 			mout.out(f'{a.index:>6}',end=' ')
 			mout.out(f'{a.number:>6}',end=' ')
