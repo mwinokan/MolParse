@@ -599,7 +599,13 @@ def parsePDBAtomLine(line,res_index,atom_index,chain_counter,debug=False,alterna
     if end:
       charge = float(line[80:89])
 
-    atom = Atom(atom_name,pdb_index,pdb_index,position,residue,chain,res_number,occupancy=occupancy,temp_factor=temp_factor,heterogen=hetatm,charge_str=chg_str,alternative_site=alt_site_str,res_index=res_index,charge=charge)
+    atom = Atom(atom_name,pdb_index,pdb_index,position,residue,chain,res_number,occupancy=occupancy,temp_factor=temp_factor,heterogen=hetatm,charge_str=chg_str,alternative_site=alt_site_str,res_index=res_index,charge=charge,element=element)
+
+    if debug:
+      atom.summary()
+
+    if debug:
+      raise Exception('Stopping DEBUG')
 
     return atom
 
@@ -956,7 +962,7 @@ def modifyPDB(filename,atoms,copy_from=None):
 
     print(line,end='')
 
-def constructPDBAtomLine(atom,index,charges=True, shift_name=False):
+def constructPDBAtomLine(atom,index,charges=True, shift_name=False, alt_sites=True):
 
   import mout
   import mcol
@@ -994,7 +1000,7 @@ def constructPDBAtomLine(atom,index,charges=True, shift_name=False):
     strlist.append(f' {atom.name[:3].ljust(3)}')
   else:
     strlist.append(str(atom.name[:4]).ljust(4))
-  if atom.alternative_site:
+  if alt_sites and atom.alternative_site:
     strlist.append(str(atom.alternative_site))
   else:
     strlist.append(" ")

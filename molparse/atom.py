@@ -123,7 +123,7 @@ class Atom:
 
   def summary(self):
     """Summarised output of the atom's properties"""
-    print(f'Atom {self.name}, index={self.index}, pdb_index={self.pdb_index}, res={self.residue}, res_number={self.res_number}, chain={self.chain}, chain_number={self.chain_number}')
+    print(f'Atom {self.name} ({self.element}), index={self.index}, pdb_index={self.pdb_index}, res={self.residue}, res_number={self.res_number}, chain={self.chain}, chain_number={self.chain_number}')
 
   def get_name(self,wRes=False,noPrime=False):
     """Returns a string of resname_atomname"""
@@ -136,7 +136,7 @@ class Atom:
     else:
       return namestring
 
-  def set_name(self,name,element=None,verbosity=1):
+  def set_name(self,name,element,verbosity=1):
     """Rename the atom"""
     if verbosity > 0:
       import mout
@@ -147,11 +147,8 @@ class Atom:
                mcol.clear+" to "+mcol.arg+name)
     self._name = name
     
-    if element:
-      self._element = element
-    else:
-      mout.warning('Guessing element from first character of atom name!')
-      self._element = name[0]
+    assert element
+    self._element = element
     assert self.symbol is not None
 
   @property
