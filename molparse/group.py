@@ -861,3 +861,7 @@ class AtomGroup():
 			import mout
 			lookup = {'a':'atoms','c':'chains','r':'residues'}
 			mout.errorOut(f"{type(self)} does not possess {lookup[key[0]]} attribute")
+
+	def __del__(self):
+		import mout
+		mout.debug(f'{self} was deleted')

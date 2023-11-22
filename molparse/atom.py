@@ -307,3 +307,7 @@ class Atom:
     return self.name
   def __str__(self):
     return self.name
+
+  def __del__(self):
+    mout.debug(f'Atom({self},id({id(self)})) was deleted')
+  

@@ -195,7 +195,10 @@ class Residue(AtomGroup):
     assert isinstance(atom,Atom)
 
     if copy:
-      atom = atom.copy()
+      atom_new = atom.copy()
+      import mout
+      mout.debug(f'copied atom: {atom} {id(atom)} --> {id(atom_new)}')
+      atom = atom_new
 
     atom.chain = self.chain
     atom.residue = self.name
