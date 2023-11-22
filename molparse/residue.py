@@ -99,10 +99,9 @@ class Residue(AtomGroup):
 
   @parent.setter
   def parent(self,obj):
-    # from .chain import Chain
-    # assert isinstance(obj, Chain)
-    import weakref
-    self._parent = weakref.ref(obj)
+    # import weakref
+    # self._parent = weakref.ref(obj)
+    self._parent = obj
 
   def rename(self,new: str,verbosity: int=1):
     """Rename the residue"""
