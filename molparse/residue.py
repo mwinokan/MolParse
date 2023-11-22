@@ -101,7 +101,8 @@ class Residue(AtomGroup):
   def parent(self,obj):
     # from .chain import Chain
     # assert isinstance(obj, Chain)
-    self._parent = obj
+    import weakref
+    self._parent = weakref.ref(obj)
 
   def rename(self,new: str,verbosity: int=1):
     """Rename the residue"""
@@ -194,7 +195,10 @@ class Residue(AtomGroup):
     assert isinstance(atom,Atom)
 
     if copy:
-      atom = atom.copy()
+      atom_new = atom.copy()
+      import mout
+      mout.debug(f'copied atom: {atom} {id(atom)} --> {id(atom_new)}')
+      atom = atom_new
 
     atom.chain = self.chain
     atom.residue = self.name

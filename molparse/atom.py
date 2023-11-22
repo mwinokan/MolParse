@@ -93,7 +93,8 @@ class Atom:
     # from .group import AtomGroup
     # from .residue import Residue
     # assert isinstance(obj, Residue) or isinstance(obj, Residue)
-    self._parent = obj
+    import weakref
+    self._parent = weakref.ref(obj)
 
   def __deepcopy__(self, memodict={}):
     copy_object = Atom(self.name, self.index, self.pdb_index, self.position, self.residue, res_number=self.res_number, res_index=self.res_index, element=self.element)
@@ -306,3 +307,7 @@ class Atom:
     return self.name
   def __str__(self):
     return self.name
+
+  def __del__(self):
+    mout.debug(f'Atom({self},id({id(self)})) was deleted')
+  

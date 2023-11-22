@@ -352,7 +352,7 @@ def parsePDB(pdb,
 
                 chain = Chain(atom.chain)
                 residue = new_residue(atom.residue,res_counter,atom.res_number,atom.chain)
-                residue.addAtom(atom)
+                residue.addAtom(atom,copy=False)
                 last_residue_name = atom.residue
                 last_residue_number = atom.res_number
                 last_chain_name = atom.chain
@@ -421,7 +421,7 @@ def parsePDB(pdb,
                       chain_counter += 1
                     chain = Chain(atom.chain)
 
-                residue.addAtom(atom)
+                residue.addAtom(atom,copy=False)
 
                 atom_counter += 1
 

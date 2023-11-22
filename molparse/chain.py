@@ -28,7 +28,8 @@ class Chain(AtomGroup):
   def parent(self,obj):
     # from .system import System
     # assert isinstance(obj, System)
-    self._parent = obj
+    import weakref
+    self._parent = weakref.ref(obj)
 
   def fix_names(self):
     """Ensure child-classes have correct parent name"""
