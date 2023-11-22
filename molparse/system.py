@@ -110,7 +110,7 @@ class System(AtomGroup):
       if atom.name[0].isnumeric():
         old = atom.name
         new = old[1:]+old[0]
-        atom.set_name(new,verbosity=verbosity-1)
+        atom.set_name(new,verbosity=verbosity-1,element=atom.element)
         if verbosity > 1:
           mout.out(old+" -> "+new)
         count+=1
@@ -680,8 +680,6 @@ class System(AtomGroup):
     if verbosity > 0 and count > 0:
       mout.warningOut(f"Deleted {count} alternative site atoms")
 
-
-
   def get_protein_interaction_sites(self):
     sites = []
     for chain in self.chains:
@@ -699,3 +697,42 @@ class System(AtomGroup):
       for residue in chain.residues:
         all_features += residue.features
     return all_features
+
+
+  def protein_residue_RMSD(self,other,plot=False):
+
+    residue_pairs = []
+
+    data = []
+
+    import numpy as np
+
+    for self_chain in self.protein_system.chains:
+
+      other_chain = other.get_chain(self_chain.name)
+
+      for self_residue in self_chain.residues:
+
+        other_residue = other_chain[f'r{self_residue.name} n{self_residue.number}']
+
+        distance = np.linalg.norm(self_residue.CoM() - other_residue.CoM())
+
+        data.append(dict(
+          name_number_chain_str=self_residue.name_number_chain_str,
+          self_residue=self_residue,
+          other_residue=other_residue,
+          distance=distance,
+        ))
+
+    if plot:
+      import plotly.express as px
+      fig = px.bar(data,x='name_number_chain_str',y='distance')
+      return fig
+
+    return data
+
+  @property
+  def protein_system(self):
+    sys = self.copy()
+    sys.chains = [c for c in sys.chains if c.type == 'PRO']
+    return sys
