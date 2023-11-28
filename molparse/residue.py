@@ -195,8 +195,8 @@ class Residue(AtomGroup):
 
     if copy:
       atom_new = atom.copy()
-      import mout
-      mout.debug(f'copied atom: {atom} {id(atom)} --> {id(atom_new)}')
+      # import mout
+      # mout.debug(f'copied atom: {atom} {id(atom)} --> {id(atom_new)}')
       atom = atom_new
 
     atom.chain = self.chain
