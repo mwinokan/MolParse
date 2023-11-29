@@ -1,6 +1,10 @@
 ![MolParse](https://github.com/mwinokan/MolParse/blob/master/graphics/molparse-01.png?raw=true)
 
-A python package for parsing, modifying, and analysis of molecular structure files. 
+A python package for parsing, modifying, and analysis of molecular structure files.
+
+Easiest way to install is from [PyPI](https://pypi.org/project/MolParse/):
+
+`pip install molparse`
 
 ## Usage
 
@@ -36,7 +40,7 @@ Gromacs produces data files in XVG format by default, these can be parsed using 
 
 Other options can be found by running `molxvg --help`.
 
-## Installation
+## Installation from source
 
 ### Requirements
 
