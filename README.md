@@ -2,6 +2,8 @@
 
 A python package for parsing, modifying, and analysis of molecular structure files.
 
+## Installation
+
 Easiest way to install is from [PyPI](https://pypi.org/project/MolParse/):
 
 `pip install molparse`
