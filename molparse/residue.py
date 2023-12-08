@@ -399,7 +399,7 @@ def res_type(resname):
   elif resname.startswith(('SOL','WAT','TIP','T3P','HOH','PEG','SO4','DMS','H2S')):
     this_type = "SOL"
   # ions
-  elif resname.startswith(('ION','MG','CL','NA','SOD','POT','CAL','LIT','Na+','Cl-','CA')):
+  elif resname.startswith(('ION','MG','CL','NA','SOD','POT','CAL','LIT','Na+','Cl-','CA','ZN')):
     this_type = "ION"
   # lipids
   elif resname.startswith(('DPPC','POPC','DAG','TAG')):
