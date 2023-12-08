@@ -36,12 +36,6 @@ def draw_mols(ms, p=None, confId=-1, hydrogen=True,colors=('cyanCarbon','redCarb
 
 def draw_grid(mols, labels=None, find_mcs=False, align_substructure=True):
 
-# def SmilesMCStoGridImage(smiles: list[str] or dict[str, str], align_substructure: bool = True, verbose: bool = False, **kwargs):
-
-    # for mol in mols:
-    #     if isinstance(mol, str):
-    #         mol = Chem.MolFromSmiles(mol)
-
     mols = [Chem.MolFromSmiles(mol) if isinstance(mol, str) else mol for mol in mols]
 
     if not labels:
