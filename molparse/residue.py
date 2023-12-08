@@ -395,7 +395,7 @@ RES_TYPES = {
   'SOL': ('SOL','WAT','TIP','T3P','HOH','PEG','SO4','DMS','H2S'),
   'ION': ('ION','MG','CL','NA','SOD','POT','CAL','LIT','Na+','Cl-','CA','ZN'),
   'LIP': ('DPPC','POPC','DAG','TAG'),
-  'LIG': ('ATP','GTP','LIG','UNL','CTP','TTP','OGTP')
+  'LIG': ('ATP','GTP','LIG','UNL','CTP','TTP','OGTP'),
   'N/A': ('QM','MM'),
   'PRO': ("ALA","ARG","ASN","ASP","CYS","GLN","GLU","GLY","HSD","HSE","HIS",
           "ILE","LEU","LYS","MET","PHE","PRO","SER","THR","TRP","TYR","VAL",

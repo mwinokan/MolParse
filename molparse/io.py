@@ -223,7 +223,7 @@ def parsePDB(pdb,
 
     from .system import System
     from .chain import Chain
-    from .residue import Residue
+    from .residue import Residue, RES_TYPES
     import mout
     import mcol
 
@@ -381,7 +381,7 @@ def parsePDB(pdb,
                 continue
               elif line.startswith("ANISOU"):
                 continue
-              elif dry and any(res in line for res in ["WAT","SOL","HOH","H2O"]):
+              elif dry and any(res in line for res in RES_TYPES['SOL']):
                 continue
               else:
 
