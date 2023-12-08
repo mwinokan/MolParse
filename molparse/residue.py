@@ -390,45 +390,34 @@ class Residue(AtomGroup):
   def children(self):
     return self.atoms
 
+RES_TYPES = {
+  'DNA': ('DA','DT','DC','DG','ADE9','THMN','GUA9','CTSN','DOG'),
+  'SOL': ('SOL','WAT','TIP','T3P','HOH','PEG','SO4','DMS','H2S'),
+  'ION': ('ION','MG','CL','NA','SOD','POT','CAL','LIT','Na+','Cl-','CA','ZN'),
+  'LIP': ('DPPC','POPC','DAG','TAG'),
+  'LIG': ('ATP','GTP','LIG','UNL','CTP','TTP','OGTP')
+  'N/A': ('QM','MM'),
+  'PRO': ("ALA","ARG","ASN","ASP","CYS","GLN","GLU","GLY","HSD","HSE","HIS",
+          "ILE","LEU","LYS","MET","PHE","PRO","SER","THR","TRP","TYR","VAL",
+          "HID","HIE","HIP","HSP"),
+}
+
 def res_type(resname):
   """Guess type from residue name"""
-  # DNA
-  if resname.startswith(('DA','DT','DC','DG','ADE9','THMN','GUA9','CTSN','DOG')):
-    this_type = "DNA"
-  # solvents
-  elif resname.startswith(('SOL','WAT','TIP','T3P','HOH','PEG','SO4','DMS','H2S')):
-    this_type = "SOL"
-  # ions
-  elif resname.startswith(('ION','MG','CL','NA','SOD','POT','CAL','LIT','Na+','Cl-','CA','ZN')):
-    this_type = "ION"
-  # lipids
-  elif resname.startswith(('DPPC','POPC','DAG','TAG')):
-    this_type = "LIP"
-  # ligands
-  elif resname.startswith(('ATP','GTP','LIG','UNL','CTP','TTP','OGTP')):
-    this_type = "LIG"
-  elif resname.startswith(('QM','MM')):
-    this_type = "N/A"
-  # amino acids
-  elif resname.startswith(("ALA","ARG","ASN","ASP",
-                             "CYS","GLN","GLU","GLY","HSD",
-                             "HSE","HIS","ILE","LEU","LYS",
-                             "MET","PHE","PRO","SER","THR",
-                             "TRP","TYR","VAL","HID","HIE","HIP","HSP")):
-    this_type = "PRO"
-  # amino acids w/ termini in Amber naming
-  elif resname[0] in ("N","C") and len(resname) == 4 and resname.endswith(("ALA","ARG","ASN","ASP",
-                             "CYS","GLN","GLU","GLY","HSD",
-                             "HSE","HIS","ILE","LEU","LYS",
-                             "MET","PHE","PRO","SER","THR",
-                             "TRP","TYR","VAL","HID","HIE","HIP","HSP")):
-    this_type = "PRO"
-  # chromophore
-  elif resname in ("CRO"):
-    this_type = "PRO"
-  else:
-    import mcol
-    import mout
-    mout.warningOut("Unknown residue type for "+mcol.arg+resname)
-    this_type = None
-  return this_type
+
+  for k,v in RES_TYPES.items():
+    if resname in v:
+      return k
+
+  # Amber style amino acid termini
+  if resname[0] in ("N","C") and len(resname) == 4 and resname[1:] in RES_TYPES['PRO']:
+    return 'PRO'
+  
+  # Chromophore
+  if resname == 'CRO':
+    return 'PRO'
+
+  import mcol
+  import mout
+  mout.warningOut("Unknown residue type for "+mcol.arg+resname)
+  return None
