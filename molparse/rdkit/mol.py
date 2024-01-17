@@ -12,6 +12,9 @@ def mol_from_pdb_block(pdb_block):
 def mol_to_smiles(mol):
 	return Chem.MolToSmiles(mol)
 
+def mol_from_smiles(smiles):
+	return Chem.MolFromSmiles(smiles)
+
 def mol_to_pdb_block(mol):
 	return Chem.MolToPDBBlock(mol)
 

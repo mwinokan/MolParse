@@ -45,7 +45,6 @@ def features_from_mol(mol, protonate=True):
             family=family, 
             atoms=atoms,
             position=position,
-            sidechain=None,
             res_name=None,
             res_number=None,
             res_chain=None,
@@ -96,7 +95,6 @@ def features_from_group(group, protonate=True):
             family=family, 
             atoms=atoms,
             position=position,
-            sidechain=None,
             res_name=None,
             res_number=None,
             res_chain=None,
@@ -110,12 +108,11 @@ import numpy as np
 
 class Feature(object):
 
-    def __init__(self, family: list, atoms: list, position: np.ndarray, sidechain: bool, res_name: str, res_number: int, res_chain: str):
+    def __init__(self, family: list, atoms: list, position: np.ndarray, res_name: str, res_number: int, res_chain: str):
             
         self.family = family
         self.atoms = atoms
         self.position = position
-        self.sidechain = sidechain
         self.res_name = res_name
         self.res_number = res_number
         self.res_chain = res_chain
