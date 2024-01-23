@@ -1,9 +1,10 @@
 
 import py3Dmol
 from rdkit import Chem
-from rdkit.Chem.Draw import IPythonConsole
+from rdkit.Chem.Draw import IPythonConsole, rdMolDraw2D
 from rdkit.Chem import rdFMCS, AllChem, Draw
 IPythonConsole.ipython_3d = True
+from IPython.display import SVG
 
 def draw_mol(m, feats=None, p=None, confId=-1, hydrogen=True):
     if p is None:
@@ -34,7 +35,7 @@ def draw_mols(ms, p=None, confId=-1, hydrogen=True,colors=('cyanCarbon','redCarb
     p.zoomTo()
     return p.show()
 
-def draw_grid(mols, labels=None, find_mcs=False, align_substructure=True):
+def draw_grid(mols, labels=None, find_mcs=False, align_substructure=True, highlightAtomLists=None):
 
     mols = [Chem.MolFromSmiles(mol) if isinstance(mol, str) else mol for mol in mols]
 
@@ -42,7 +43,7 @@ def draw_grid(mols, labels=None, find_mcs=False, align_substructure=True):
         labels = [Chem.MolToSmiles(mol) for mol in mols]
 
     if not find_mcs:
-        return Chem.Draw.MolsToGridImage(mols, legends=labels)
+        return Chem.Draw.MolsToGridImage(mols, legends=labels, highlightAtomLists=highlightAtomLists)
 
     else:
 
@@ -118,3 +119,29 @@ def draw_mcs(smiles: list[str] or dict[str, str], align_substructure: bool = Tru
           return drawing, mcs_smarts, mcs_mol, mols
      else:
           return drawing
+
+def view_difference(mol1, mol2):
+    mcs = rdFMCS.FindMCS([mol1,mol2])
+    mcs_mol = Chem.MolFromSmarts(mcs.smartsString)
+    match1 = mol1.GetSubstructMatch(mcs_mol)
+    target_atm1 = []
+    for atom in mol1.GetAtoms():
+        if atom.GetIdx() not in match1:
+            target_atm1.append(atom.GetIdx())
+    match2 = mol2.GetSubstructMatch(mcs_mol)
+    target_atm2 = []
+    for atom in mol2.GetAtoms():
+        if atom.GetIdx() not in match2:
+            target_atm2.append(atom.GetIdx())
+    return Draw.MolsToGridImage([mol1, mol2],highlightAtomLists=[target_atm1, target_atm2])
+
+def draw_highlighted_mol(mol, index_color_pairs):
+
+    drawer = rdMolDraw2D.MolDraw2DSVG(400,200)
+
+    drawer.DrawMolecule(mol,highlightAtoms=[x[0] for x in index_color_pairs],highlightAtomColors={x[0]:x[1] for x in index_color_pairs})
+    # drawer.DrawMolecule(mol)#,highlightAtoms=[x[0] for x in index_color_pairs],highlightAtomColors={x[0]:x[1] for x in index_color_pairs})
+
+    drawer.FinishDrawing()
+    svg = drawer.GetDrawingText().replace('svg:','')
+    return SVG(svg)
