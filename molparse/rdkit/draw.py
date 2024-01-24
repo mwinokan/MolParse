@@ -135,11 +135,15 @@ def view_difference(mol1, mol2):
             target_atm2.append(atom.GetIdx())
     return Draw.MolsToGridImage([mol1, mol2],highlightAtomLists=[target_atm1, target_atm2])
 
-def draw_highlighted_mol(mol, index_color_pairs):
+def draw_highlighted_mol(mol, index_color_pairs, legend=None):
 
     drawer = rdMolDraw2D.MolDraw2DSVG(400,200)
 
-    drawer.DrawMolecule(mol,highlightAtoms=[x[0] for x in index_color_pairs],highlightAtomColors={x[0]:x[1] for x in index_color_pairs})
+    drawer.DrawMolecule(mol,
+        highlightAtoms=[x[0] for x in index_color_pairs],
+        highlightAtomColors={x[0]:x[1] for x in index_color_pairs},
+        legend=legend,    
+    )
     # drawer.DrawMolecule(mol)#,highlightAtoms=[x[0] for x in index_color_pairs],highlightAtomColors={x[0]:x[1] for x in index_color_pairs})
 
     drawer.FinishDrawing()
