@@ -13,6 +13,8 @@ class AtomGroup():
 		self._show_context = False
 		self._context_options = {}
 
+		self._header_data = []
+
 		from .list import NamedList
 		self._atoms = NamedList()
 
