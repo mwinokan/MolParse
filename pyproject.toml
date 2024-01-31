@@ -17,7 +17,7 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    "mpytools",
+    "mpytools >= 0.0.9",
     "numpy",
     "matplotlib",
     "plotly",
