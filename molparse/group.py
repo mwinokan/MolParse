@@ -214,34 +214,26 @@ class AtomGroup():
 	@property
 	def atomic_numbers(self):
 		"""Get all child Atom atomic numbers (list)"""
-		number_list = []
-		for atom in self.atoms:
-			number_list.append(atom.atomic_number)
-		return number_list
+		return [atom.atomic_number for atom in self.atoms]
 
 	@property
 	def positions(self):
 		"""Get all child Atom positions (list)"""
-		positions_list = []
-		for atom in self.atoms:
-			positions_list.append(atom.position)
-		return positions_list
+		return [atom.np_pos for atom in self.atoms]
 
 	@property
 	def charges(self):
 		"""Get all child Atom charges (list)"""
-		charges = []
-		for atom in self.atoms:
-			charges.append(atom.charge)
-		return charges
+		return [atom.charge for atom in self.atoms]
 
 	@property
 	def symbols(self):
 		"""Get all child Atom symbols (list)"""
-		symbols = []
-		for atom in self.atoms:
-			symbols.append(atom.symbol)  
-		return symbols
+		return [atom.symbol for atom in self.atoms]
+
+	@property
+	def present_symbols(self):
+		return set(self.symbols)
 
 	@property
 	def masses(self):
@@ -253,19 +245,13 @@ class AtomGroup():
 
 	@property
 	def species(self):
-		"""Returns species of all child Atoms (list)"""
-		species_list = []
-		for atom in self.atoms:
-			species_list.append(atom.species)
-		return ''.join(species_list)
+		"""Returns species of all child Atoms (str)"""
+		return ''.join([atom.species for atom in self.atoms])
 
 	@property
 	def indices(self):
 		"""Returns indices of all child Atoms (list)"""
-		indices = []
-		for atom in self.atoms:
-			indices.append(atom.index)
-		return indices
+		return [atom.index for atom in self.atoms]
 
 	@property
 	def bbox(self):
