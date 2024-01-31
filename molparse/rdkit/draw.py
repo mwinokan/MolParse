@@ -149,3 +149,20 @@ def draw_highlighted_mol(mol, index_color_pairs, legend=None, size=(600,300)):
     drawer.FinishDrawing()
     svg = drawer.GetDrawingText().replace('svg:','')
     return SVG(svg)
+
+def draw_flat(mol, indices=False, legend=None, size=(600,300)):
+
+    mol = Chem.MolFromSmiles(Chem.MolToSmiles(mol))
+
+    drawer = rdMolDraw2D.MolDraw2DSVG(*size)
+
+    if indices:
+        for i,atom in enumerate(mol.GetAtoms()):
+            # atom.SetAtomMapNum(atom.GetIdx())
+            atom.SetProp('atomNote',f'{i}')
+
+    drawer.DrawMolecule(mol)
+
+    drawer.FinishDrawing()
+    svg = drawer.GetDrawingText().replace('svg:','')
+    return SVG(svg)
