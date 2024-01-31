@@ -20,7 +20,13 @@ def mol_to_pdb_block(mol):
 
 def mol_to_AtomGroup(mol):
 	from ..group import AtomGroup
-	return AtomGroup.from_pdb_block(mol_to_pdb_block(mol))
+	group = AtomGroup.from_pdb_block(mol_to_pdb_block(mol))
+	if hasattr(mol, '_Name'):
+		group.name = mol._Name
+	return group
+
+def mol_from_AtomGroup(group):
+	return group.mol
 
 def protonate(mol,embed=True,align=True,verbosity=1):
 	mol_prot = Chem.AddHs(mol)
