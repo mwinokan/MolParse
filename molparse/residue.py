@@ -156,14 +156,6 @@ class Residue(AtomGroup):
     return names_list
 
   @property
-  def positions(self):
-    """Returns positions of all child Atoms (list)"""
-    positions_list = []
-    for atom in self._atoms:
-      positions_list.append(atom.position)
-    return positions_list
-
-  @property
   def atomic_numbers(self):
     """Returns atomic numbers of all child Atoms (list)"""
     number_list = []
