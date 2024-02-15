@@ -1009,7 +1009,10 @@ def constructPDBAtomLine(atom,index,charges=True, shift_name=False, alt_sites=Tr
     mout.errorOut(f"{mcol.varName}atom.residue{mcol.clear}{mcol.warning} is None",code=f'mp.io.constructPDBAtomLine({atom},{index})')
     strlist.append("    ".ljust(4))
   else:
-    strlist.append(str(atom.residue).ljust(4))
+    res_str = str(atom.residue).ljust(4)
+    if len(res_str) > 4:
+      res_str = res_str[:4]
+    strlist.append(res_str)
   if atom.chain is None:
     mout.errorOut(f"{mcol.varName}atom.chain{mcol.clear}{mcol.warning} is None",code=f'mp.io.constructPDBAtomLine({atom},{index})')
     strlist.append(" ")
