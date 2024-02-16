@@ -139,6 +139,9 @@ def draw_highlighted_mol(mol, index_color_pairs, legend=None, size=(600,300)):
 
     drawer = rdMolDraw2D.MolDraw2DSVG(*size)
 
+    if legend is None:
+        legend=''
+
     drawer.DrawMolecule(mol,
         highlightAtoms=[x[0] for x in index_color_pairs],
         highlightAtomColors={x[0]:x[1] for x in index_color_pairs},
