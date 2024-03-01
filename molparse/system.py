@@ -356,7 +356,7 @@ class System(AtomGroup):
     return number_deleted
 
   def remove_residues_by_index(self,del_list:list,verbosity:int=1,fix_indices=True):
-    """Remove Atoms by their index"""
+    """Remove Residues by their index"""
     import mcol
     import mout
 

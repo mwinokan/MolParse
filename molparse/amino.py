@@ -320,7 +320,7 @@ class AminoAcid(Residue):
 				family=f_dict['family'], 
 				atoms=atoms,
 				position=position,
-				sidechain=None,
+				# sidechain=None,
 				res_name=self.name,
 				res_number=self.number,
 				res_chain=self.chain,

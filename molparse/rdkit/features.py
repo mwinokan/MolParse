@@ -156,5 +156,7 @@ class Feature(object):
         return f'{self.family} {self.res_name} {self.res_number} {self.res_chain} {self.atoms}'
 
     def __sub__(self,other):
-        assert isinstance(other,Feature)
-        return self.position - other.position
+        if isinstance(other, np.ndarray):
+            return self.position - other
+        else:
+            return self.position - other.position
