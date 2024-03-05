@@ -43,21 +43,12 @@ def plot3d(atoms, extra=[], bonds=[], alpha=1.0, velocity=False, v_scale=1.0, fi
             fig.add_trace(trace)
 
     if bonds:
-
-        x = []
-        y = []
-        z = []
+        x, y, z = [], [], []
 
         for a, b in bonds:
-            x.append(a[0])
-            x.append(b[0])
-            x.append(None)
-            y.append(a[1])
-            y.append(b[1])
-            y.append(None)
-            z.append(a[2])
-            z.append(b[2])
-            z.append(None)
+            x.extend([a[0], b[0], None])
+            y.extend([a[1], b[1], None])
+            z.extend([a[2], b[2], None])
 
         if transform and flat:
             p = [[a, b] for a, b in zip(x, y)]
@@ -74,9 +65,7 @@ def plot3d(atoms, extra=[], bonds=[], alpha=1.0, velocity=False, v_scale=1.0, fi
 
     if not flat and velocity:
 
-        x = []
-        y = []
-        z = []
+        x, y, z = [], [], []
 
         for atom in atoms:
 
@@ -87,15 +76,9 @@ def plot3d(atoms, extra=[], bonds=[], alpha=1.0, velocity=False, v_scale=1.0, fi
             a = atom.np_pos
             b = v_scale * atom.np_vel + a
 
-            x.append(a[0])
-            x.append(b[0])
-            x.append(None)
-            y.append(a[1])
-            y.append(b[1])
-            y.append(None)
-            z.append(a[2])
-            z.append(b[2])
-            z.append(None)
+            x.extend([a[0], b[0], None])
+            y.extend([a[1], b[1], None])
+            z.extend([a[2], b[2], None])
 
         trace = go.Scatter3d(x=x, y=y, z=z, mode='lines', name='velocity', line=dict(color='red', width=16))
 
