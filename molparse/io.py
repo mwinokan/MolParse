@@ -168,6 +168,9 @@ def parse(file,verbosity=1):
     return parseMol(file,verbosity=verbosity)
   elif extension == "ndx":
     return parseNDX(file,verbosity=verbosity)
+  elif extension == "json":
+    from json import load
+    return load(open(file,'rt'))
   else:
     import mout
     mout.errorOut("Unsupported file type for MolParse parsing, using ASE.io.read")
