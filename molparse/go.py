@@ -89,9 +89,7 @@ def plot3d(atoms, extra=[], bonds=[], alpha=1.0, velocity=False, v_scale=1.0, fi
             data = {}
 
             positions = [a.np_pos for a in atom_subset]
-            x = [p[0] for p in positions]
-            y = [p[1] for p in positions]
-            z = [p[2] for p in positions]
+            x, y, z = zip(*positions)
 
             if transform and flat:
                 x, y = zip(*transform(list(zip(x, y))))
