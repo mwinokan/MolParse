@@ -564,11 +564,7 @@ class AtomGroup():
         extra can contain pairs of coordinates to be shown as vectors."""
 
         if bonds:
-            bonds = self.guess_bonds()
-            bond_vectors = []
-            for a, b in bonds:
-                bond_vectors.append([self.atoms[a].np_pos, self.atoms[b].np_pos])
-            bonds = bond_vectors
+            bonds = [[self.atoms[a].np_pos, self.atoms[b].np_pos] for a, b in self.guess_bonds()]
         else:
             bonds = []
 
