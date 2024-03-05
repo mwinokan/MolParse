@@ -1,178 +1,178 @@
-
 import numpy as np
 from ase.calculators.calculator import Calculator
 from ase import Atoms
 import mout
 import mcol
 
+
 class NaNEncounteredInPmfError(Exception):
-	pass
+    pass
+
 
 class FakeAtoms(Atoms):
+    """This class creates an object resembling ase.Atoms that encodes any number (N) of reaction coordinates into the x-positions of ase.Atom objects. Use this class together with FakeSurfaceCalculator to perform optimisations inside an N-dimensional PMF.
 
-	"""This class creates an object resembling ase.Atoms that encodes any number (N) of reaction coordinates into the x-positions of ase.Atom objects. Use this class together with FakeSurfaceCalculator to perform optimisations inside an N-dimensional PMF.
+    Initialise as:
 
-	Initialise as:
+    FakeAtoms(rcs=[...],name=...)
 
-	FakeAtoms(rcs=[...],name=...)
+    - rcs is a list of floats representing a vector in reaction-coordinate space
+    - name is an optional string naming this point in RC-space
 
-	- rcs is a list of floats representing a vector in reaction-coordinate space
-	- name is an optional string naming this point in RC-space
+    """
 
-	"""
+    def __init__(self, rcs=None, name=None, **kwargs):
+        mout.debugOut(f"FakeAtoms.__init__({rcs=},{name=},...)")
 
-	def __init__(self,rcs=None,name=None,**kwargs):
-		mout.debugOut(f"FakeAtoms.__init__({rcs=},{name=},...)")
+        self.name = name
 
-		self.name = name
+        if rcs is not None:
 
-		if rcs is not None:
+            symbols = len(rcs) * 'H'
 
-			symbols = len(rcs)*'H'
+            positions = []
 
-			positions = []
+            for r in rcs:
+                positions.append((r, 0.0, 0.0))
 
-			for r in rcs:
-				positions.append((r,0.0,0.0))
+            Atoms.__init__(self, symbols, positions=positions, **kwargs)
 
-			Atoms.__init__(self,symbols,positions=positions,**kwargs)
-		
-		else:
-			
-			Atoms.__init__(self,**kwargs)
+        else:
 
-	def set_constraints(self,locut=0.5,hicut=3.0,k=20,additional=None):
+            Atoms.__init__(self, **kwargs)
 
-		del self.constraints
+    def set_constraints(self, locut=0.5, hicut=3.0, k=20, additional=None):
 
-		from ase.constraints import Hookean
+        del self.constraints
 
-		constraints = []
+        from ase.constraints import Hookean
 
-		for i in range(self.__len__()):
-			constraints.append(Hookean(a1=i,a2=(1,0,0,-hicut),k=k))
-			constraints.append(Hookean(a1=i,a2=(-1,0,0,locut),k=k))
+        constraints = []
 
-			# constraints.append(Hookean(a1=i,a2=(-1,0,0,-hicut),k=k))
-			# constraints.append(Hookean(a1=i,a2=(1,0,0,locut),k=k))
+        for i in range(self.__len__()):
+            constraints.append(Hookean(a1=i, a2=(1, 0, 0, -hicut), k=k))
+            constraints.append(Hookean(a1=i, a2=(-1, 0, 0, locut), k=k))
 
-		if additional is not None:
-			constraints.append(additional)
+        # constraints.append(Hookean(a1=i,a2=(-1,0,0,-hicut),k=k))
+        # constraints.append(Hookean(a1=i,a2=(1,0,0,locut),k=k))
 
-		self.set_constraint(constraints)
+        if additional is not None:
+            constraints.append(additional)
 
-	def positions_from_rcs(self,rcs):
-		positions = []
-		for r in rcs:
-			positions.append((r,0.0,0.0))
-		self.positions = positions
+        self.set_constraint(constraints)
 
-	@property
-	def rcs(self):
-		return [p[0] for p in self.positions]	
+    def positions_from_rcs(self, rcs):
+        positions = []
+        for r in rcs:
+            positions.append((r, 0.0, 0.0))
+        self.positions = positions
 
-	def set_positions(self, newpositions, apply_constraint=False):
-		newpositions = np.array([np.array([p[0],0.0,0.0]) for p in newpositions])
-		self.set_array('positions', newpositions, shape=(3,))
+    @property
+    def rcs(self):
+        return [p[0] for p in self.positions]
+
+    def set_positions(self, newpositions, apply_constraint=False):
+        newpositions = np.array([np.array([p[0], 0.0, 0.0]) for p in newpositions])
+        self.set_array('positions', newpositions, shape=(3,))
+
 
 class FakeSurfaceCalculator(Calculator):
+    """
 
-	"""
-	
-		Calculator to hijack ASE optimisation algorithms.
+        Calculator to hijack ASE optimisation algorithms.
 
-		Initialise as:
+        Initialise as:
 
-		FakeSurfaceCalculator(pmf=function())
+        FakeSurfaceCalculator(pmf=function())
 
-		pmf is a N-dimensional free energy surface. Should be callable with the same number of arguments as reaction coordinates described in the FakeAtoms object.
+        pmf is a N-dimensional free energy surface. Should be callable with the same number of arguments as reaction coordinates described in the FakeAtoms object.
 
-		Optimisation example:
+        Optimisation example:
 
-		atoms = FakeAtoms(rcs=[1.0,1.0])
+        atoms = FakeAtoms(rcs=[1.0,1.0])
 
-		def pmf(x,y):
-			...
+        def pmf(x,y):
+            ...
 
-		calc = FakeSurfaceCalculator(pmf=pmf)
+        calc = FakeSurfaceCalculator(pmf=pmf)
 
-		atoms.set_calculator(calc)
+        atoms.set_calculator(calc)
 
-		from ase.optimize import BFGS
+        from ase.optimize import BFGS
 
-		dyn = BFGS(atoms=atoms)
+        dyn = BFGS(atoms=atoms)
 
-		dyn.run()
+        dyn.run()
 
-	"""
+    """
 
-	implemented_properties = ['energy','forces']
+    implemented_properties = ['energy', 'forces']
 
-	# default_parameters = {'delta': 0.01}
+    # default_parameters = {'delta': 0.01}
 
-	nolabel = True
+    nolabel = True
 
-	def __init__(self, pmf, delta=0.001, suppress_warnings=False, restoring_force = 10, **kwargs):
-		mout.debugOut(f"FakeSurfaceCalculator.__init__(delta={delta})")
-		self._pmf = pmf
-		self.delta = delta
-		self._history = []
-		self._last_ok = None
-		self._restoring_force = restoring_force
-		self._warnings = not suppress_warnings
-		Calculator.__init__(self, **kwargs)
-	
-	def pmf(self,arg):
-		from ase.units import kcal,mol
-		e = self._pmf(arg)
+    def __init__(self, pmf, delta=0.001, suppress_warnings=False, restoring_force=10, **kwargs):
+        mout.debugOut(f"FakeSurfaceCalculator.__init__(delta={delta})")
+        self._pmf = pmf
+        self.delta = delta
+        self._history = []
+        self._last_ok = None
+        self._restoring_force = restoring_force
+        self._warnings = not suppress_warnings
+        Calculator.__init__(self, **kwargs)
 
-		if np.isnan(e):
-			mout.errorOut(f"NaN detected in PMF! {arg=}")
-			raise NaNEncounteredInPmfError
+    def pmf(self, arg):
+        from ase.units import kcal, mol
+        e = self._pmf(arg)
 
-		return self._pmf(arg)
+        if np.isnan(e):
+            mout.errorOut(f"NaN detected in PMF! {arg=}")
+            raise NaNEncounteredInPmfError
 
-	@property
-	def history(self):
-		return self._history
+        return self._pmf(arg)
 
-	@history.setter
-	def history(self,arg):
-		self._history = arg
+    @property
+    def history(self):
+        return self._history
 
-	def calculate(self,atoms=None,properties=['energy','forces'],system_changes=['positions','numbers','cell','pbc']):
-		Calculator.calculate(self, atoms, properties, system_changes)
+    @history.setter
+    def history(self, arg):
+        self._history = arg
 
-		self.energy = 0.0
+    def calculate(self, atoms=None, properties=['energy', 'forces'],
+                  system_changes=['positions', 'numbers', 'cell', 'pbc']):
+        Calculator.calculate(self, atoms, properties, system_changes)
 
-		xs = np.array([p[0] for p in self.atoms.get_positions()])
+        self.energy = 0.0
 
-		energy = self.pmf([xs])
-		mout.debugOut(f"xs: {xs}, pmf(xs): {energy}")
-		
-		self.history.append(xs)
+        xs = np.array([p[0] for p in self.atoms.get_positions()])
 
-		forces = []
+        energy = self.pmf([xs])
+        mout.debugOut(f"xs: {xs}, pmf(xs): {energy}")
 
-		y = self.pmf([xs])
+        self.history.append(xs)
 
-		self._last_ok = [x for x in xs]
-	
-		# partial derivatives
-		for i in range(len(self.atoms)):
+        forces = []
 
-			h = np.array([0.0 for i in range(len(self.atoms))])
-			h[i] = self.delta
-			y_h = self.pmf([xs+h])
+        y = self.pmf([xs])
 
-			dx = (y_h - y)/self.delta
-			forces.append(-dx[0])
+        self._last_ok = [x for x in xs]
 
-		mout.debugOut(f"forces: {forces}")
+        # partial derivatives
+        for i in range(len(self.atoms)):
+            h = np.array([0.0 for i in range(len(self.atoms))])
+            h[i] = self.delta
+            y_h = self.pmf([xs + h])
 
-		forces = np.array([np.array([f,0.0,0.0]) for f in forces])
+            dx = (y_h - y) / self.delta
+            forces.append(-dx[0])
 
-		### convert forces to correct units
+        mout.debugOut(f"forces: {forces}")
 
-		self.results['energy'] = energy
-		self.results['forces'] = forces
+        forces = np.array([np.array([f, 0.0, 0.0]) for f in forces])
+
+        ### convert forces to correct units
+
+        self.results['energy'] = energy
+        self.results['forces'] = forces

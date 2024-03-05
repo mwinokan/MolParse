@@ -1,280 +1,283 @@
-
 from .residue import Residue
 from .group import AtomGroup
 
 ALPHABET = {
-	"ATP":"A",
-	"TTP":"T",
-	"GTP":"G",
-	"CTP":"C",
+    "ATP": "A",
+    "TTP": "T",
+    "GTP": "G",
+    "CTP": "C",
 }
 
 LONGNAME = {
-	"ATP": "Adenine Tri-Phosphate",
-	"TTP": "Thymine Tri-Phosphate",
-	"GTP": "Guanine Tri-Phosphate",
-	"CTP": "Cytosine Tri-Phosphate",
+    "ATP": "Adenine Tri-Phosphate",
+    "TTP": "Thymine Tri-Phosphate",
+    "GTP": "Guanine Tri-Phosphate",
+    "CTP": "Cytosine Tri-Phosphate",
 }
 
+
 class NucleobaseTriPhosphate(Residue):
-	"""Class for Nucleobase Tri Phosphate Residue
+    """Class for Nucleobase Tri Phosphate Residue
 
-	These objects should not be created by the user, 
-	but constructed automatically when parsing a 
-	coordinate file via amp.parsePDB or otherwise"""
+    These objects should not be created by the user,
+    but constructed automatically when parsing a
+    coordinate file via amp.parsePDB or otherwise"""
 
-	def __init__(self,name: str,index: int=None, number: int=None,chain: str=None,atoms=None):
-		super(NucleobaseTriPhosphate, self).__init__(name,index,number,chain,atoms)
+    def __init__(self, name: str, index: int = None, number: int = None, chain: str = None, atoms=None):
+        super(NucleobaseTriPhosphate, self).__init__(name, index, number, chain, atoms)
 
-		self._backbone = None
-		self._nucleobase = None
+        self._backbone = None
+        self._nucleobase = None
 
-	@property
-	def longname(self):
-		return LONGNAME[self.name]
-	
-	@property
-	def letter(self):
-		return ALPHABET[self.name]
+    @property
+    def longname(self):
+        return LONGNAME[self.name]
 
-	@property
-	def is_purine(self):
-		return self.name in ["GTP","ATP"]
+    @property
+    def letter(self):
+        return ALPHABET[self.name]
 
-	@property
-	def is_pyrimidine(self):
-		return self.name in ["CTP","TTP"]
-	
-	@property
-	def type(self):
-		"""Fixed typing"""
-		return "LIG"
+    @property
+    def is_purine(self):
+        return self.name in ["GTP", "ATP"]
 
-	@property
-	def backbone(self):
-		"""Get backbone atoms"""
-		if not self._backbone:
-			self._backbone = self.get_atom(self.bb_names)
-		return self._backbone
+    @property
+    def is_pyrimidine(self):
+        return self.name in ["CTP", "TTP"]
 
-	@property
-	def nucleobase(self):
-		"""Get nucleobase atoms"""
-		if not self._nucleobase:
-			self._nucleobase = self.get_atom(self.nonbb_names)
-		return self._nucleobase
+    @property
+    def type(self):
+        """Fixed typing"""
+        return "LIG"
 
-	@property
-	def bb_names(self):
-		return [
-			"C1'",
-			"H1'",
-			"C2'",
-			"O2'",
-			"H2'",
-			"H2''",
-			"C3'",
-			"H3'",
-			"O3'",
-			"H3T",
-			"HO3'",
-			"C4'",
-			"H4'",
-			"O4'",
-			"C5'",
-			"H5'",
-			"H5''",
-			"O5'",
-			"PA",
-			"O1A",
-			"O2A",
-			"O3A",
-			"PB",
-			"O1B",
-			"O2B",
-			"O3B",
-			"PG",
-			"O1G",
-			"O2G",
-			"O3G",
-		]
+    @property
+    def backbone(self):
+        """Get backbone atoms"""
+        if not self._backbone:
+            self._backbone = self.get_atom(self.bb_names)
+        return self._backbone
 
-	@property
-	def nonbb_names(self):
-		"""Get nucleobase atoms"""
-		return [n for n in self.atom_names() if n not in self.bb_names]
+    @property
+    def nucleobase(self):
+        """Get nucleobase atoms"""
+        if not self._nucleobase:
+            self._nucleobase = self.get_atom(self.nonbb_names)
+        return self._nucleobase
 
-	def flip(self):
+    @property
+    def bb_names(self):
+        return [
+            "C1'",
+            "H1'",
+            "C2'",
+            "O2'",
+            "H2'",
+            "H2''",
+            "C3'",
+            "H3'",
+            "O3'",
+            "H3T",
+            "HO3'",
+            "C4'",
+            "H4'",
+            "O4'",
+            "C5'",
+            "H5'",
+            "H5''",
+            "O5'",
+            "PA",
+            "O1A",
+            "O2A",
+            "O3A",
+            "PB",
+            "O1B",
+            "O2B",
+            "O3B",
+            "PG",
+            "O1G",
+            "O2G",
+            "O3G",
+        ]
 
-		import mout
-		import mcol
-		mout.header(f"Flipping {mcol.arg}{self.longname} {mcol.clear}{mcol.bold}({mcol.arg}{self.name_number_str}{mcol.clear}{mcol.bold})")
+    @property
+    def nonbb_names(self):
+        """Get nucleobase atoms"""
+        return [n for n in self.atom_names() if n not in self.bb_names]
 
-		nucleobase_group = AtomGroup.from_any(f'{self.name}.nucleobase',self.nucleobase)
+    def flip(self):
 
-		if self.is_purine:
-			source = nucleobase_group.atoms['N9'][0]
-			target = nucleobase_group.atoms['O6'][0]
+        import mout
+        import mcol
+        mout.header(
+            f"Flipping {mcol.arg}{self.longname} {mcol.clear}{mcol.bold}({mcol.arg}{self.name_number_str}{mcol.clear}{mcol.bold})")
 
-		vector = target - source
+        nucleobase_group = AtomGroup.from_any(f'{self.name}.nucleobase', self.nucleobase)
 
-		nucleobase_group.rotate(180,vector,source.np_pos)
+        if self.is_purine:
+            source = nucleobase_group.atoms['N9'][0]
+            target = nucleobase_group.atoms['O6'][0]
 
-		for a1,a2 in zip(self.nucleobase, nucleobase_group.atoms):
-			a1.position = a2.position
+        vector = target - source
 
-	def mutate(self,newname,show=False):
-		""" Mutate this nucleic triphosphate to another"""
+        nucleobase_group.rotate(180, vector, source.np_pos)
 
-		import mout
-		import mcol
-		mout.header(f"Mutating {mcol.arg}{self.longname}{mcol.clear+mcol.bold} --> {mcol.arg}{LONGNAME[newname]}{mcol.clear+mcol.bold} ({mcol.result}{self.letter}{self.number}{ALPHABET[newname]}{mcol.clear+mcol.bold})")
+        for a1, a2 in zip(self.nucleobase, nucleobase_group.atoms):
+            a1.position = a2.position
 
-		if self.name == newname:
-			mout.warning("Skipping mutation with self == target!")
-			return
+    def mutate(self, newname, show=False):
+        """ Mutate this nucleic triphosphate to another"""
 
-		NEW_ANALOGUE = {
-			"ATP":"DA",
-			"TTP":"DT",
-			"GTP":"DG",
-			"CTP":"DC",
-		}
+        import mout
+        import mcol
+        mout.header(
+            f"Mutating {mcol.arg}{self.longname}{mcol.clear + mcol.bold} --> {mcol.arg}{LONGNAME[newname]}{mcol.clear + mcol.bold} ({mcol.result}{self.letter}{self.number}{ALPHABET[newname]}{mcol.clear + mcol.bold})")
 
-		import os
-		amp_path = os.path.dirname(__file__)
+        if self.name == newname:
+            mout.warning("Skipping mutation with self == target!")
+            return
 
-		from .io import parse
+        NEW_ANALOGUE = {
+            "ATP": "DA",
+            "TTP": "DT",
+            "GTP": "DG",
+            "CTP": "DC",
+        }
 
-		if newname in ["ATP","TTP"]:
-			ref_sys = parse(f"{amp_path}/ref/AT_FLAT.pdb",verbosity=0)
-		elif newname in ["GTP","CTP"]:
-			ref_sys = parse(f"{amp_path}/ref/GC_FLAT.pdb",verbosity=0)
-		else:
-			mout.error("Unsupported target mutation")
+        import os
+        amp_path = os.path.dirname(__file__)
 
-		rem = [c for c in ref_sys.chain_names if c not in NEW_ANALOGUE[newname][-1]][0]
-		ref_sys.remove_chain(rem,verbosity=0)
-		ref_sys.fix_indices()
-		ref_res = ref_sys.residues[0]
+        from .io import parse
 
-		if self.is_purine and ref_res.is_purine:
+        if newname in ["ATP", "TTP"]:
+            ref_sys = parse(f"{amp_path}/ref/AT_FLAT.pdb", verbosity=0)
+        elif newname in ["GTP", "CTP"]:
+            ref_sys = parse(f"{amp_path}/ref/GC_FLAT.pdb", verbosity=0)
+        else:
+            mout.error("Unsupported target mutation")
 
-			# get atoms to align by
-			names = ["N9","C6","C2"]
-			start = ref_res.get_atom(names)
-			target = self.get_atom(names)
+        rem = [c for c in ref_sys.chain_names if c not in NEW_ANALOGUE[newname][-1]][0]
+        ref_sys.remove_chain(rem, verbosity=0)
+        ref_sys.fix_indices()
+        ref_res = ref_sys.residues[0]
 
-			# align the system
-			extra = ref_sys.align_by_posmap([start,target])
+        if self.is_purine and ref_res.is_purine:
 
-			# delete intersecting atoms
-			ref_res.delete_atom("H9",verbosity=0)
+            # get atoms to align by
+            names = ["N9", "C6", "C2"]
+            start = ref_res.get_atom(names)
+            target = self.get_atom(names)
 
-		elif self.is_pyrimidine and ref_res.is_pyrimidine:
-			
-			# get atoms to align by
-			names = ["C6","C4","C2"]
-			start = ref_res.get_atom(names)
-			target = self.get_atom(names)
+            # align the system
+            extra = ref_sys.align_by_posmap([start, target])
 
-			# align the system
-			extra = ref_sys.align_by_posmap([start,target])
+            # delete intersecting atoms
+            ref_res.delete_atom("H9", verbosity=0)
 
-			# shift to connect to the backbone
-			ref_res.translate(self.get_atom("N1")-ref_res.get_atom("N1"))
+        elif self.is_pyrimidine and ref_res.is_pyrimidine:
 
-			# delete intersecting atoms
-			ref_res.delete_atom("H1",verbosity=0)
+            # get atoms to align by
+            names = ["C6", "C4", "C2"]
+            start = ref_res.get_atom(names)
+            target = self.get_atom(names)
 
-		elif self.is_purine and ref_res.is_pyrimidine:
-			mout.warning("Purine --> Pyrimidine")
+            # align the system
+            extra = ref_sys.align_by_posmap([start, target])
 
-			# get atoms to align by
-			start = ref_res.get_atom(["C6","C4","C2"])
-			target = self.get_atom(["C4","C6","C2"])
+            # shift to connect to the backbone
+            ref_res.translate(self.get_atom("N1") - ref_res.get_atom("N1"))
 
-			# align the system
-			extra = ref_sys.align_by_posmap([start,target])
+            # delete intersecting atoms
+            ref_res.delete_atom("H1", verbosity=0)
 
-			# shift to connect to the backbone
-			ref_res.translate(self.get_atom("N9")-ref_res.get_atom("N1"))
+        elif self.is_purine and ref_res.is_pyrimidine:
+            mout.warning("Purine --> Pyrimidine")
 
-			# delete intersecting atoms
-			ref_res.delete_atom("H1",verbosity=0)
+            # get atoms to align by
+            start = ref_res.get_atom(["C6", "C4", "C2"])
+            target = self.get_atom(["C4", "C6", "C2"])
 
-		elif self.is_pyrimidine and ref_res.is_purine:
-			mout.warning("Pyrimidine --> Purine")
+            # align the system
+            extra = ref_sys.align_by_posmap([start, target])
 
-			# get atoms to align by
-			start = ref_res.get_atom(["C4","C6","C2"])
-			target = self.get_atom(["C6","C4","C2"])
+            # shift to connect to the backbone
+            ref_res.translate(self.get_atom("N9") - ref_res.get_atom("N1"))
 
-			# align the system
-			extra = ref_sys.align_by_posmap([start,target])
+            # delete intersecting atoms
+            ref_res.delete_atom("H1", verbosity=0)
 
-			# shift to connect to the backbone
-			ref_res.translate(self.get_atom("N1")-ref_res.get_atom("N9"))
+        elif self.is_pyrimidine and ref_res.is_purine:
+            mout.warning("Pyrimidine --> Purine")
 
-			# delete intersecting atoms
-			ref_res.delete_atom("H9",verbosity=0)
-		
-		self.name = newname
+            # get atoms to align by
+            start = ref_res.get_atom(["C4", "C6", "C2"])
+            target = self.get_atom(["C6", "C4", "C2"])
 
-		if show:
-			view_sys = ref_sys.copy()
-			for atom in self.atoms:
-				view_sys.add_atom(atom)
-			view_sys.plot3d(extra,1.0)
+            # align the system
+            extra = ref_sys.align_by_posmap([start, target])
 
-		# delete intersecting atoms
-		self.delete_atom(self.nonbb_names,verbosity=0)
+            # shift to connect to the backbone
+            ref_res.translate(self.get_atom("N1") - ref_res.get_atom("N9"))
 
-		# add the reference nucleobase
-		for atom in ref_res.atoms:
-			self.add_atom(atom)
+            # delete intersecting atoms
+            ref_res.delete_atom("H9", verbosity=0)
 
-	def oxidise(self):
+        self.name = newname
 
-		assert self.name == 'GTP'
+        if show:
+            view_sys = ref_sys.copy()
+            for atom in self.atoms:
+                view_sys.add_atom(atom)
+            view_sys.plot3d(extra, 1.0)
 
-		import numpy as np
-		from .atom import Atom
+        # delete intersecting atoms
+        self.delete_atom(self.nonbb_names, verbosity=0)
 
-		import mout
-		import mcol
+        # add the reference nucleobase
+        for atom in ref_res.atoms:
+            self.add_atom(atom)
 
-		mout.header(f"Oxidising {mcol.arg}{self.longname}{mcol.header} --> {mcol.result}{mcol.bold}8-Oxo-7,8-dihydroguanine triphosphate (OGTP)")
+    def oxidise(self):
 
-		# H8 --> O8
-		self.get_atom('H8').name = 'O8'
+        assert self.name == 'GTP'
 
-		# +H7
-		N7 = self.get_atom('N7')
-		N9 = self.get_atom('N9')
-		C4 = self.get_atom('C4')
-		vec = N7 - (N9 + C4)/2
-		vec /= np.linalg.norm(vec)
-		atom = Atom("H7")
-		atom.position = N7 + vec
-		self.add_atom(atom)
+        import numpy as np
+        from .atom import Atom
 
-		# +H2
-		N2 = self.get_atom('N2')
-		C2 = self.get_atom('C2')
-		N3 = self.get_atom('N3')
-		vec = np.cross(N2 - C2, N3 - C2)
-		vec /= np.linalg.norm(vec)
-		atom = Atom("H2")
-		atom.position = C2 + vec
-		self.add_atom(atom)
+        import mout
+        import mcol
 
-		# +H3
-		C6 = self.get_atom('C6')
-		vec = N3 - C6
-		vec /= np.linalg.norm(vec)
-		atom = Atom("H3")
-		atom.position = N3 + vec
-		self.add_atom(atom)
+        mout.header(
+            f"Oxidising {mcol.arg}{self.longname}{mcol.header} --> {mcol.result}{mcol.bold}8-Oxo-7,8-dihydroguanine triphosphate (OGTP)")
 
-		self.name = 'OGTP'
+        # H8 --> O8
+        self.get_atom('H8').name = 'O8'
+
+        # +H7
+        N7 = self.get_atom('N7')
+        N9 = self.get_atom('N9')
+        C4 = self.get_atom('C4')
+        vec = N7 - (N9 + C4) / 2
+        vec /= np.linalg.norm(vec)
+        atom = Atom("H7")
+        atom.position = N7 + vec
+        self.add_atom(atom)
+
+        # +H2
+        N2 = self.get_atom('N2')
+        C2 = self.get_atom('C2')
+        N3 = self.get_atom('N3')
+        vec = np.cross(N2 - C2, N3 - C2)
+        vec /= np.linalg.norm(vec)
+        atom = Atom("H2")
+        atom.position = C2 + vec
+        self.add_atom(atom)
+
+        # +H3
+        C6 = self.get_atom('C6')
+        vec = N3 - C6
+        vec /= np.linalg.norm(vec)
+        atom = Atom("H3")
+        atom.position = N3 + vec
+        self.add_atom(atom)
+
+        self.name = 'OGTP'

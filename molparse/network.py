@@ -1,49 +1,47 @@
-
-
 class Network(object):
-	"""Barebones class for visualising a network/graph"""
+    """Barebones class for visualising a network/graph"""
 
-	def __init__(self, connections):
+    def __init__(self, connections):
 
-		import networkx as nx
-		
-		self._connections = connections
-		self._graph = nx.Graph()
+        import networkx as nx
 
-		for u,v in connections:
-			self._graph.add_edge(u,v)
+        self._connections = connections
+        self._graph = nx.Graph()
 
-	def relax_pos(self,seed=None):
-		import networkx as nx
-		if seed:
-			return nx.spring_layout(self._graph,seed=seed)
-		else:
-			return nx.spring_layout(self._graph)
+        for u, v in connections:
+            self._graph.add_edge(u, v)
 
-	def plot(self,seed=None,show=True):
+    def relax_pos(self, seed=None):
+        import networkx as nx
+        if seed:
+            return nx.spring_layout(self._graph, seed=seed)
+        else:
+            return nx.spring_layout(self._graph)
 
-		import networkx as nx
-		import matplotlib.pyplot as plt
+    def plot(self, seed=None, show=True):
 
-		pos = self.relax_pos(seed)
+        import networkx as nx
+        import matplotlib.pyplot as plt
 
-		options = {
-			"font_size": 36,
-			"node_size": 3000,
-			"node_color": "white",
-			"edgecolors": "black",
-			"linewidths": 5,
-			"width": 5,
-		}
+        pos = self.relax_pos(seed)
 
-		# draw network
-		nx.draw_networkx(self._graph, pos, **options)
-		
-		ax = plt.gca()
-		ax.margins(0.2)
-		plt.axis('off')
+        options = {
+            "font_size": 36,
+            "node_size": 3000,
+            "node_color": "white",
+            "edgecolors": "black",
+            "linewidths": 5,
+            "width": 5,
+        }
 
-		if show:
-			plt.show()
+        # draw network
+        nx.draw_networkx(self._graph, pos, **options)
 
-		return ax
+        ax = plt.gca()
+        ax.margins(0.2)
+        plt.axis('off')
+
+        if show:
+            plt.show()
+
+        return ax

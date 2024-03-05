@@ -1,342 +1,346 @@
-
 from .hijack import FakeAtoms, FakeSurfaceCalculator
 import mout
 import mcol
 
 from ase.optimize import BFGS
-from ase.units import kcal,mol
+from ase.units import kcal, mol
 from ase.calculators.singlepoint import SinglePointCalculator
+
 
 class NDFES(object):
 
-	def __init__(self, outdir, n_coords):
-		mout.debugHeader("NDFES.__init__()")
-		self._pmf = None
-		self._meta = None
-		self._calc = None
-		self.outdir = outdir
-		self.checkpoint = f'{outdir}/checkpoint'
-		self.metafile = f'{outdir}/metafile'
-		self.n_coords = n_coords
-		super(NDFES, self).__init__()
-	
-	def run(self,method="vfep",binlength=0.2,temperature=300,script="eureka.sh"):
-		mout.debugHeader("NDFES.run()")
-
-		mout.varOut("metafile",self.metafile,valCol=mcol.file)
-		mout.varOut("checkpoint",self.checkpoint,valCol=mcol.file)
-		mout.varOut("method",f'{method}',valCol=mcol.arg)
-		mout.varOut("temperature",f'{temperature}',unit="K",valCol=mcol.arg)
-		mout.varOut("script",f'{script}',valCol=mcol.file)
-
-		import os
-		amp_path = os.environ['MWAMPPATH']
-		script = f'{amp_path}/molparse/ndfes/{script}'
-
-		length_str = ""
-		for i in range(self.n_coords):
-			length_str += f"-w {binlength} "
-
-		mout.headerOut("Running ndfes...")
-		os.system(f'{script} --{method} -c {self.checkpoint} {length_str} {self.metafile} -t {temperature} > {self.outdir}/ndfes.log')
-
-	@property
-	def pmf(self):
-		if self._pmf is None:
-			self.generate_pmf_object()
-		return self._pmf
-
-	@property
-	def meta(self):
-		if self._meta is None:
-			self.generate_pmf_object()
-		return self._meta
-
-	@property
-	def calc(self):
-		return self._calc
-	
-	@calc.setter
-	def calc(self,arg):
-		self._calc = arg
-
-	def energy_along_path(self,rcs):
-		energies = []
-		for xs in rcs:
-			e = self.pmf([xs])
-			# if e > 1000:
-			# 	energies.append(None)
-			# else:
-			# 	energies.append(e*(kcal/mol))
-			energies.append(e*(kcal/mol))
-		return energies
-
-	def generate_pmf_object(self):
-		mout.debugHeader("NDFES.generate_pmf_object()")
-		try:
-			import ndfes
-		except:
-			mout.errorOut("Missing ndfes library. Try sourcing $MWSHPATH/load_ndfes.sh",fatal=True)
+    def __init__(self, outdir, n_coords):
+        mout.debugHeader("NDFES.__init__()")
+        self._pmf = None
+        self._meta = None
+        self._calc = None
+        self.outdir = outdir
+        self.checkpoint = f'{outdir}/checkpoint'
+        self.metafile = f'{outdir}/metafile'
+        self.n_coords = n_coords
+        super(NDFES, self).__init__()
+
+    def run(self, method="vfep", binlength=0.2, temperature=300, script="eureka.sh"):
+        mout.debugHeader("NDFES.run()")
+
+        mout.varOut("metafile", self.metafile, valCol=mcol.file)
+        mout.varOut("checkpoint", self.checkpoint, valCol=mcol.file)
+        mout.varOut("method", f'{method}', valCol=mcol.arg)
+        mout.varOut("temperature", f'{temperature}', unit="K", valCol=mcol.arg)
+        mout.varOut("script", f'{script}', valCol=mcol.file)
+
+        import os
+        amp_path = os.environ['MWAMPPATH']
+        script = f'{amp_path}/molparse/ndfes/{script}'
+
+        length_str = ""
+        for i in range(self.n_coords):
+            length_str += f"-w {binlength} "
+
+        mout.headerOut("Running ndfes...")
+        os.system(
+            f'{script} --{method} -c {self.checkpoint} {length_str} {self.metafile} -t {temperature} > {self.outdir}/ndfes.log')
+
+    @property
+    def pmf(self):
+        if self._pmf is None:
+            self.generate_pmf_object()
+        return self._pmf
+
+    @property
+    def meta(self):
+        if self._meta is None:
+            self.generate_pmf_object()
+        return self._meta
+
+    @property
+    def calc(self):
+        return self._calc
+
+    @calc.setter
+    def calc(self, arg):
+        self._calc = arg
+
+    def energy_along_path(self, rcs):
+        energies = []
+        for xs in rcs:
+            e = self.pmf([xs])
+            # if e > 1000:
+            # 	energies.append(None)
+            # else:
+            # 	energies.append(e*(kcal/mol))
+            energies.append(e * (kcal / mol))
+        return energies
 
-		meta = ndfes.Metafile(self.metafile)
-		pmf = ndfes.interpolator([self.checkpoint],meta)
+    def generate_pmf_object(self):
+        mout.debugHeader("NDFES.generate_pmf_object()")
+        try:
+            import ndfes
+        except:
+            mout.errorOut("Missing ndfes library. Try sourcing $MWSHPATH/load_ndfes.sh", fatal=True)
 
-		self._meta = meta
-		self._pmf = pmf
+        meta = ndfes.Metafile(self.metafile)
+        pmf = ndfes.interpolator([self.checkpoint], meta)
 
-	def plot_2d_fes(self,dims):
-		mout.debugHeader("NDFES.plot_2d_fes()")
-		try:
-			import ndfes
-		except:
-			mout.errorOut("Missing ndfes library. Try sourcing $MWSHPATH/load_ndfes.sh",fatal=True)
+        self._meta = meta
+        self._pmf = pmf
 
-		mout.varOut("checkpoint",f'{self.checkpoint}',valCol=mcol.file)
+    def plot_2d_fes(self, dims):
+        mout.debugHeader("NDFES.plot_2d_fes()")
+        try:
+            import ndfes
+        except:
+            mout.errorOut("Missing ndfes library. Try sourcing $MWSHPATH/load_ndfes.sh", fatal=True)
 
-		ndgrid = ndfes.NDUniformRegularGrid()
-		for d in dims:
-			ndgrid.add_dim_using_delta(d[0],d[1],d[2])
-
-		pts = ndgrid.get_list_of_tuples()
-
-		vals = self.pmf(pts)
+        mout.varOut("checkpoint", f'{self.checkpoint}', valCol=mcol.file)
 
-		# Print the PMF to a file
-		fh = open(f'{self.outdir}/2dfes.dat',"w")
-		for pt,val in zip(pts,vals):
-		    # if pt[0] == -1.0: fh.write("\n")
+        ndgrid = ndfes.NDUniformRegularGrid()
+        for d in dims:
+            ndgrid.add_dim_using_delta(d[0], d[1], d[2])
 
-			# collapse onto 2d
+        pts = ndgrid.get_list_of_tuples()
 
-			if val > 1000:
-				continue
+        vals = self.pmf(pts)
 
-			fh.write("%15.5f %15.5f %20.10e\n"%(pt[0]-pt[1],pt[2]-pt[3],val))
-		
-		fh.close()
+        # Print the PMF to a file
+        fh = open(f'{self.outdir}/2dfes.dat', "w")
+        for pt, val in zip(pts, vals):
+            # if pt[0] == -1.0: fh.write("\n")
 
-	def plot_window_pmf(self,i1,i2):
-		import matplotlib.pyplot as plt
-		import numpy as np
-		mout.debugHeader("NDFES.plot_window_pmf()")
+            # collapse onto 2d
 
-		try:
-			import ndfes
-		except:
-			mout.errorOut("Missing ndfes library. Try: "+mcol.file+"source $MWSHPATH/load_ndfes.sh",fatal=True)
+            if val > 1000:
+                continue
 
-		cs = self.meta.get_centers()
+            fh.write("%15.5f %15.5f %20.10e\n" % (pt[0] - pt[1], pt[2] - pt[3], val))
 
-		# reactant free energy
-		self.reactant = cs[i1]
-		mout.varOut(f"Reactant Free Energy (window {i1})",self.pmf([self.reactant])[0],unit="kcal/mol")
+        fh.close()
 
-		# product free energy
-		self.product = cs[i2]
-		mout.varOut(f"Product Free Energy (window {i2})",self.pmf([self.product])[0],unit="kcal/mol")
+    def plot_window_pmf(self, i1, i2):
+        import matplotlib.pyplot as plt
+        import numpy as np
+        mout.debugHeader("NDFES.plot_window_pmf()")
 
-		cs = cs[0:5]
+        try:
+            import ndfes
+        except:
+            mout.errorOut("Missing ndfes library. Try: " + mcol.file + "source $MWSHPATH/load_ndfes.sh", fatal=True)
 
-		# reshape into 1d
+        cs = self.meta.get_centers()
 
-		vals = self.pmf(cs)
+        # reactant free energy
+        self.reactant = cs[i1]
+        mout.varOut(f"Reactant Free Energy (window {i1})", self.pmf([self.reactant])[0], unit="kcal/mol")
 
-		x = []
-		y = []
+        # product free energy
+        self.product = cs[i2]
+        mout.varOut(f"Product Free Energy (window {i2})", self.pmf([self.product])[0], unit="kcal/mol")
 
-		mout.headerOut("Window Centres & Energies:")
+        cs = cs[0:5]
 
-		for c,v in zip(cs,vals):
-			x.append(c[0]-c[1]+c[2]-c[3])
-			print(c,v)
-			if v < 1000:
-				y.append(v*(kcal/mol))
-			else:
-				y.append(None)
+        # reshape into 1d
 
-		fig,ax = plt.subplots()
+        vals = self.pmf(cs)
 
-		plt.scatter(x,y)
+        x = []
+        y = []
 
-		plt.savefig(f"{self.outdir}/window_pmf.png")
+        mout.headerOut("Window Centres & Energies:")
 
-		plt.close()
+        for c, v in zip(cs, vals):
+            x.append(c[0] - c[1] + c[2] - c[3])
+            print(c, v)
+            if v < 1000:
+                y.append(v * (kcal / mol))
+            else:
+                y.append(None)
 
-	def find_minima(self,start,fmax=0.01,optimizer=BFGS,suppress_warnings=False):
-		mout.debugHeader("NDFES.find_minima()")
+        fig, ax = plt.subplots()
 
-		# mout.varOut("start",list(start))
+        plt.scatter(x, y)
 
-		atoms = FakeAtoms(start)
+        plt.savefig(f"{self.outdir}/window_pmf.png")
 
-		# print("1",atoms.get_positions())
+        plt.close()
 
-		self.calc = FakeSurfaceCalculator(self.pmf,suppress_warnings=suppress_warnings)
+    def find_minima(self, start, fmax=0.01, optimizer=BFGS, suppress_warnings=False):
+        mout.debugHeader("NDFES.find_minima()")
 
-		atoms.calc = self.calc
-		
-		# print("2",atoms.get_positions())
+        # mout.varOut("start",list(start))
 
-		# from ase.optimize import BFGS
+        atoms = FakeAtoms(start)
 
-		dyn = optimizer(atoms)
-		
-		# print("3",atoms.get_positions())
+        # print("1",atoms.get_positions())
 
-		dyn.run(fmax=fmax)
+        self.calc = FakeSurfaceCalculator(self.pmf, suppress_warnings=suppress_warnings)
 
-		mout.varOut("Post-BFGS RC's",atoms.rcs)
+        atoms.calc = self.calc
 
-	def constraint_pair(self,index,locut=0.5,hicut=3.0,k=20):
-		from ase.constraints import Hookean
-		print(index,locut,hicut)
-		if locut > hicut:
-			c1 = Hookean(a1=index,a2=(1,0,0,-locut),k=k)
-			c2 = Hookean(a1=index,a2=(-1,0,0,hicut),k=k)
-		else:
-			c1 = Hookean(a1=index,a2=(1,0,0,-hicut),k=k)
-			c2 = Hookean(a1=index,a2=(-1,0,0,locut),k=k)
-		return [c1,c2]
+        # print("2",atoms.get_positions())
 
-	def find_path(self,start,final,n_images=10,fmax=0.01,traj=None,optimizer=BFGS,suppress_warnings=True,constraints=None,constrain_final=False):
+        # from ase.optimize import BFGS
 
-		assert n_images > 2
+        dyn = optimizer(atoms)
 
-		if traj is None:
-			traj = f"{self.outdir}/neb_rcs.traj"
+        # print("3",atoms.get_positions())
 
-		from ase.neb import NEB
-		from ase.optimize import MDMin
-		if constrain_final:
-			from ase.constraints import FixAtoms
+        dyn.run(fmax=fmax)
 
-		start = FakeAtoms(start)
-		final = FakeAtoms(final)
+        mout.varOut("Post-BFGS RC's", atoms.rcs)
 
-		mout.varOut("NEB Start",start.rcs)
-		mout.varOut("NEB Final",final.rcs)
+    def constraint_pair(self, index, locut=0.5, hicut=3.0, k=20):
+        from ase.constraints import Hookean
+        print(index, locut, hicut)
+        if locut > hicut:
+            c1 = Hookean(a1=index, a2=(1, 0, 0, -locut), k=k)
+            c2 = Hookean(a1=index, a2=(-1, 0, 0, hicut), k=k)
+        else:
+            c1 = Hookean(a1=index, a2=(1, 0, 0, -hicut), k=k)
+            c2 = Hookean(a1=index, a2=(-1, 0, 0, locut), k=k)
+        return [c1, c2]
 
-		images = [start]
-		for i in range(n_images-2):
-			image = start.copy()
-			image.calc = FakeSurfaceCalculator(self.pmf,suppress_warnings=suppress_warnings)
-			image.set_constraints(constraints[0],constraints[1],constraints[2])
-			images.append(image)
-		images.append(final)
+    def find_path(self, start, final, n_images=10, fmax=0.01, traj=None, optimizer=BFGS, suppress_warnings=True,
+                  constraints=None, constrain_final=False):
 
-		neb = NEB(images)
-		neb.interpolate()
+        assert n_images > 2
 
-		import matplotlib.pyplot as plt
+        if traj is None:
+            traj = f"{self.outdir}/neb_rcs.traj"
 
-		fig,ax = plt.subplots()
+        from ase.neb import NEB
+        from ase.optimize import MDMin
+        if constrain_final:
+            from ase.constraints import FixAtoms
 
-		interpolated_rcs = [[p[0] for p in a.get_positions()] for a in images]
+        start = FakeAtoms(start)
+        final = FakeAtoms(final)
 
-		fig,ax = plt.subplots()
-		plt.plot(self.energy_along_path(interpolated_rcs))
-		plt.savefig(f"{self.outdir}/neb_interpolated.png")
-		plt.close()
+        mout.varOut("NEB Start", start.rcs)
+        mout.varOut("NEB Final", final.rcs)
 
-		dyn = optimizer(neb, trajectory=traj)
-		dyn.run(fmax=fmax)
+        images = [start]
+        for i in range(n_images - 2):
+            image = start.copy()
+            image.calc = FakeSurfaceCalculator(self.pmf, suppress_warnings=suppress_warnings)
+            image.set_constraints(constraints[0], constraints[1], constraints[2])
+            images.append(image)
+        images.append(final)
 
-def pullx2rco(infile,output,n_coords,skip=1):
-	"""convert a pullx to an rco file"""
+        neb = NEB(images)
+        neb.interpolate()
 
-	import mout
-	import os
+        import matplotlib.pyplot as plt
 
-	mout.out(f"{infile} --> {os.path.basename(output)}")
+        fig, ax = plt.subplots()
 
-	f_input = open(infile,'r')
-	f_output = open(output,'w')
+        interpolated_rcs = [[p[0] for p in a.get_positions()] for a in images]
 
-	mins = [None for i in range(n_coords)]
-	maxs = [None for i in range(n_coords)]
+        fig, ax = plt.subplots()
+        plt.plot(self.energy_along_path(interpolated_rcs))
+        plt.savefig(f"{self.outdir}/neb_interpolated.png")
+        plt.close()
 
-	for line in f_input:
+        dyn = optimizer(neb, trajectory=traj)
+        dyn.run(fmax=fmax)
 
-		if line[0] in ["#","@"]:
-			count = 0
-			continue
 
-		if count%skip != 0:
-			count += 1
-			continue
+def pullx2rco(infile, output, n_coords, skip=1):
+    """convert a pullx to an rco file"""
 
-		# the new RCO should contain
-		# time, N*(restraint)
+    import mout
+    import os
 
-		split_line=line.split()
+    mout.out(f"{infile} --> {os.path.basename(output)}")
 
-		time = float(split_line[0])
-		RCs = []
+    f_input = open(infile, 'r')
+    f_output = open(output, 'w')
 
-		for i in range(n_coords):
-			x = float(split_line[1+8*i])*10
-			RCs.append(x)
-			if mins[i] is None or x < mins[i]:
-				mins[i] = x
-			if maxs[i] is None or x > maxs[i]:
-				maxs[i] = x
+    mins = [None for i in range(n_coords)]
+    maxs = [None for i in range(n_coords)]
 
-		f_output.write(f'{time:.4f}')
-		for x in RCs:
-			f_output.write(f' {x:.6f}')
+    for line in f_input:
 
-		f_output.write("\n")
+        if line[0] in ["#", "@"]:
+            count = 0
+            continue
 
-		count += 1
+        if count % skip != 0:
+            count += 1
+            continue
 
-	# return reference information
-	window_centres = []
-	for i in range(n_coords):
-		window_centres.append(float(split_line[2+8*i]))
+        # the new RCO should contain
+        # time, N*(restraint)
 
-	f_input.close()
-	f_output.close()
+        split_line = line.split()
 
-	return window_centres, mins, maxs
+        time = float(split_line[0])
+        RCs = []
 
-def prepare_metafile(outdir,winkeys,n_coords,force,skip=1):
-	import mout
-	import mcol
-	import os
-	
-	mout.debugHeader("prepare_metafile()")
+        for i in range(n_coords):
+            x = float(split_line[1 + 8 * i]) * 10
+            RCs.append(x)
+            if mins[i] is None or x < mins[i]:
+                mins[i] = x
+            if maxs[i] is None or x > maxs[i]:
+                maxs[i] = x
 
-	os.system(f'mkdir -p {outdir}')
+        f_output.write(f'{time:.4f}')
+        for x in RCs:
+            f_output.write(f' {x:.6f}')
 
-	metafile = open(f'{outdir}/metafile','w')
+        f_output.write("\n")
 
-	mout.varOut("metafile",f'{outdir}/metafile',valCol=mcol.file)
-	mout.varOut("force",f'{force}',unit="kcal/mol/Length^2",valCol=mcol.arg)
+        count += 1
 
-	all_mins = [None for i in range(n_coords)]
-	all_maxs = [None for i in range(n_coords)]
+    # return reference information
+    window_centres = []
+    for i in range(n_coords):
+        window_centres.append(float(split_line[2 + 8 * i]))
 
-	mout.headerOut("Creating amber-style RCO's")
-	for key in winkeys:
+    f_input.close()
+    f_output.close()
 
-		# create the 'amber-style' RCO's
-		centres, mins, maxs = pullx2rco(f'{key}/pullx.xvg',f'{outdir}/{key}.rco',n_coords,skip=skip)
+    return window_centres, mins, maxs
 
-		for i,(this_min,this_max) in enumerate(zip(mins,maxs)):
-			if all_mins[i] is None or this_min < all_mins[i]:
-				all_mins[i] = this_min
-			if all_maxs[i] is None or this_max > all_maxs[i]:
-				all_maxs[i] = this_max
 
-		# add to the metafile
-		# the file should contain
-		# RCO_path, N*(RN_window_centre, RN_force)
+def prepare_metafile(outdir, winkeys, n_coords, force, skip=1):
+    import mout
+    import mcol
+    import os
 
-		metafile.write(f'{outdir}/{key}.rco')
-		for x in centres:
-			metafile.write(f' {x*10:.6f} {force:.2f}')
-		metafile.write('\n')
+    mout.debugHeader("prepare_metafile()")
 
-	for i in range(n_coords):
-		mout.varOut(f"RC{i+1} range: ",f'({all_mins[i]} - {all_maxs[i]})',unit="Å")
+    os.system(f'mkdir -p {outdir}')
+
+    metafile = open(f'{outdir}/metafile', 'w')
+
+    mout.varOut("metafile", f'{outdir}/metafile', valCol=mcol.file)
+    mout.varOut("force", f'{force}', unit="kcal/mol/Length^2", valCol=mcol.arg)
+
+    all_mins = [None for i in range(n_coords)]
+    all_maxs = [None for i in range(n_coords)]
+
+    mout.headerOut("Creating amber-style RCO's")
+    for key in winkeys:
+
+        # create the 'amber-style' RCO's
+        centres, mins, maxs = pullx2rco(f'{key}/pullx.xvg', f'{outdir}/{key}.rco', n_coords, skip=skip)
+
+        for i, (this_min, this_max) in enumerate(zip(mins, maxs)):
+            if all_mins[i] is None or this_min < all_mins[i]:
+                all_mins[i] = this_min
+            if all_maxs[i] is None or this_max > all_maxs[i]:
+                all_maxs[i] = this_max
+
+        # add to the metafile
+        # the file should contain
+        # RCO_path, N*(RN_window_centre, RN_force)
+
+        metafile.write(f'{outdir}/{key}.rco')
+        for x in centres:
+            metafile.write(f' {x * 10:.6f} {force:.2f}')
+        metafile.write('\n')
+
+    for i in range(n_coords):
+        mout.varOut(f"RC{i + 1} range: ", f'({all_mins[i]} - {all_maxs[i]})', unit="Å")
 ## use scipy to find minima and maxima in the 4D PMF

@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 name = "MolParse"
 version = "0.0.11"
 authors = [
-    { name="Max Winokan", email="max@winokan.com"},
+    { name = "Max Winokan", email = "max@winokan.com" },
 ]
 description = "Package for parsing, writing, and modifying molecular structure files"
 readme = "README.md"
@@ -32,20 +32,20 @@ dependencies = [
 "Bug Tracker" = "https://github.com/mwinokan/MolParse/issues"
 [tool.hatch.build]
 include = [
-  "molparse/*.py",
-  "molparse/dl_poly/*.py",
-  "molparse/dna/*.py",
-  "molparse/ndfes/*.py",
-  "molparse/hijack/*.py",
-  "molparse/monte/*.py",
-  "molparse/mutate/*.py",
-  "molparse/rdkit/*.py",
-  "molparse/signal/*.py",
-  "molparse/sites/*.py",
-  "molparse/styles/*.py",
-  "molparse/tunnel/*.py",
-  "molparse/units/*.py",
-  "molparse/ref/*.pdb",
-  "molxvg",
-  "moltree",
+    "molparse/*.py",
+    "molparse/dl_poly/*.py",
+    "molparse/dna/*.py",
+    "molparse/ndfes/*.py",
+    "molparse/hijack/*.py",
+    "molparse/monte/*.py",
+    "molparse/mutate/*.py",
+    "molparse/rdkit/*.py",
+    "molparse/signal/*.py",
+    "molparse/sites/*.py",
+    "molparse/styles/*.py",
+    "molparse/tunnel/*.py",
+    "molparse/units/*.py",
+    "molparse/ref/*.pdb",
+    "molxvg",
+    "moltree",
 ]

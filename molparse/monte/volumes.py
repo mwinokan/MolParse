@@ -1,226 +1,229 @@
-
 import plotly.graph_objects as go
 import mgo
 import numpy as np
 from .rand import random_point_spherical
 
+
 class CompoundVolume:
 
-	def __init__(self,reference=None):
-		self.volumes = []
-		self.reference = reference
+    def __init__(self, reference=None):
+        self.volumes = []
+        self.reference = reference
 
-	# def cull_overlapping_volumes(self):
+    # def cull_overlapping_volumes(self):
 
-	def add_volume(self,volume):
-		volume.index = self.num_volumes
-		self.volumes.append(volume)
+    def add_volume(self, volume):
+        volume.index = self.num_volumes
+        self.volumes.append(volume)
 
-	def plot(self,distance,fig=None,show=False,samples=20):
-		if fig is None:
-			fig = go.Figure()
-		
-		for vol in self.volumes:
-			fig = vol.plot(distance=distance,samples=samples,fig=fig,show=False)
+    def plot(self, distance, fig=None, show=False, samples=20):
+        if fig is None:
+            fig = go.Figure()
 
-		if show:
-			fig.show()
+        for vol in self.volumes:
+            fig = vol.plot(distance=distance, samples=samples, fig=fig, show=False)
 
-		return fig
+        if show:
+            fig.show()
 
-	def is_inside(self,point):
+        return fig
 
-		for vol in self.volumes:
+    def is_inside(self, point):
 
-			if vol.is_inside(point):
-				return True
-		return False
+        for vol in self.volumes:
 
-	def is_within(self,point,within):
-		for vol in self.volumes:
-			if vol.is_within(point,within):
-				return True
-		return False
+            if vol.is_inside(point):
+                return True
+        return False
 
-	@property
-	def num_volumes(self):
-		return len(self.volumes)
+    def is_within(self, point, within):
+        for vol in self.volumes:
+            if vol.is_within(point, within):
+                return True
+        return False
 
-	def simplify(self):
+    @property
+    def num_volumes(self):
+        return len(self.volumes)
 
-		del_list = []
+    def simplify(self):
 
-		for this_volume in self.volumes:
-			for other_volume in self.volumes:
+        del_list = []
 
-				if this_volume.index == other_volume.index:
-					continue
+        for this_volume in self.volumes:
+            for other_volume in self.volumes:
 
-				if this_volume in del_list:
-					continue
+                if this_volume.index == other_volume.index:
+                    continue
 
-				if other_volume in del_list:
-					continue
-				
-				print(this_volume,this_volume.index,other_volume,other_volume.index)
+                if this_volume in del_list:
+                    continue
 
-				if this_volume.always_inside(other_volume):
-					del_list.append(this_volume)
+                if other_volume in del_list:
+                    continue
 
-		print(del_list)
+                print(this_volume, this_volume.index, other_volume, other_volume.index)
 
-		for volume in reversed(self.volumes):
-			if volume in del_list:
-				del volume
+                if this_volume.always_inside(other_volume):
+                    del_list.append(this_volume)
+
+        print(del_list)
+
+        for volume in reversed(self.volumes):
+            if volume in del_list:
+                del volume
+
 
 class Sphere:
 
-	def __init__(self,centre,radius,index=None):
-		
-		self.index = index
-		self.centre = np.array(centre)
-		self.radius = np.array(radius)
+    def __init__(self, centre, radius, index=None):
+        self.index = index
+        self.centre = np.array(centre)
+        self.radius = np.array(radius)
 
-	def is_inside(self,point):
-		return np.linalg.norm(point - self.centre) < self.radius
+    def is_inside(self, point):
+        return np.linalg.norm(point - self.centre) < self.radius
+
 
 import mout
 
+
 class CappedCone:
 
-	def __init__(self,origin,target,radius,name=None,index=None):
+    def __init__(self, origin, target, radius, name=None, index=None):
 
-		# parameters
-		self.name = name
-		self.origin = np.array(origin)
-		self.target = np.array(target)
-		self.radius = radius
-		self.index = index
+        # parameters
+        self.name = name
+        self.origin = np.array(origin)
+        self.target = np.array(target)
+        self.radius = radius
+        self.index = index
 
-		# derived internals
-		self.vec_origin_target = self.target - self.origin
-		self.dist_origin_target = np.linalg.norm(self.vec_origin_target)
-		self.unit_origin_target = self.vec_origin_target / self.dist_origin_target
-		self.theta = np.arctan(self.radius/self.dist_origin_target)
-		self.cos_theta = np.cos(self.theta)
-		self.start = self.dist_origin_target * self.cos_theta * self.cos_theta
+        # derived internals
+        self.vec_origin_target = self.target - self.origin
+        self.dist_origin_target = np.linalg.norm(self.vec_origin_target)
+        self.unit_origin_target = self.vec_origin_target / self.dist_origin_target
+        self.theta = np.arctan(self.radius / self.dist_origin_target)
+        self.cos_theta = np.cos(self.theta)
+        self.start = self.dist_origin_target * self.cos_theta * self.cos_theta
 
-		# child volumes
-		self.cap_radius = self.dist_origin_target * np.sin(self.theta)
-		self.cap_sphere = Sphere(target,self.cap_radius)
+        # child volumes
+        self.cap_radius = self.dist_origin_target * np.sin(self.theta)
+        self.cap_sphere = Sphere(target, self.cap_radius)
 
-		# plotting variables
-		self.vec_origin_point = None
-		
-		self._expanded_volume = None
-	
-	def is_inside(self,point):
+        # plotting variables
+        self.vec_origin_point = None
 
-		self._is_inside_cap = self.cap_sphere.is_inside(point)
+        self._expanded_volume = None
 
-		if self._is_inside_cap:
-			return True
+    def is_inside(self, point):
 
-		self.vec_origin_point = point - self.origin
-		self.dist_origin_point = np.linalg.norm(self.vec_origin_point)
+        self._is_inside_cap = self.cap_sphere.is_inside(point)
 
-		if self.dist_origin_point == 0:
-			return False
+        if self._is_inside_cap:
+            return True
 
-		self.unit_origin_point = self.vec_origin_point / self.dist_origin_point
+        self.vec_origin_point = point - self.origin
+        self.dist_origin_point = np.linalg.norm(self.vec_origin_point)
 
-		if self.dist_origin_point < self.start:
-			return False
+        if self.dist_origin_point == 0:
+            return False
 
-		self.origin_point_dot_origin_target = np.dot(self.unit_origin_point,self.unit_origin_target)
+        self.unit_origin_point = self.vec_origin_point / self.dist_origin_point
 
-		if self.origin_point_dot_origin_target > self.cos_theta:
-			# print(f'{self.origin_point_dot_origin_target=}')
-			# print(f'{self.cos_theta=}')
-			return True
+        if self.dist_origin_point < self.start:
+            return False
 
-		return False
+        self.origin_point_dot_origin_target = np.dot(self.unit_origin_point, self.unit_origin_target)
 
-	def is_within(self,point,within):
+        if self.origin_point_dot_origin_target > self.cos_theta:
+            # print(f'{self.origin_point_dot_origin_target=}')
+            # print(f'{self.cos_theta=}')
+            return True
 
-		if self._expanded_volume is None or self._expanded_volume._expansion != within:
+        return False
 
-			new_origin = self.origin - self.unit_origin_target*within/np.sin(self.theta)
+    def is_within(self, point, within):
 
-			self._expanded_volume = CappedCone(origin=new_origin, target=self.target, radius=self.radius + within, name=self.name + ' expanded')
-			self._expanded_volume._expansion = within
+        if self._expanded_volume is None or self._expanded_volume._expansion != within:
+            new_origin = self.origin - self.unit_origin_target * within / np.sin(self.theta)
 
-		return self._expanded_volume.is_inside(point)
+            self._expanded_volume = CappedCone(origin=new_origin, target=self.target, radius=self.radius + within,
+                                               name=self.name + ' expanded')
+            self._expanded_volume._expansion = within
 
-	def test_random_point(self,n=1,distance=5):
+        return self._expanded_volume.is_inside(point)
 
-		fig = self.plot(distance)
+    def test_random_point(self, n=1, distance=5):
 
-		for i in range(n):
+        fig = self.plot(distance)
 
-			# point = random_point(self.origin,distance)
-			point = np.array([-2.127,2.62,-17.7])
+        for i in range(n):
 
-			# print(f'{point=}')
+            # point = random_point(self.origin,distance)
+            point = np.array([-2.127, 2.62, -17.7])
 
-			is_inside = self.is_inside(point)
+            # print(f'{point=}')
 
-			# print(f'{is_inside=}')
-			# print(f'{self._is_inside_cap=}')
+            is_inside = self.is_inside(point)
 
-			if self.vec_origin_point is not None:
-				trace = mgo.vector_trace(self.origin,self.vec_origin_point,name=f'{is_inside=}')
-				fig.add_trace(trace)
+            # print(f'{is_inside=}')
+            # print(f'{self._is_inside_cap=}')
 
-		fig.show()
+            if self.vec_origin_point is not None:
+                trace = mgo.vector_trace(self.origin, self.vec_origin_point, name=f'{is_inside=}')
+                fig.add_trace(trace)
 
-	def plot(self,distance,samples=20,fig=None,show=False,verbosity=1):
+        fig.show()
 
-		if fig is None:
-			fig = go.Figure()
+    def plot(self, distance, samples=20, fig=None, show=False, verbosity=1):
 
-		trace = mgo.cone_trace(self.origin, self.target, self.radius, distance, samples=samples, name=self.name, start_at_target=True, plot_caps=True, verbosity=verbosity-1)
-		fig.add_trace(trace)
+        if fig is None:
+            fig = go.Figure()
 
-		if show:
-			fig.show()
+        trace = mgo.cone_trace(self.origin, self.target, self.radius, distance, samples=samples, name=self.name,
+                               start_at_target=True, plot_caps=True, verbosity=verbosity - 1)
+        fig.add_trace(trace)
 
-		return fig
+        if show:
+            fig.show()
 
-	@mout.debug_log
-	def always_inside(self,other):
+        return fig
 
-		if isinstance(other,CappedCone):
+    @mout.debug_log
+    def always_inside(self, other):
 
-			assert np.linalg.norm(self.origin - other.origin) == 0
+        if isinstance(other, CappedCone):
 
-			if other.dist_origin_target - other.cap_radius < self.dist_origin_target - self.cap_radius:
-				print('case1')
-				return False
+            assert np.linalg.norm(self.origin - other.origin) == 0
 
-			# if not other.is_inside(self.target):
-			# 	print(f'{self}.target is not inside {other}')
-			# 	return False
+            if other.dist_origin_target - other.cap_radius < self.dist_origin_target - self.cap_radius:
+                print('case1')
+                return False
 
-			# print(f'{self}.target is inside {other}')
+            # if not other.is_inside(self.target):
+            # 	print(f'{self}.target is not inside {other}')
+            # 	return False
 
-			if other.theta < self.theta:
-				print('case2')
-				return False
+            # print(f'{self}.target is inside {other}')
 
-			phi = np.arccos(np.dot(self.unit_origin_target, other.unit_origin_target))
+            if other.theta < self.theta:
+                print('case2')
+                return False
 
-			if other.theta < phi + self.theta:
-				print('case3')
-				return False
-		
-			return True
+            phi = np.arccos(np.dot(self.unit_origin_target, other.unit_origin_target))
 
-		else:
-			raise Exception(f'Unsupported: CappedCone.always_inside(self,type({other}))')
+            if other.theta < phi + self.theta:
+                print('case3')
+                return False
 
-	def __repr__(self):
-		if self.name:
-			return self.name
-		else:
-			return f'CappedCone index={self.index}'
+            return True
+
+        else:
+            raise Exception(f'Unsupported: CappedCone.always_inside(self,type({other}))')
+
+    def __repr__(self):
+        if self.name:
+            return self.name
+        else:
+            return f'CappedCone index={self.index}'

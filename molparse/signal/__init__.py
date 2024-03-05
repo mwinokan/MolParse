@@ -1,4 +1,3 @@
-
 from .modify import runningAverage
 from .modify import differentiate
 # from .2d import peakFinder
@@ -15,4 +14,3 @@ from .peaks import peakFinder, closest_index, closest_value
 # 	if not 'login' in socket.gethostname():
 # 		if not 'node' in socket.gethostname():
 # 			from .fitwizard import fitwizard
-	

@@ -1,88 +1,85 @@
+def runningAverage(xdata, ydata, averaging_window=5, cutoff_style=None, debug=False):
+    import mout
 
-def runningAverage(xdata,ydata,averaging_window=5,cutoff_style=None,debug=False):
-	import mout
+    many = any(isinstance(el, list) for el in ydata)
 
-	many = any(isinstance(el,list) for el in ydata)
+    if debug:
+        mout.varOut("many", many)
+        mout.varOut("len(xdata)", len(xdata))
+        mout.varOut("len(ydata)", len(ydata))
 
-	if debug: 
-		mout.varOut("many",many)
-		mout.varOut("len(xdata)",len(xdata))
-		mout.varOut("len(ydata)",len(ydata))
+    if many:
 
-	if many:
+        result_x = []
+        result_y = []
 
-		result_x = []
-		result_y = []
+        for dataset in ydata:
+            x, y = runningAverage(xdata, dataset, averaging_window=averaging_window, cutoff_style=cutoff_style)
+            result_y.append(y)
 
-		for dataset in ydata:
+        result_x = x
 
-			x,y = runningAverage(xdata,dataset,averaging_window=averaging_window,cutoff_style=cutoff_style)
-			result_y.append(y)
+        assert len(ydata) == len(result_y)
 
-		result_x = x
+    else:
 
-		assert len(ydata) == len(result_y)
+        if cutoff_style is not None:
+            mout.errorOut("Not supported yet!", fatal=True)
 
-	else:
+        result_x = []
+        result_y = []
 
-		if cutoff_style is not None:
-			mout.errorOut("Not supported yet!",fatal=True)
+        for i, x in enumerate(xdata):
 
-		result_x = []
-		result_y = []
+            result_x.append(x)
 
-		for i,x in enumerate(xdata): 
+            if i == 0:
 
-			result_x.append(x)
+                y = ydata[0]
 
-			if i == 0:
+            elif i < averaging_window:
 
-				y = ydata[0]
+                y = sum(ydata[0:i]) / i
 
-			elif i < averaging_window: 
+            else:
 
-				y = sum(ydata[0:i])/i
+                y = sum(ydata[i - averaging_window:i]) / averaging_window
 
-			else:
+            result_y.append(y)
 
-				y = sum(ydata[i-averaging_window:i])/averaging_window
+    return result_x, result_y
 
-			result_y.append(y)
 
-	return result_x,result_y
+def differentiate(xdata, ydata):
+    many = any(isinstance(el, list) for el in ydata)
 
-def differentiate(xdata,ydata):
+    result_x = []
+    result_y = []
 
-	many = any(isinstance(el,list) for el in ydata)
+    if many:
 
-	result_x = []
-	result_y = []
+        for dataset in ydata:
+            x, y = differentiate(xdata, dataset)
 
-	if many:
+            result_y.append(y)
 
-		for dataset in ydata:
+        result_x = x
 
-			x,y = differentiate(xdata,dataset)
+        assert len(ydata) == len(result_y)
 
-			result_y.append(y)
+    else:
 
-		result_x = x
+        for i, x in enumerate(xdata):
+            result_x.append(xdata[i])
 
-		assert len(ydata) == len(result_y)
+            if i != 0:
 
-	else:
+                dy_dx = (ydata[i] - ydata[i - 1]) / (xdata[i] - xdata[i - 1])
 
-		for i,x in enumerate(xdata):
-			result_x.append(xdata[i])
+                result_y.append(dy_dx)
 
-			if i!=0: 
+            else:
 
-				dy_dx = (ydata[i] - ydata[i-1]) / (xdata[i] - xdata[i-1])
+                result_y.append(0.0)
 
-				result_y.append(dy_dx)
-
-			else:
-
-				result_y.append(0.0)
-
-	return result_x,result_y
+    return result_x, result_y

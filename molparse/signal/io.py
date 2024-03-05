@@ -1,152 +1,152 @@
+def csv_strip(filename, output=None, overwrite=False, comment_chars='#@!'):
+    import re
+    import mout
+    import mcol
 
-def csv_strip(filename,output=None,overwrite=False,comment_chars='#@!'):
-	import re
-	import mout
-	import mcol
+    with open(filename, 'r') as file:
+        lines = file.readlines()
+    file.close()
 
-	with open(filename,'r') as file:
-		lines = file.readlines()
-	file.close()
+    if output is None and not overwrite:
+        mout.errorOut("No output specified", fatal=True)
 
-	if output is None and not overwrite:
-		mout.errorOut("No output specified",fatal=True)
+    if overwrite:
+        mout.warningOut("Overwriting " + mcol.file + filename + mcol.warning + "!")
+        output = filename
 
-	if overwrite:
-		mout.warningOut("Overwriting "+mcol.file+filename+mcol.warning+"!")
-		output=filename
+    file = open(output, 'w')
 
-	file = open(output,'w')
+    test_line = re.sub(r'\t', ' ', lines[0])
+    test_line = re.sub(' +', ' ', test_line)
+    test_line = test_line.strip()
 
-	test_line = re.sub(r'\t', ' ', lines[0])
-	test_line = re.sub(' +',' ',test_line)
-	test_line = test_line.strip()
+    if test_line != lines[0]:
+        for line in lines:
 
-	if test_line != lines[0]:
-		for line in lines:
+            if line[0] in comment_chars:
+                continue
 
-			if line[0] in comment_chars:
-				continue
+            line = re.sub(r'\t', ' ', line)
+            line = re.sub(' +', ' ', line)
+            line = line.strip()
+            file.write(line + '\n')
+    else:
+        mout.warningOut("Skipping already stipped file: " + filename)
 
-			line = re.sub(r'\t', ' ', line)
-			line = re.sub(' +',' ',line)
-			line = line.strip()
-			file.write(line+'\n')
-	else:
-		mout.warningOut("Skipping already stipped file: "+filename)
+    file.close()
 
-	file.close()
 
-def parseDat(filename,num_columns=2,header_rows=1,delimiter=' ',debug=False,pre_strip=False,clean_nan=False,comment_chars='#@!'):
-	
-	import mout
-	import pandas
-	import os
-	import math
+def parseDat(filename, num_columns=2, header_rows=1, delimiter=' ', debug=False, pre_strip=False, clean_nan=False,
+             comment_chars='#@!'):
+    import mout
+    import pandas
+    import os
+    import math
 
-	columns=list(range(num_columns))
+    columns = list(range(num_columns))
 
-	labels=[]
+    labels = []
 
-	for i in columns:
+    for i in columns:
 
-		if i==0:
-			labels.append("x")
-		else:
-			labels.append("y"+str(i))
+        if i == 0:
+            labels.append("x")
+        else:
+            labels.append("y" + str(i))
 
-	if pre_strip:
-		# csv_strip(filename,overwrite=True)
-		csv_strip(filename,output="__temp__",overwrite=False,comment_chars=comment_chars)
-		
-		dataframe = pandas.read_csv("__temp__",
-									skiprows=header_rows,
-									delimiter=delimiter,
-									usecols=columns,
-									names=labels)
+    if pre_strip:
+        # csv_strip(filename,overwrite=True)
+        csv_strip(filename, output="__temp__", overwrite=False, comment_chars=comment_chars)
 
-		os.system("rm __temp__")
+        dataframe = pandas.read_csv("__temp__",
+                                    skiprows=header_rows,
+                                    delimiter=delimiter,
+                                    usecols=columns,
+                                    names=labels)
 
-	else:
+        os.system("rm __temp__")
 
-		dataframe = pandas.read_csv(filename,
-									skiprows=header_rows,
-									delimiter=delimiter,
-									usecols=columns,
-									names=labels,comment='#')
+    else:
 
-	if debug: print(dataframe)
+        dataframe = pandas.read_csv(filename,
+                                    skiprows=header_rows,
+                                    delimiter=delimiter,
+                                    usecols=columns,
+                                    names=labels, comment='#')
 
-	if num_columns > 2:
+    if debug: print(dataframe)
 
-		if debug: mout.headerOut("many")
+    if num_columns > 2:
 
-		big_y = []
-		x = dataframe.iloc[:, 0].values
+        if debug: mout.headerOut("many")
 
-		for i in range(1,num_columns):
+        big_y = []
+        x = dataframe.iloc[:, 0].values
 
-			y = list(dataframe.iloc[:, i].values)
+        for i in range(1, num_columns):
 
-			big_y.append(y)
+            y = list(dataframe.iloc[:, i].values)
 
-			if debug: mout.varOut("big_y len",len(big_y))
+            big_y.append(y)
 
-		if clean_nan:
-			if num_columns > 2:
-				new_x = []
-				new_ys = []
-				for x,ys in zip(x,big_y):
+            if debug: mout.varOut("big_y len", len(big_y))
 
-					# print("DEBUG",x,ys)
+        if clean_nan:
+            if num_columns > 2:
+                new_x = []
+                new_ys = []
+                for x, ys in zip(x, big_y):
 
-					try:
-						if math.isnan(float(x)):
-							continue
-					except ValueError:
-						continue
-					for y in ys:
-						try:
-							if math.isnan(float(y)):
-								continue
-						except ValueError:
-							continue
-							
-					new_x.append(x)
-					new_ys.append(ys)
-				x = new_x
-				big_y = new_ys
+                    # print("DEBUG",x,ys)
 
-		return x,big_y
+                    try:
+                        if math.isnan(float(x)):
+                            continue
+                    except ValueError:
+                        continue
+                    for y in ys:
+                        try:
+                            if math.isnan(float(y)):
+                                continue
+                        except ValueError:
+                            continue
 
-	elif num_columns == 1:
+                    new_x.append(x)
+                    new_ys.append(ys)
+                x = new_x
+                big_y = new_ys
 
-		x = dataframe.iloc[:, 0].values
+        return x, big_y
 
-		if clean_nan:
-			new_x = []
-			for this_x in list(x):
-				if math.isnan(float(this_x)):
-					continue
-				new_x.append(this_x)
-			return new_x
+    elif num_columns == 1:
 
-		return list(x)
+        x = dataframe.iloc[:, 0].values
 
-	else:
+        if clean_nan:
+            new_x = []
+            for this_x in list(x):
+                if math.isnan(float(this_x)):
+                    continue
+                new_x.append(this_x)
+            return new_x
 
-		x = dataframe.iloc[:, 0].values
-		y = dataframe.iloc[:, 1].values
+        return list(x)
 
-		if clean_nan:
-			new_x = []
-			new_y = []
-			for this_x,this_y in zip(list(x),list(y)):
-				if math.isnan(float(this_x)):
-					continue
-				if math.isnan(float(this_y)):
-					continue
-				new_x.append(this_x)
-				new_y.append(this_y)
-			return new_x, new_y
+    else:
 
-		return list(x),list(y)
+        x = dataframe.iloc[:, 0].values
+        y = dataframe.iloc[:, 1].values
+
+        if clean_nan:
+            new_x = []
+            new_y = []
+            for this_x, this_y in zip(list(x), list(y)):
+                if math.isnan(float(this_x)):
+                    continue
+                if math.isnan(float(this_y)):
+                    continue
+                new_x.append(this_x)
+                new_y.append(this_y)
+            return new_x, new_y
+
+        return list(x), list(y)

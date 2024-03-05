@@ -1,8 +1,8 @@
 from ase import io
 
-import mcol              # https://github.com/mwinokan/MPyTools
-import mout              # https://github.com/mwinokan/MPyTools
-import molparse as amp # https://github.com/mwinokan/AseMolPlot
+import mcol  # https://github.com/mwinokan/MPyTools
+import mout  # https://github.com/mwinokan/MPyTools
+import molparse as amp  # https://github.com/mwinokan/AseMolPlot
 
 # # load some molecule
 # from ase.data.pubchem import pubchem_atoms_search, pubchem_atoms_conformer_search
@@ -25,4 +25,4 @@ import cs4qb
 
 # system.check_indices()
 
-amp.write("test.pdb",system)
+amp.write("test.pdb", system)

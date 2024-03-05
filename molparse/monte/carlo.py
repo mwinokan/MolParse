@@ -1,76 +1,76 @@
-
 from .rand import random_point_spherical
 import numpy as np
 
-def mc_spherical(volume, radius:float, proximity:float, origin:np.ndarray=None, samples:int=4000, boolean:bool=False, inverse:bool=False, points:bool=False):
-	
-	"""
-		volume: CompoundVolume object
-		radius: radius of testing sphere
-		proximity: value to pass to volume.is_within
-		samples: number of MC samples
-		boolean: return True/False if any valid point in testing sphere
-		inverse: points within the volume are invalid
-	"""
 
-	num_in = 0
-	num_out = 0
-	points_in = []
-	points_out = []
+def mc_spherical(volume, radius: float, proximity: float, origin: np.ndarray = None, samples: int = 4000,
+                 boolean: bool = False, inverse: bool = False, points: bool = False):
+    """
+        volume: CompoundVolume object
+        radius: radius of testing sphere
+        proximity: value to pass to volume.is_within
+        samples: number of MC samples
+        boolean: return True/False if any valid point in testing sphere
+        inverse: points within the volume are invalid
+    """
 
-	if origin is None:
-		origin = volume.origin
+    num_in = 0
+    num_out = 0
+    points_in = []
+    points_out = []
 
-	for i in range(samples):
-		point = random_point_spherical(origin,radius)
+    if origin is None:
+        origin = volume.origin
 
-		if volume.is_within(point, proximity):
+    for i in range(samples):
+        point = random_point_spherical(origin, radius)
 
-			# point is in volume
+        if volume.is_within(point, proximity):
 
-			if inverse:
-				num_out += 1
-				points_out.append(point)
-			else:
-				num_in += 1
-				if boolean:
-					return True
-				points_in.append(point)
-		else:
-			
-			# point is not in volume
-			
-			if inverse:
-				num_in += 1
-				if boolean:
-					return True
-				points_in.append(point)
-			else:
-				num_out += 1
-				points_out.append(point)
+            # point is in volume
 
-		# fig = volume.plot(radius)
+            if inverse:
+                num_out += 1
+                points_out.append(point)
+            else:
+                num_in += 1
+                if boolean:
+                    return True
+                points_in.append(point)
+        else:
 
-		# import mgo
+            # point is not in volume
 
-		# print(f'{point=}')
-		# print(f'{points_in=}')
-		# print(f'{points_out=}')
+            if inverse:
+                num_in += 1
+                if boolean:
+                    return True
+                points_in.append(point)
+            else:
+                num_out += 1
+                points_out.append(point)
 
-		# fig.add_trace(mgo.point_trace(point))
+    # fig = volume.plot(radius)
 
-		# fig.show()
+    # import mgo
 
-		# exit()
+    # print(f'{point=}')
+    # print(f'{points_in=}')
+    # print(f'{points_out=}')
 
-	if boolean:
-		return False
+    # fig.add_trace(mgo.point_trace(point))
 
-	sphere_volume = np.pi*np.power(radius,3)
-	fraction = num_out / samples
-	valid_volume = fraction * sphere_volume
+    # fig.show()
 
-	if points:
-		return fraction, valid_volume, points_in, points_out
-	else:
-		return fraction, valid_volume
+    # exit()
+
+    if boolean:
+        return False
+
+    sphere_volume = np.pi * np.power(radius, 3)
+    fraction = num_out / samples
+    valid_volume = fraction * sphere_volume
+
+    if points:
+        return fraction, valid_volume, points_in, points_out
+    else:
+        return fraction, valid_volume

@@ -147,7 +147,7 @@ from .graphing import graphBondAngle
 from .graphing import graphBondVibSpec
 
 # Console IO
-from .console_io import printEnergy # needs documentation
+from .console_io import printEnergy  # needs documentation
 
 # XVG Parsing
 from .xvg import parseXVG
@@ -171,9 +171,9 @@ from .amber import write_amber_restraints
 # from .umbrella_integrate import umbrella_integrate
 
 # File conversion
-from .convert import pdb2traj # needs documentation
-from .convert import gro2traj # needs documentation
-from .convert import xyz2traj # needs documentation
+from .convert import pdb2traj  # needs documentation
+from .convert import gro2traj  # needs documentation
+from .convert import xyz2traj  # needs documentation
 
 # import subpackages
 

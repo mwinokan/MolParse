@@ -24,7 +24,8 @@ Use `pydoc` to see help on the `molparse` module, or its methods & classes. E.g.
 
 #### moltree
 
-In addition to the python module, an interactive command-line interface is available with the binary `moltree`. Pass a PDB or GRO file as follows:
+In addition to the python module, an interactive command-line interface is available with the binary `moltree`. Pass a
+PDB or GRO file as follows:
 
 `moltree <FILE>`
 
@@ -34,7 +35,9 @@ Use the mouse to interact with buttons and CTR-C to exit.
 
 #### molxvg
 
-Gromacs produces data files in XVG format by default, these can be parsed using the `molparse.xvg.parseXVG` method from within a python environment, alternatively a binary exists to access its basic functionality from the command line. Run the following to open an interactive plotly graph of an xvg:
+Gromacs produces data files in XVG format by default, these can be parsed using the `molparse.xvg.parseXVG` method from
+within a python environment, alternatively a binary exists to access its basic functionality from the command line. Run
+the following to open an interactive plotly graph of an xvg:
 
 `molxvg [FILE.xvg] -s`
 
@@ -46,14 +49,15 @@ Other options can be found by running `molxvg --help`.
 
 ### Requirements
 
-*   [ASE](#https://wiki.fysik.dtu.dk/ase/index.html)
-*   [MPyTools](#https://github.com/mwinokan/MPyTools)
+* [ASE](#https://wiki.fysik.dtu.dk/ase/index.html)
+* [MPyTools](#https://github.com/mwinokan/MPyTools)
 
 ### Installing ASE
 
-*   `pip install --upgrade --user ase`
-*   `export PATH=$PATH:~/.local/bin` to your `.bash_profile`
-*   `export PYTHONPATH=$PYTHONPATH:~/.local/lib/python3.X/site-packages` to your `.bash_profile` Where X is your python version.
+* `pip install --upgrade --user ase`
+* `export PATH=$PATH:~/.local/bin` to your `.bash_profile`
+* `export PYTHONPATH=$PYTHONPATH:~/.local/lib/python3.X/site-packages` to your `.bash_profile` Where X is your python
+  version.
 
 ### MPyTools
 
