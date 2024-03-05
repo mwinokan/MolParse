@@ -110,11 +110,9 @@ def plot3d(atoms, extra=[], bonds=[], alpha=1.0, velocity=False, v_scale=1.0, fi
             data['res_number'] = [a.res_number for a in atom_subset]
             data['name'] = [a.name for a in atom_subset]
 
-            customdata = []
-
-            for a in atom_subset:
-                customstr = f'name={a.name}<br>chain={a.chain}<br>index={a.index}<br>number={a.number}<br>residue={a.residue}<br>res_index={a.res_index}<br>res_number={a.res_number}<br>x={a.x:.3f}<br>y={a.y:.3f}<br>z={a.z:.3f}'
-                customdata.append(customstr)
+            customdata = [
+                f'name={a.name}<br>chain={a.chain}<br>index={a.index}<br>number={a.number}<br>residue={a.residue}<br>res_index={a.res_index}<br>res_number={a.res_number}<br>x={a.x:.3f}<br>y={a.y:.3f}<br>z={a.z:.3f}'
+                for a in atom_subset]
 
             if flat:
                 trace = go.Scatter(x=x, y=y, mode='markers', name=s,
