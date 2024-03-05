@@ -51,10 +51,7 @@ def plot3d(atoms, extra=[], bonds=[], alpha=1.0, velocity=False, v_scale=1.0, fi
             z.extend([a[2], b[2], None])
 
         if transform and flat:
-            p = [[a, b] for a, b in zip(x, y)]
-            p = transform(p)
-            x = [v[0] for v in p]
-            y = [v[1] for v in p]
+            x, y = zip(*transform(list(zip(x, y))))
 
         if flat:
             trace = go.Scatter(x=x, y=y, mode='lines', name='bonds', line=dict(color='black', width=16))
@@ -97,10 +94,7 @@ def plot3d(atoms, extra=[], bonds=[], alpha=1.0, velocity=False, v_scale=1.0, fi
             z = [p[2] for p in positions]
 
             if transform and flat:
-                p = [[a, b] for a, b in zip(x, y)]
-                p = transform(p)
-                x = [v[0] for v in p]
-                y = [v[1] for v in p]
+                x, y = zip(*transform(list(zip(x, y))))
 
             data['x'] = x
             data['y'] = y
