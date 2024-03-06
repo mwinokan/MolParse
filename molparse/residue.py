@@ -411,7 +411,7 @@ def res_type(resname):
         return 'PRO'
 
     # Chromophore
-    if resname == 'CRO':
+    if resname == 'SYG' or resname == 'CRO' or resname == 'NTYG' or resname == 'DGLU' or resname == 'AS2T' or resname == 'SYTY' or resname == 'ASYG':
         return 'PRO'
 
     import mcol
