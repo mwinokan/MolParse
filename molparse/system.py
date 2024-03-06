@@ -1,5 +1,7 @@
 from .group import AtomGroup
 
+from mlog import setup_logger
+logger = setup_logger('MolParse')
 
 class System(AtomGroup):
     """Top-level object for molecular systems
@@ -337,82 +339,90 @@ class System(AtomGroup):
         if verbosity > 0:
             mout.warningOut("Removed " + mcol.result + str(number_deleted) + mcol.warning + " heterogens")
 
-    def remove_atoms_by_index(self, del_list: list, verbosity: int = 1, fix_indices=True):
-        """Remove Atoms by their index"""
+    def remove_atoms(self,
+        *, 
+        names: list | None = None,
+        indices: list | None = None, 
+        numbers: list | None = None, 
+        res_filter: str | None = None,
+        verbosity: int = 2,
+    ) -> int:
+
+        assert names or indices or numbers, "must supply indices or numbers"
+
         import mcol
-        import mout
+        mout = logger
 
         number_deleted = 0
-        if fix_indices:
-            self.fix_indices()
+
+        if indices:
+            del_list = indices
+            f = lambda x: x.index
+        elif numbers:
+            del_list = numbers
+            f = lambda x: x.number
+        else:
+            del_list = names
+            f = lambda x: x.name
+
         for chain in self.chains:
             for residue in chain.residues:
                 for index, atom in reversed(list(enumerate(residue.atoms))):
-                    if atom.index in del_list:
+                    if f(atom) in del_list:
                         del residue.atoms[index]
                         number_deleted += 1
                         if verbosity > 1:
-                            mout.warningOut("Removed atom " +
-                                            mcol.arg + atom.name + str([atom.index]) +
-                                            mcol.warning + " in residue " +
-                                            mcol.arg + residue.name + str([residue.number]))
+                            mout.warning(f"Removed atom {atom.name_number_str} from {residue.name_number_chain_str}")
+
+        if verbosity:
+            mout.var('#atoms deleted', number_deleted)
+
         return number_deleted
 
-    def remove_residues_by_index(self, del_list: list, verbosity: int = 1, fix_indices=True):
-        """Remove Residues by their index"""
+    def remove_residues(self, 
+        *, 
+        names: list | None = None,
+        indices: list | None = None, 
+        numbers: list | None = None, 
+        verbosity: int = 2,
+    ) -> int:
+
+        assert names or indices or numbers, "must supply indices or numbers"
+
         import mcol
-        import mout
+        mout = logger
 
         number_deleted = 0
-        if fix_indices:
-            self.fix_indices()
+
+        if indices:
+            del_list = indices
+            f = lambda x: x.index
+        elif numbers:
+            del_list = numbers
+            f = lambda x: x.number
+        else:
+            del_list = names
+            f = lambda x: x.name
+
         for chain in self.chains:
             for index, residue in reversed(list(enumerate(chain.residues))):
-                if residue.number in del_list:
+                if f(residue) in del_list:
                     del chain.residues[index]
                     number_deleted += 1
                     if verbosity > 1:
-                        mout.warningOut("Removed residue " +
-                                        mcol.arg + residue.name + str([residue.number]) +
-                                        mcol.warning + " in chain " +
-                                        mcol.arg + chain.name)
+                        mout.warning(f"Removed residue {residue.name_number_chain_str}")
+
+        if verbosity:
+            mout.var('#residues deleted', number_deleted)
+
         return number_deleted
 
-    def remove_atoms(self, name: str, res_filter: str = None, verbosity: int = 2):
-        """Remove Atoms by their name"""
-        import mcol
-        import mout
-
-        number_deleted = 0
-        self.fix_indices()
-        for chain in self.chains:
-            for residue in chain.residues:
-                if res_filter is not None and res_filter not in residue.name:
-                    continue
-                for index, atom in reversed(list(enumerate(residue.atoms))):
-                    if atom.name == name:
-                        del residue.atoms[index]
-                        number_deleted += 1
-                        if verbosity > 1:
-                            mout.warningOut("Removed atom " +
-                                            mcol.arg + atom.name + str([atom.index]) +
-                                            mcol.warning + " in residue " +
-                                            mcol.arg + residue.name + str([residue.number]))
-        if verbosity > 0:
-            if res_filter is None:
-                mout.warningOut(
-                    "Removed " + mcol.result + str(number_deleted) + mcol.warning + " atoms named " + mcol.arg + name)
-            else:
-                mout.warningOut("Removed " + mcol.result + str(
-                    number_deleted) + mcol.warning + " atoms named " + mcol.arg + name + mcol.warning + " with res_filter " + mcol.arg + res_filter)
-        return number_deleted
-
-    def atom_names(self, wRes=False, noPrime=False):
-        """Get all child Atom names (list)"""
-        names_list = []
-        for chain in self.chains:
-            names_list += chain.atom_names(wRes=wRes, noPrime=noPrime)
-        return names_list
+    # def atom_names(self, wRes=False, noPrime=False):
+    #     """Get all child Atom names (list)"""
+    #     names_list = []
+    #     for chain in self.chains:
+    #         names_list += chain.atom_names(wRes=wRes, noPrime=noPrime)
+    #     return names_list
 
     @property
     def atoms(self):
@@ -456,6 +466,18 @@ class System(AtomGroup):
         for chain in self.chains:
             atomtype_list += chain.FF_atomtypes
         return atomtype_list
+
+    @property
+    def res_indices(self):
+        return [r.index for r in self.residues]
+    
+    @property
+    def res_numbers(self):
+        return [r.number for r in self.residues]
+
+    @property
+    def res_names(self):
+        return [r.name for r in self.residues]
 
     def write_CJSON(self, filename, use_atom_types=False, gulp_names=False):
         """Export a CJSON"""

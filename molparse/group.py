@@ -249,9 +249,19 @@ class AtomGroup():
         return ''.join([atom.species for atom in self.atoms])
 
     @property
-    def indices(self):
+    def atom_indices(self):
         """Returns indices of all child Atoms (list)"""
         return [atom.index for atom in self.atoms]
+
+    @property
+    def atom_names(self):
+        """Returns indices of all child Atoms (list)"""
+        return [atom.name for atom in self.atoms]
+
+    @property
+    def atom_numbers(self):
+        """Returns indices of all child Atoms (list)"""
+        return [atom.number for atom in self.atoms]
 
     @property
     def bbox(self):
