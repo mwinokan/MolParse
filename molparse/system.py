@@ -335,7 +335,7 @@ class System(AtomGroup):
         for index, atom in enumerate(atoms):
             if atom.heterogen:
                 del_list.append(index)
-        number_deleted = self.remove_atoms_by_index(del_list, verbosity=verbosity - 1)
+        number_deleted = self.remove_atoms(indices=del_list, verbosity=verbosity - 1)
         if verbosity > 0:
             mout.warningOut("Removed " + mcol.result + str(number_deleted) + mcol.warning + " heterogens")
 
