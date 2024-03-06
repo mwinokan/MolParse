@@ -398,9 +398,17 @@ RES_TYPES = {
             "HID", "HIE", "HIP", "HSP"),
 }
 
+EXTRA_TYPES = {}
+
+def add_res_type(resname, type):
+    global EXTRA_TYPES
+    EXTRA_TYPES[resname] = type
 
 def res_type(resname):
     """Guess type from residue name"""
+
+    if resname in EXTRA_TYPES:
+        return EXTRA_TYPES[resname]
 
     for k, v in RES_TYPES.items():
         if resname in v:
@@ -417,4 +425,5 @@ def res_type(resname):
     import mcol
     import mout
     mout.warningOut("Unknown residue type for " + mcol.arg + resname)
-    return None
+    mout.warningOut("Defaulting to ligand " + mcol.arg + resname)
+    return 'LIG'
