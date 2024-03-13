@@ -20,7 +20,14 @@ github_repository = 'MolParse'
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ['sphinx.ext.autodoc', "myst_parser", 'sphinx.ext.napoleon']
+extensions = [
+              'sphinx.ext.autodoc',
+              'sphinx.ext.doctest',
+              'sphinx.ext.extlinks',
+              'sphinx.ext.mathjax',
+              'sphinx.ext.viewcode',
+              'sphinx.ext.napoleon',
+              'sphinx.ext.intersphinx']
 
 templates_path = ['_templates']
 exclude_patterns = []
@@ -32,3 +39,14 @@ exclude_patterns = []
 
 html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
+
+source_suffix = '.rst'
+master_doc = 'index'
+# project = 'ASE'
+# copyright = f'{datetime.date.today().year}, ASE-developers'
+# templates_path = ['templates']
+exclude_patterns = ['build']
+# default_role = 'math'
+# pygments_style = 'sphinx'
+autoclass_content = 'both'
+modindex_common_prefix = ['mp.']
