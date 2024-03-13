@@ -1,4 +1,6 @@
-def write(filename, image, verbosity=1, **parameters):
+
+def write(filename, payload, verbosity=1, **parameters):
+    """Write an object to a filename."""
     from ase import io
     from ase import atoms as aseatoms
     import mcol
@@ -22,71 +24,71 @@ def write(filename, image, verbosity=1, **parameters):
         # pickle:
         if filename.endswith(".pickle"):
             with open(filename, 'wb') as f:
-                pickle.dump(image, f)
+                pickle.dump(payload, f)
 
         # JSON:
         elif filename.endswith(".json"):
             with open(filename, 'wt') as f:
-                json.dump(image, f, indent=2)
+                json.dump(payload, f, indent=2)
 
         # CJSON:
         elif filename.endswith(".cjson"):
-            writeCJSON(filename, image)
+            writeCJSON(filename, payload)
         # PBD and amp.System:
-        elif (filename.endswith(".pdb") or filename.endswith(".pdb2")) and isinstance(image, System):
-            writePDB(filename, image, verbosity=verbosity - 1)
-        elif (filename.endswith(".pdb") or filename.endswith(".pdb2")) and isinstance(image, AtomGroup):
-            writePDB(filename, image, verbosity=verbosity - 1)
+        elif (filename.endswith(".pdb") or filename.endswith(".pdb2")) and isinstance(payload, System):
+            writePDB(filename, payload, verbosity=verbosity - 1)
+        elif (filename.endswith(".pdb") or filename.endswith(".pdb2")) and isinstance(payload, AtomGroup):
+            writePDB(filename, payload, verbosity=verbosity - 1)
         # GRO and amp.System:
-        elif filename.endswith(".gro") and isinstance(image, System):
-            writeGRO(filename, image, verbosity=verbosity - 1)
+        elif filename.endswith(".gro") and isinstance(payload, System):
+            writeGRO(filename, payload, verbosity=verbosity - 1)
         # PDB and list of amp.System's:
-        elif filename.endswith(".pdb") and isinstance(image, list):
+        elif filename.endswith(".pdb") and isinstance(payload, list):
 
             ### List of Systems
-            if all([isinstance(i, System) for i in image]):
+            if all([isinstance(i, System) for i in payload]):
 
-                for index, frame in enumerate(image):
+                for index, frame in enumerate(payload):
                     if index == 0:
                         writePDB(filename, frame, verbosity=verbosity - 1)
                     else:
                         writePDB(filename, frame, verbosity=verbosity - 1, append=True, model=index + 1)
 
-            elif all([isinstance(i, aseatoms.Atoms) for i in image]):
-                io.write(filename, image, **parameters)
+            elif all([isinstance(i, aseatoms.Atoms) for i in payload]):
+                io.write(filename, payload, **parameters)
             else:
                 mout.errorOut("Unsupported", fatal=True)
 
-        elif isinstance(image, System):
+        elif isinstance(payload, System):
             mout.errorOut(
                 f"Filetype {mcol.file}{filename.split('.')[-1]}{mcol.error} not supported for mp.System object",
                 code="amp.io.write[1]")
             return None
 
-        elif isinstance(image, go.Figure):
+        elif isinstance(payload, go.Figure):
             if filename.endswith('.html'):
-                image.write_html(filename)
+                payload.write_html(filename)
             else:
                 if filename.endswith('.pdf'):
                     import plotly.io as pio
                     if pio.kaleido.scope is not None:
                         pio.kaleido.scope.mathjax = None
-                image.write_image(filename)
+                payload.write_image(filename)
 
         # Others:
         else:
-            io.write(filename, image, **parameters)
+            io.write(filename, payload, **parameters)
     except TypeError as e:
         mout.out("Fail.")
         mout.error(e)
-        mout.error(f"{type(image)} could not be written to " + mcol.file + filename, code="amp.io.write[1]")
+        mout.error(f"{type(payload)} could not be written to " + mcol.file + filename, code="amp.io.write[1]")
         return None
 
     if (verbosity > 0):
         mout.out("Done.")  # user output
 
-
 def read(filename, index=None, verbosity=1, tagging=True, tagByResidue=False, **parameters):
+    """Wrapper for ase.io.read"""
     from ase import io
     import mcol
     import mout
@@ -159,20 +161,32 @@ def tagFromLine(line, byResidue):
         return 0
 
 
-def parse(file, verbosity=1):
+def parse(file, verbosity=1, **kwargs):
+    """Parse a molecular structure file.
+
+    Supported filetypes
+    -------------------
+
+    * PDB: *.pdb
+    * Gromacs: *.gro
+    * XYZ: *.xyz
+    * mol: *.mol
+    * Gromacs Index: *.ndx
+    * JSON: *.json
+    """
     from .ndx import parseNDX
     file = str(file)
     extension = file.split(".")[-1]
     if extension == "pdb":
-        return parsePDB(file, verbosity=verbosity)
+        return parsePDB(file, verbosity=verbosity, **kwargs)
     elif extension == "gro":
-        return parseGRO(file, verbosity=verbosity)
+        return parseGRO(file, verbosity=verbosity, **kwargs)
     elif extension == "xyz":
-        return parseXYZ(file, verbosity=verbosity)
+        return parseXYZ(file, verbosity=verbosity, **kwargs)
     elif extension == "mol":
-        return parseMol(file, verbosity=verbosity)
+        return parseMol(file, verbosity=verbosity, **kwargs)
     elif extension == "ndx":
-        return parseNDX(file, verbosity=verbosity)
+        return parseNDX(file, verbosity=verbosity, **kwargs)
     elif extension == "json":
         from json import load
         return load(open(file, 'rt'))
@@ -183,6 +197,7 @@ def parse(file, verbosity=1):
 
 
 def parseMol(mol, verbosity=1):
+    """Parse an RDKit Molecule"""
     mol = str(mol)
     assert mol.endswith(".mol"), f"filename doesn't end with '.mol': {mol}"
 
@@ -223,7 +238,8 @@ def parsePDB(pdb,
              reordering_summary_warnings=True,
              skipping_residue_warning=True,
              keep_headers=False,
-             ):
+):
+    """Parse a PDB"""
     if resfilter is None:
         resfilter = []
 
@@ -632,8 +648,15 @@ def parsePDBAtomLine(line, res_index, atom_index, chain_counter, debug=False, al
 
 
 # def parseGRO(gro,systemName=None,fix_indices=True,fix_atomnames=True,verbosity=1,auto_ter=None):
-def parseGRO(gro, systemName=None, fix_indices=True, fix_atomnames=True, autoname_chains=True, verbosity=1,
-             auto_ter=["DA3", "DT3", "DG3", "DC3"]):
+def parseGRO(gro, 
+    systemName=None, 
+    fix_indices=True, 
+    fix_atomnames=True, 
+    autoname_chains=True, 
+    verbosity=1,
+    auto_ter=["DA3", "DT3", "DG3", "DC3"],
+):
+    """Parse a Gromacs structure"""
     import mcol
     import mout
     from .system import System
@@ -870,8 +893,19 @@ def writeCJSON(filename, system, use_atom_types=False, gulp_names=False, noPrime
         mout.out("Done.")  # user outpu
 
 
-def writePDB(filename, system, verbosity=1, append=False, model=1, header=None, title=None, compound=None,
-             write_model=True, charges=True, shift_name=0):
+def writePDB(
+    filename, 
+    system, 
+    verbosity=1, 
+    append=False, 
+    model=1, 
+    header=None, 
+    title=None, 
+    compound=None,
+    write_model=True, 
+    charges=True, 
+    shift_name=0,
+):
     import mcol
     import mout
     from .system import System
@@ -949,7 +983,10 @@ def writePDB(filename, system, verbosity=1, append=False, model=1, header=None, 
         mout.out("Done.")  # user output
 
 
-def modifyPDB(filename, atoms, copy_from=None):
+def modifyPDB(filename, 
+    atoms, 
+    copy_from=None
+):
     """ in-place modification of a PDB file for improved performance when only modifying a certain subset of atoms
 
     filename: PDB to modify

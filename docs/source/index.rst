@@ -3,18 +3,46 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to MolParse's documentation!
-====================================
+MolParse Documentation
+======================
+
+**Warning: this documentation is barebones**
+
+MolParse is a python package for parsing, modifying, and analysis of molecular structure files built on top of ASE.
+
+To parse a file try:
+
+::
+
+   import molparse as mp
+   sys = mp.parse(file)
+
+This will return a hierarchical System object (for .pdb and .gro files) which is structured as follows:
+
+::
+
+   System
+   |__ Chain
+       |__ Residue
+           |__ Atom
+
+N.B. All groups of Atom objects inherit from AtomGroup
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: API Reference:
+   
+   .. molparse
+   io
+   group
+   system
+   chain
+   residue
+   atom
 
+.. Indices and tables
+.. ==================
 
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+.. * :ref:`genindex`
+.. * :ref:`modindex`
+.. * :ref:`search`

@@ -1,6 +1,8 @@
 """
 
-Molecular Parsing
+========
+MolParse
+========
 
 A python package for parsing, modifying, and analysis of molecular structure files. 
 
@@ -8,9 +10,13 @@ It is recommended to import as the acronym:
 
 	import molparse as mp
 
-Key features:
+Key features
+============
 
-* Parsing coordinate files into System objects:
+Parsing coordinate files into System objects
+--------------------------------------------
+
+::
 
 	system = mp.parsePDB(filestr)
 	system = mp.parseGRO(filestr)
@@ -71,8 +77,6 @@ Key features:
 * Analysis of common molecular properties:
 
 	see help(mp.analysis)
-
-* Tunnel
 
 """
 
