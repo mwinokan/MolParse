@@ -2,3 +2,5 @@
 __pycache__/
 *.sublime-*
 *.pyc
+docs/build/
+dist/

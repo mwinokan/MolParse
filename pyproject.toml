@@ -28,7 +28,7 @@ dependencies = [
     "kaleido",
 ]
 [project.urls]
-"Homepage" = "https://github.com/mwinokan/MolParse"
+"Homepage" = "molparse.winokan.com"
 "Bug Tracker" = "https://github.com/mwinokan/MolParse/issues"
 [tool.hatch.build]
 include = [
