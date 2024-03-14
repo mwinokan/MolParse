@@ -1,5 +1,10 @@
 ![MolParse](https://github.com/mwinokan/MolParse/blob/master/graphics/molparse-01.png?raw=true)
 
+![GitHub Tag](https://img.shields.io/github/v/tag/mwinokan/molparse?include_prereleases&label=PyPI&link=https%3A%2F%2Fpypi.org%2Fproject%2Fmolparse%2F)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/mwinokan/molparse/python-publish.yml)
+[![Documentation Status](https://readthedocs.org/projects/hippo-db/badge/?version=latest)](https://molparse.winokan.com/en/latest/?badge=latest)
+![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/mwinokan/molparse)
+
 A python package for parsing, modifying, and analysis of molecular structure files.
 
 ## Installation
