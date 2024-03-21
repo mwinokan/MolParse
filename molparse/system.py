@@ -408,10 +408,10 @@ class System(AtomGroup):
             del_list = names
             f = lambda x: x.name
 
-        for chain in self.chains:
-            for index, residue in reversed(list(enumerate(chain.residues))):
+        for c in self.chains:
+            for index, residue in reversed(list(enumerate(c.residues))):
                 if f(residue) in del_list:
-                    del chain.residues[index]
+                    del c.residues[index]
                     number_deleted += 1
                     if verbosity > 1:
                         mout.warning(f"Removed residue {residue.name_number_chain_str}")
