@@ -318,13 +318,17 @@ class System(AtomGroup):
         """Delete Chain by name"""
         import mcol
         import mout
+        
+        if name not in self.chain_names:
+            mout.errorOut("Chain with name " + mcol.arg + name + mcol.error + " not found.", fatal=True)
+            return
+        
         for index, chain in enumerate(self.chains):
             if chain.name == name:
                 if verbosity > 0:
                     mout.warningOut("Removing chain " + mcol.arg + name + str([index]))
                 del self.chains[index]
-                return chain
-        mout.errorOut("Chain with name " + mcol.arg + name + mcol.error + " not found.", fatal=True)
+                # return chain
 
     def remove_heterogens(self, verbosity: int = 1):
         """Remove HETATM entries"""
