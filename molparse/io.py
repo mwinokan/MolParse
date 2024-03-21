@@ -425,6 +425,7 @@ def parsePDB(pdb,
                                 if residue is None: make_new_res = True
                                 if last_residue_name != atom.residue: make_new_res = True
                                 if last_residue_number != atom.res_number: make_new_res = True
+                                if last_chain_name != atom.chain: make_new_res = True
 
                                 make_new_chain = False
                                 if residue is None: make_new_chain = True
