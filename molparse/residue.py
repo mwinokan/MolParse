@@ -125,6 +125,13 @@ class Residue(AtomGroup):
         """resid and number are the residue index from the original file"""
         return self._number
 
+    @number.setter
+    def number(self, a):
+        """resid and number are the residue index from the original file"""
+        self._number = a
+        for atom in self.atoms:
+            atom._res_number = a
+
     @property
     def ase_atoms(self):
         from ase import Atoms
@@ -391,7 +398,7 @@ RES_TYPES = {
     'SOL': ('SOL', 'WAT', 'TIP', 'T3P', 'HOH', 'PEG', 'SO4', 'DMS', 'H2S'),
     'ION': ('ION', 'MG', 'CL', 'NA', 'SOD', 'POT', 'CAL', 'LIT', 'Na+', 'Cl-', 'CA', 'ZN'),
     'LIP': ('DPPC', 'POPC', 'DAG', 'TAG'),
-    'LIG': ('ATP', 'GTP', 'LIG', 'UNL', 'CTP', 'TTP', 'OGTP'),
+    'LIG': ('ATP', 'GTP', 'LIG', 'UNL', 'CTP', 'TTP', 'OGTP', 'TRS', 'APR'),
     'N/A': ('QM', 'MM'),
     'PRO': ("ALA", "ARG", "ASN", "ASP", "CYS", "GLN", "GLU", "GLY", "HSD", "HSE", "HIS",
             "ILE", "LEU", "LYS", "MET", "PHE", "PRO", "SER", "THR", "TRP", "TYR", "VAL",
@@ -424,6 +431,5 @@ def res_type(resname):
 
     import mcol
     import mout
-    mout.warningOut("Unknown residue type for " + mcol.arg + resname)
-    mout.warningOut("Defaulting to ligand " + mcol.arg + resname)
+    mout.warningOut(f"Unknown residue type for {mcol.arg}{resname}{mcol.warning}. Defaulted to {mcol.arg}LIG")
     return 'LIG'
