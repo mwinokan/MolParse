@@ -1,5 +1,7 @@
 from .group import AtomGroup
 
+from mlog import setup_logger
+logger = setup_logger('MolParse')
 
 class Chain(AtomGroup):
     """Class containing covalently bonded Residue objects
@@ -141,3 +143,41 @@ class Chain(AtomGroup):
     @property
     def children(self):
         return self.residues
+
+    def remove_residues(self, 
+        *, 
+        names: list | None = None,
+        indices: list | None = None, 
+        numbers: list | None = None, 
+        verbosity: int = 2,
+    ) -> int:
+
+        assert names or indices or numbers, "must supply names, indices or numbers"
+
+        import mcol
+        mout = logger
+
+        number_deleted = 0
+
+        if indices:
+            del_list = indices
+            f = lambda x: x.index
+        elif numbers:
+            del_list = numbers
+            f = lambda x: x.number
+        else:
+            del_list = names
+            f = lambda x: x.name
+
+        for index, residue in reversed(list(enumerate(self.residues))):
+            if f(residue) in del_list:
+                del self.residues[index]
+                number_deleted += 1
+                if verbosity > 1:
+                    mout.warning(f"Removed residue {residue.name_number_chain_str}")
+
+        if verbosity:
+            mout.var('#residues deleted', number_deleted)
+
+        return number_deleted
+        
