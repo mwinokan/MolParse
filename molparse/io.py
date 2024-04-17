@@ -906,6 +906,7 @@ def writePDB(
     write_model=True, 
     charges=True, 
     shift_name=0,
+    hydrogen=True,
 ):
     import mcol
     import mout
@@ -960,6 +961,9 @@ def writePDB(
         strbuff += "MODEL " + str(model) + end
 
     for i, atom in enumerate(system.atoms):
+
+        if not hydrogen and atom.symbol == 'H':
+            continue
 
         atomline = constructPDBAtomLine(atom, i, charges=charges, shift_name=shift_name)
 
