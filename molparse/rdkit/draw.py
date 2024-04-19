@@ -75,7 +75,7 @@ def draw_grid(mols, labels=None, find_mcs=False, align_substructure=True, highli
         return drawing
 
 
-def draw_mcs(smiles: list[str] or dict[str, str], align_substructure: bool = True, verbose: bool = False, **kwargs):
+def draw_mcs(smiles: list[str] or dict[str, str], align_substructure: bool = True, verbose: bool = False, show_mcs = True, highlight_common: bool = True, **kwargs):
     """
     Convert a list (or dictionary) of SMILES strings to an RDKit grid image of the maximum common substructure (MCS) match between them
 
@@ -94,7 +94,11 @@ def draw_mcs(smiles: list[str] or dict[str, str], align_substructure: bool = Tru
     mcs_mol = Chem.MolFromSmarts(res.smartsString)
     smarts = res.smartsString
     smart_mol = Chem.MolFromSmarts(smarts)
-    smarts_and_mols = [smart_mol] + mols
+
+    if show_mcs:
+        smarts_and_mols = [smart_mol] + mols
+    else:
+        smarts_and_mols = mols
 
     smarts_legend = "Max. substructure match"
 
@@ -104,9 +108,25 @@ def draw_mcs(smiles: list[str] or dict[str, str], align_substructure: bool = Tru
     else:
         mol_legends = ["" for mol in mols]
 
-    legends = [smarts_legend] + mol_legends
+    if show_mcs:
+        legends = [smarts_legend] + mol_legends
+    else:
+        legends = mol_legends
 
-    matches = [""] + [mol.GetSubstructMatch(mcs_mol) for mol in mols]
+    def inverse_indices(mol, indices):
+        inverted = []
+        for index, _ in enumerate(mol.GetAtoms()):
+            if index not in indices:
+                inverted.append(index)
+        return tuple(inverted)
+    
+    if not highlight_common:
+        matches = [inverse_indices(mol, mol.GetSubstructMatch(mcs_mol)) for mol in mols]
+    else:
+        matches = [mol.GetSubstructMatch(mcs_mol) for mol in mols]
+
+    if show_mcs:
+        matches = [""] + matches
 
     subms = [x for x in smarts_and_mols if x.HasSubstructMatch(mcs_mol)]
 
