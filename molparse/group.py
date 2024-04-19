@@ -404,9 +404,9 @@ class AtomGroup():
             mout.out(f'{a.res_number:>6}', end=' ')
             mout.out(f'{a.chain:<5}', end='\n')
 
-    def write(self, filename):
+    def write(self, filename, **kwargs):
         from .io import write
-        write(filename, self)
+        write(filename, self, **kwargs)
 
     # overloaded by child classes
     def fix_names(self):
