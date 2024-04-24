@@ -3,7 +3,7 @@ from rdkit import DataStructs
 from rdkit.Chem.Fingerprints import FingerprintMols
 
 
-def get_similar(mols, query, index=False, threshold=1.0):
+def get_similar(mols, query, index=False, score=False, threshold=1.0):
     if isinstance(query, str):
         query = mol_from_smiles(query)
 
@@ -16,5 +16,9 @@ def get_similar(mols, query, index=False, threshold=1.0):
 
     if index:
         return [i for i, s in enumerate(scores) if s >= threshold]
+    
+    elif not index and score:
+        return [(m,s) for m, s in zip(mols, scores) if s >= threshold]
+
     else:
         return [m for m, s in zip(mols, scores) if s >= threshold]
