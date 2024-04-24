@@ -766,3 +766,7 @@ class System(AtomGroup):
         sys = self.copy()
         sys.chains = [c for c in sys.chains if c.type == 'PRO']
         return sys
+
+    @property
+    def ligand_residues(self):
+        return [r for r in self.residues if r.type=='LIG']
