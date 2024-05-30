@@ -696,18 +696,7 @@ class System(AtomGroup):
         count = 0
 
         for residue in self.residues:
-            delete_list = []
-            for index, atom in enumerate(residue.atoms):
-                if not atom.alternative_site:
-                    continue
-                elif atom.alternative_site == site:
-                    atom._alternative_site = None
-                elif atom.alternative_site != site:
-                    delete_list.append(index)
-                    count += 1
-
-            for index in reversed(delete_list):
-                del residue._atoms[index]
+            count += residue.prune_alternative_sites(site=site, verbosity=verbosity-1)
 
         if verbosity > 0 and count > 0:
             mout.warningOut(f"Deleted {count} alternative site atoms")

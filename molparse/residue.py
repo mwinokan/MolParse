@@ -392,6 +392,27 @@ class Residue(AtomGroup):
     def children(self):
         return self.atoms
 
+    def prune_alternative_sites(self, site='A', verbosity=1):
+        """Remove atoms with alternative sites"""
+        import mout
+        count = 0
+        delete_list = []
+        for index, atom in enumerate(self.atoms):
+            if not atom.alternative_site:
+                continue
+            elif atom.alternative_site == site:
+                atom._alternative_site = None
+            elif atom.alternative_site != site:
+                delete_list.append(index)
+                count += 1
+
+        for index in reversed(delete_list):
+            del self._atoms[index]
+
+        if verbosity > 0 and count > 0:
+            mout.warningOut(f"Deleted {count} alternative site atoms")
+
+        return count
 
 RES_TYPES = {
     'DNA': ('DA', 'DT', 'DC', 'DG', 'ADE9', 'THMN', 'GUA9', 'CTSN', 'DOG'),
