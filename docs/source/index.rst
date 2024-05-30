@@ -30,7 +30,7 @@ To parse a file try:
 import molparse as mp
 sys = mp.parse(file)
 
-This will return a hierarchical System object (for .pdb and .gro files) which is structured as follows:
+This will return a hierarchical :class:`.System` object (for .pdb and .gro files) which is structured as follows:
 
 ::
 
