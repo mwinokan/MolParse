@@ -773,5 +773,16 @@ class System(AtomGroup):
         return sys
 
     @property
+    def protein_backbone(self):
+        sys = self.copy()
+        sys.chains = [c for c in sys.chains if c.type == 'PRO']
+
+        for chain in sys.chains:
+            for residue in chain.residues:
+                residue.remove_sidechain(verbosity=0)
+
+        return sys
+
+    @property
     def ligand_residues(self):
         return [r for r in self.residues if r.type=='LIG']
