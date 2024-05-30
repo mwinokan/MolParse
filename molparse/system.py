@@ -516,15 +516,110 @@ class System(AtomGroup):
         ase_atoms = auto_rotate(ase_atoms)
         self.set_coordinates(ase_atoms)
 
-    def align_to(self, target):
-        """Minimise rotation w.r.t. a target"""
-        from ase.build import minimize_rotation_and_translation
-        if isinstance(target, System):
-            target = target.ase_atoms
-        atoms = self.ase_atoms
-        minimize_rotation_and_translation(target, atoms)
-        self.set_coordinates(atoms)
-        return atoms
+    def align_to(self, target, protein_only=False, backbone_only=False, heavy_atoms_only=True):
+        """Align this system to another. use protein_only to align using only the protein, if so the arguments backbone_only and heavy_atoms_only are considered"""
+
+        if protein_only:
+
+            import numpy as np
+            from ase.build.rotate import rotation_matrix_from_points
+
+            # get the protein subsystem
+            if backbone_only:
+                self_protein = self.protein_backbone
+                target_protein = target.protein_backbone
+                
+                # raise NotImplementedError
+
+            else:
+                self_protein = self.protein_system
+                target_protein = target.protein_system
+
+            if heavy_atoms_only:
+                self_protein.remove_hydrogens(verbosity=0)
+                target_protein.remove_hydrogens(verbosity=0)
+
+            # if the protein subsystems have different residues, use only shared residues
+            self_strs = set([r.name_number_str for r in self_protein.residues])
+            target_strs = set([r.name_number_str for r in target_protein.residues])
+
+            if self_protein.num_atoms != target_protein.num_atoms:
+                
+                assert len(self_protein.chains) == 1
+                assert len(target_protein.chains) == 1
+
+                logger.warning('Proteins have different residues, using common')
+
+                # set arithmetic
+                self_remove = self_strs - target_strs
+                target_remove = target_strs - self_strs
+
+                # logger.debug(self_remove)
+                # logger.debug(target_remove)
+
+                # remove not shared
+                if self_remove:
+                    numbers = [int(s.split()[1]) for s in self_remove]
+                    self_protein.remove_residues(numbers=numbers, verbosity=2)
+
+                if target_remove:
+                    numbers = [int(s.split()[1]) for s in target_remove]
+                    target_protein.remove_residues(numbers=numbers, verbosity=2)
+
+                for a,b in zip(self_protein.residues, target_protein.residues):
+
+                    if a.num_atoms != b.num_atoms:
+                        # print(a.name_number_str)
+
+                        logger.warning(f'{a.name_number_str} has different backbone in self vs target')
+                        logger.warning(f'Pruning alternative sites != A')
+
+                        a.prune_alternative_sites()
+                        b.prune_alternative_sites()
+
+                        if a.num_atoms != b.num_atoms:
+                            a.summary()
+                            b.summary()
+
+                            raise Exception()
+
+            # get the atomic positions (ASE style)
+            pself = self_protein.ase_atoms.get_positions()
+            ptarget = target_protein.ase_atoms.get_positions()
+
+            # translate centeroids to origin
+            cself = np.mean(pself, axis=0)
+            pself -= cself
+            ctarget = np.mean(ptarget, axis=0)
+            ptarget -= ctarget
+
+            # get the rotation matrix
+            R = rotation_matrix_from_points(pself.T, ptarget.T)
+
+            # get all atoms
+            atoms = self.ase_atoms
+
+            # apply the rotation matrix
+            new_positions = np.dot(atoms.get_positions() - cself, R.T) + ctarget
+
+            # shift by centroid
+            atoms.set_positions(new_positions)
+
+            self.set_coordinates(atoms)
+
+            # raise NotImplementedError
+
+            return self
+
+        else:
+
+            from ase.build import minimize_rotation_and_translation
+            if isinstance(target, System):
+                target = target.ase_atoms
+            atoms = self.ase_atoms
+            minimize_rotation_and_translation(target, atoms)
+            self.set_coordinates(atoms)
+            return self
 
     def translate(self, displacement):
         """Translate the system"""
