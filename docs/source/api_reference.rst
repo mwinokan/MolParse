@@ -6,7 +6,6 @@ API Reference
    :maxdepth: 2
    :caption: molparse:
    
-   .. molparse
    io
    group
    system

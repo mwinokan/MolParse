@@ -45,21 +45,6 @@ N.B. All groups of Atom objects inherit from AtomGroup
    :maxdepth: 2
    :caption: Contents:
 
+   Aligning molecules <aligning>
+
    API Reference <api_reference>
-   .. molparse
-   .. io
-   .. group
-   .. system
-   .. chain
-   .. residue
-   .. atom
-
-
-
-
-.. Indices and tables
-.. ==================
-
-.. * :ref:`genindex`
-.. * :ref:`modindex`
-.. * :ref:`search`
