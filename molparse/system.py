@@ -347,16 +347,25 @@ class System(AtomGroup):
         if verbosity > 0:
             mout.warningOut("Removed " + mcol.result + str(number_deleted) + mcol.warning + " heterogens")
 
+    def remove_hydrogens(self, verbosity: int = 1):
+        """Remove hydrogen atoms"""
+        import mcol
+        import mout
+        number_deleted = self.remove_atoms(symbols=['H'], verbosity=verbosity-2)
+        if verbosity > 0:
+            mout.warningOut("Removed " + mcol.result + str(number_deleted) + mcol.warning + " hydrogens")
+
     def remove_atoms(self,
         *, 
         names: list | None = None,
         indices: list | None = None, 
         numbers: list | None = None, 
+        symbols: str | None = None,
         res_filter: str | None = None,
         verbosity: int = 2,
     ) -> int:
 
-        assert names or indices or numbers, "must supply indices or numbers"
+        assert names or indices or numbers or symbols, "must supply indices, numbers, names, or symbols"
 
         import mcol
         mout = logger
@@ -369,6 +378,9 @@ class System(AtomGroup):
         elif numbers:
             del_list = numbers
             f = lambda x: x.number
+        elif symbols:
+            del_list = symbols
+            f = lambda x: x.symbol
         else:
             del_list = names
             f = lambda x: x.name
@@ -382,7 +394,7 @@ class System(AtomGroup):
                         if verbosity > 1:
                             mout.warning(f"Removed atom {atom.name_number_str} from {residue.name_number_chain_str}")
 
-        if verbosity:
+        if verbosity > 0:
             mout.var('#atoms deleted', number_deleted)
 
         return number_deleted
