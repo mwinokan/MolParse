@@ -1,5 +1,5 @@
 
-from rdkit.Chem import Fragments, MolFromSmarts
+from rdkit.Chem import Fragments, MolFromSmarts, Draw
 
 import os
 from rdkit import RDConfig
@@ -7,13 +7,12 @@ from rdkit import RDConfig
 import logging
 logger = logging.getLogger('MolParse')
 
-def classify_compound(mol, draw=True):
+def classify_mol(mol, draw=True):
+	"""Find RDKit Fragments within the molecule and draw them (or just return a list of (descriptor, count) tuples)"""
 
-	# print(FRAGMENT_SMARTS)
-
-	# print(defaultPatternFileName)
-
-	# mp;.draw()
+	mols = []
+	highlights = []
+	counts = []
 
 	for name, descriptor in FRAGMENT_DESCRIPTORS.items():
 		
@@ -24,31 +23,29 @@ def classify_compound(mol, draw=True):
 		if not n:
 			continue
 
-		logger.header(descriptor)
-
-		# print(f'{n} x {descriptor}')
-
 		smarts = FRAGMENT_SMARTS[name]
 
 		pattern = MolFromSmarts(smarts)
 
 		matches = mol.GetSubstructMatches(pattern, uniquify=True)
 
-		print(smarts)
-		# display(pattern)
-		# display(matches)
+		mols.append(mol)
+		counts.append((descriptor, n))
 
 		highlight = []
 
 		for match in matches:
 			for index in match:
-				highlight.append((index, (0.7,0.7,0.7)))
+				highlight.append(index)
 
-		from .draw import draw_highlighted_mol
+		highlights.append(highlight)
 
-		drawing = draw_highlighted_mol(mol, index_color_pairs=highlight)
-
+	if draw:
+		legends = [f'{n} x {descriptor}' for descriptor,n in counts]
+		drawing = Draw.MolsToGridImage(mols, highlightAtomLists=highlights, legends=legends)
 		display(drawing)
+	else:
+		return counts
 
 defaultPatternFileName = os.path.join(RDConfig.RDDataDir, 'FragmentDescriptors.csv')
 
