@@ -509,6 +509,11 @@ class System(AtomGroup):
         from .gui import view
         view(self, **kwargs)
 
+    def render(self, **kwargs):
+        """View the system with py3Dmol"""
+        from .py3d import render
+        return render(self, **kwargs)
+
     def auto_rotate(self):
         """Rotate the system into the XY plane"""
         from .manipulate import auto_rotate
