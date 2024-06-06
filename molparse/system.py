@@ -521,21 +521,20 @@ class System(AtomGroup):
         ase_atoms = auto_rotate(ase_atoms)
         self.set_coordinates(ase_atoms)
 
-    def align_to(self, target, protein_only=False, backbone_only=False, heavy_atoms_only=True):
+    def align_to(self, target, protein_only=False, backbone_only=False, heavy_atoms_only=True, return_transformations=False):
         """Align this system to another. use protein_only to align using only the protein, if so the arguments backbone_only and heavy_atoms_only are considered"""
 
         if protein_only:
 
             import numpy as np
             from ase.build.rotate import rotation_matrix_from_points
+            from .transform import apply_rototranslation, compute_rototranslation_matrix
 
             # get the protein subsystem
             if backbone_only:
                 self_protein = self.protein_backbone
                 target_protein = target.protein_backbone
                 
-                # raise NotImplementedError
-
             else:
                 self_protein = self.protein_system
                 target_protein = target.protein_system
@@ -559,9 +558,6 @@ class System(AtomGroup):
                 self_remove = self_strs - target_strs
                 target_remove = target_strs - self_strs
 
-                # logger.debug(self_remove)
-                # logger.debug(target_remove)
-
                 # remove not shared
                 if self_remove:
                     numbers = [int(s.split()[1]) for s in self_remove]
@@ -574,7 +570,6 @@ class System(AtomGroup):
                 for a,b in zip(self_protein.residues, target_protein.residues):
 
                     if a.num_atoms != b.num_atoms:
-                        # print(a.name_number_str)
 
                         logger.warning(f'{a.name_number_str} has different backbone in self vs target')
                         logger.warning(f'Pruning alternative sites != A')
@@ -601,18 +596,18 @@ class System(AtomGroup):
             # get the rotation matrix
             R = rotation_matrix_from_points(pself.T, ptarget.T)
 
-            # get all atoms
+            if return_transformations:
+                return cself, ctarget, R
+            
+            # get ASE atoms
             atoms = self.ase_atoms
 
             # apply the rotation matrix
-            new_positions = np.dot(atoms.get_positions() - cself, R.T) + ctarget
+            new_positions = apply_rototranslation(atoms.get_positions(), cself, ctarget, R)
 
-            # shift by centroid
             atoms.set_positions(new_positions)
 
             self.set_coordinates(atoms)
-
-            # raise NotImplementedError
 
             return self
 
@@ -625,6 +620,14 @@ class System(AtomGroup):
             minimize_rotation_and_translation(target, atoms)
             self.set_coordinates(atoms)
             return self
+
+    def apply_transformation(self, matrix):
+        """Apply a transformation matrix"""
+        from .transform import apply_transformation
+        atoms = self.ase_atoms
+        new_positions = apply_transformation(atoms.get_positions(), matrix)
+        atoms.set_positions(new_positions)
+        self.set_coordinates(atoms)
 
     def translate(self, displacement):
         """Translate the system"""

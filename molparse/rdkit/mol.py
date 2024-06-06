@@ -46,3 +46,7 @@ def protonate(mol, embed=True, align=True, verbosity=1):
         ps = Chem.AllChem.ETKDGv3()
         Chem.AllChem.EmbedMolecule(mol_prot, ps)
     return mol_prot
+
+def copy_mol(mol):
+    return Chem.Mol(mol)
+    
