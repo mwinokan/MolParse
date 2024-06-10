@@ -13,7 +13,7 @@ class Atom:
     def __init__(self, name, index=None, pdb_index=None, position=None, residue=None, chain=None, res_number=None,
                  charge=None, FF_atomtype=None, mass=None, LJ_sigma=None, LJ_epsilon=None, occupancy=None,
                  temp_factor=None, heterogen=None, charge_str=None, velocity=None, alternative_site=None,
-                 res_index=None, element=None, ignore_warnings=False):
+                 res_index=None, element=None, element_guess_warning=True):
 
         # necessary upon init
         self._name = name
@@ -28,7 +28,7 @@ class Atom:
         if element:
             self._element = element
         else:
-            if not ignore_warnings:
+            if element_guess_warning:
                 mout.warning('Guessing element from first character of atom name!')
             self._element = name[0]
         assert self.symbol is not None

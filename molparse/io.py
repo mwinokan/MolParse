@@ -654,7 +654,7 @@ def parseGRO(gro,
     fix_indices=True, 
     fix_atomnames=True, 
     autoname_chains=True, 
-    ignore_warnings=False, 
+    element_guess_warnings=True, 
     verbosity=1,
     auto_ter=["DA3", "DT3", "DG3", "DC3"],
 ):
@@ -712,7 +712,7 @@ def parseGRO(gro,
                         break
 
                     # parse an atom line:
-                    atom = parseGROAtomLine(line, res_counter, atom_counter, chain_counter)
+                    atom = parseGROAtomLine(line, res_counter, atom_counter, chain_counter, element_guess_warning=element_guess_warnings)
 
                     # first atom
                     if line_counter == 3:
@@ -811,7 +811,7 @@ def new_residue(name, index, number, chain):
         return Residue(name, index, number, chain)
 
 
-def parseGROAtomLine(line, res_index, atom_index, chain_counter, ignore_warnings=False):
+def parseGROAtomLine(line, res_index, atom_index, chain_counter, element_guess_warning=True):
     import string
     from .atom import Atom
 
@@ -840,7 +840,7 @@ def parseGROAtomLine(line, res_index, atom_index, chain_counter, ignore_warnings
     hetatm = False
 
     atom = Atom(atom_name, atom_index, gro_index, position, residue, chain, res_number, velocity=velocity,
-                res_index=res_index, ignore_warnings=ignore_warnings)
+                res_index=res_index, element_guess_warning=element_guess_warning)
 
     return atom
 
