@@ -4,3 +4,4 @@ from .draw import *
 from .mol import *
 from .fingerprint import get_similar
 from .tools import sdf_align
+from .sucos import SuCOS_score
