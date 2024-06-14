@@ -2,6 +2,7 @@ import py3Dmol
 from rdkit import Chem
 from rdkit.Chem.Draw import IPythonConsole, rdMolDraw2D
 from rdkit.Chem import rdFMCS, AllChem, Draw
+from rdkit.Chem.Features.ShowFeats import _featColors as featColors
 
 IPythonConsole.ipython_3d = True
 from IPython.display import SVG
@@ -193,3 +194,4 @@ def draw_flat(mol, indices=False, legend=None, size=(600, 300)):
     drawer.FinishDrawing()
     svg = drawer.GetDrawingText().replace('svg:', '')
     return SVG(svg)
+
