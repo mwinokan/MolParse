@@ -26,8 +26,7 @@ def draw_mol(m, feats=None, p=None, confId=-1, hydrogen=True):
 		clr = featColors.get(feat.GetFamily(), (.5, .5, .5))
 		p.addSphere({'center': {'x': pos.x, 'y': pos.y, 'z': pos.z}, 'radius': .5, 'color': colorToHex(clr)});
 	p.zoomTo()
-	return p.show()
-
+	p.show()
 
 def draw_mols(ms, p=None, confId=-1, hydrogen=True, colors=('cyanCarbon', 'redCarbon', 'blueCarbon')):
 	if p is None:
