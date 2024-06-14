@@ -12,3 +12,4 @@ API Reference
    chain
    residue
    atom
+   rdkit
