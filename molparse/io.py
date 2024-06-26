@@ -341,6 +341,30 @@ def parsePDB(pdb,
                                 header_data.append(line)
                             elif line.startswith('SCALE'):
                                 header_data.append(line)
+                            elif line.startswith('HET   '):
+                                header_data.append(line)
+                            elif line.startswith('FORMUL'):
+                                header_data.append(line)
+                            elif line.startswith('HELIX'):
+                                header_data.append(line)
+                            elif line.startswith('HELIX'):
+                                header_data.append(line)
+                            elif line.startswith('DBREF'):
+                                header_data.append(line)
+                            elif line.startswith('SEQADV'):
+                                header_data.append(line)
+                            elif line.startswith('SEQRES'):
+                                header_data.append(line)
+                            elif line.startswith('SHEET'):
+                                header_data.append(line)
+                            elif line.startswith('SITE'):
+                                header_data.append(line)
+                            elif line.startswith('ORIGX'):
+                                header_data.append(line)
+                            elif line.startswith('SCALE'):
+                                header_data.append(line)
+                            elif line.startswith('HETNAM'):
+                                header_data.append(line)
 
                         else:
 
