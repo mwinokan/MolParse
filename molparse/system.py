@@ -432,7 +432,7 @@ class System(AtomGroup):
                     if verbosity > 1:
                         mout.warning(f"Removed residue {residue.name_number_chain_str}")
 
-        if verbosity:
+        if verbosity > 0:
             mout.var('#residues deleted', number_deleted)
 
         return number_deleted
@@ -521,7 +521,7 @@ class System(AtomGroup):
         ase_atoms = auto_rotate(ase_atoms)
         self.set_coordinates(ase_atoms)
 
-    def align_to(self, target, protein_only=False, backbone_only=False, heavy_atoms_only=True, return_transformations=False):
+    def align_to(self, target, protein_only=False, backbone_only=False, heavy_atoms_only=True, return_transformations=False, verbosity=1):
         """Align this system to another. use protein_only to align using only the protein, if so the arguments backbone_only and heavy_atoms_only are considered"""
 
         if protein_only:
@@ -540,8 +540,8 @@ class System(AtomGroup):
                 target_protein = target.protein_system
 
             if heavy_atoms_only:
-                self_protein.remove_hydrogens(verbosity=0)
-                target_protein.remove_hydrogens(verbosity=0)
+                self_protein.remove_hydrogens(verbosity=verbosity-1)
+                target_protein.remove_hydrogens(verbosity=verbosity-1)
 
             # if the protein subsystems have different residues, use only shared residues
             self_strs = set([r.name_number_str for r in self_protein.residues])
@@ -552,7 +552,8 @@ class System(AtomGroup):
                 assert len(self_protein.chains) == 1
                 assert len(target_protein.chains) == 1
 
-                logger.warning('Proteins have different residues, using common')
+                if verbosity:
+                    logger.warning('Proteins have different residues, using common')
 
                 # set arithmetic
                 self_remove = self_strs - target_strs
@@ -561,21 +562,22 @@ class System(AtomGroup):
                 # remove not shared
                 if self_remove:
                     numbers = [int(s.split()[1]) for s in self_remove]
-                    self_protein.remove_residues(numbers=numbers, verbosity=2)
+                    self_protein.remove_residues(numbers=numbers, verbosity=verbosity-1)
 
                 if target_remove:
                     numbers = [int(s.split()[1]) for s in target_remove]
-                    target_protein.remove_residues(numbers=numbers, verbosity=2)
+                    target_protein.remove_residues(numbers=numbers, verbosity=verbosity-1)
 
                 for a,b in zip(self_protein.residues, target_protein.residues):
 
                     if a.num_atoms != b.num_atoms:
 
-                        logger.warning(f'{a.name_number_str} has different backbone in self vs target')
-                        logger.warning(f'Pruning alternative sites != A')
+                        if verbosity:
+                            logger.warning(f'{a.name_number_str} has different backbone in self vs target')
+                            logger.warning(f'Pruning alternative sites != A')
 
-                        a.prune_alternative_sites()
-                        b.prune_alternative_sites()
+                        a.prune_alternative_sites(verbosity=verbosity-1)
+                        b.prune_alternative_sites(verbosity=verbosity-1)
 
                         if a.num_atoms != b.num_atoms:
                             a.summary()

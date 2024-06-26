@@ -176,7 +176,7 @@ class Chain(AtomGroup):
                 if verbosity > 1:
                     mout.warning(f"Removed residue {residue.name_number_chain_str}")
 
-        if verbosity:
+        if verbosity > 0:
             mout.var('#residues deleted', number_deleted)
 
         return number_deleted
