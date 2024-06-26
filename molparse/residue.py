@@ -430,9 +430,15 @@ EXTRA_TYPES = {}
 
 WARNED_TYPES = [] 
 
+WARN_UNKNOWN_RES = True
+
 def add_res_type(resname, type):
     global EXTRA_TYPES
     EXTRA_TYPES[resname] = type
+
+def silence_unknown_res_warning():
+    global WARN_UNKNOWN_RES
+    WARN_UNKNOWN_RES = False
 
 def res_type(resname):
     """Guess type from residue name"""
@@ -457,7 +463,7 @@ def res_type(resname):
     import mcol
     import mout
 
-    if resname not in WARNED_TYPES:
+    if WARN_UNKNOWN_RES and resname not in WARNED_TYPES:
         mout.warningOut(f"Unknown residue type for {mcol.arg}{resname}{mcol.warning}. Defaulted to {mcol.arg}LIG")
         WARNED_TYPES.append(resname)
     return 'LIG'
