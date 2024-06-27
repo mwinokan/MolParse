@@ -1,5 +1,8 @@
 from .residue import Residue, res_type
 
+from mlog import setup_logger
+logger = setup_logger('MolParse')
+
 
 def alphabet(name):
     try:
@@ -300,7 +303,7 @@ class AminoAcid(Residue):
 
     @property
     def features(self):
-
+        import mout
         import numpy as np
         from .rdkit import Feature
 
@@ -313,9 +316,13 @@ class AminoAcid(Residue):
             if len(atoms) == 1:
                 atoms = [self.get_atom(atoms[0])]
                 if atoms[0] is None:
-                    self.plot3d()
-                    mout.error(f'No atom {f_dict["atoms"][0]}', code='AminoAcid.features.0', fatal=True)
+                    # self.plot3d()
+                    # mout.error(f'No atom {f_dict["atoms"][0]}', code='AminoAcid.features.0', fatal=True)
+                    logger.warning(f'No atom {f_dict["atoms"][0]}, is {self} {self.number} partially modelled?')
+                    continue
+
                 position = atoms[0].np_pos
+
             else:
                 atoms = self.get_atom(atoms)
                 position = np.mean([a.np_pos for a in atoms], axis=0).round(3)
