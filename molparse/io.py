@@ -393,7 +393,7 @@ def parsePDB(pdb,
 
                                 #### PARSELINE
                                 try:
-                                    atom = parsePDBAtomLine(line, res_counter, atom_counter, chain_counter, debug=debug, alternative_site_warnings=alt_sites)
+                                    atom = parsePDBAtomLine(line, res_counter, atom_counter, chain_counter, debug=debug, alternative_site_warnings=alternative_site_warnings)
                                 except Exception as e:
                                     mout.error(f'{pdb=} {index=}')
                                     raise Exception(e)
