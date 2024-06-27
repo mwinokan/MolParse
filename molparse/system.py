@@ -549,8 +549,8 @@ class System(AtomGroup):
 
             if self_protein.num_atoms != target_protein.num_atoms:
                 
-                assert len(self_protein.chains) == 1
-                assert len(target_protein.chains) == 1
+                assert len(self_protein.chains) == 1, f'{self.name} {self_protein.chains=}'
+                assert len(target_protein.chains) == 1, f'{target.name} {target_protein.chains=}'
 
                 if verbosity:
                     logger.warning('Proteins have different residues, using common')
