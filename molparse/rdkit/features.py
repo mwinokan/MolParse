@@ -110,6 +110,7 @@ import numpy as np
 
 
 class Feature(object):
+    """Object representing an interaction feature (usually on a protein)"""
 
     def __init__(self, family: list, atoms: list, position: np.ndarray, res_name: str, res_number: int, res_chain: str):
 
@@ -124,18 +125,22 @@ class Feature(object):
 
     @property
     def x(self):
+        """x coordinate"""
         return self.position[0]
 
     @property
     def y(self):
+        """y coordinate"""
         return self.position[1]
 
     @property
     def z(self):
+        """z coordinate"""
         return self.position[2]
 
     @property
     def dict(self):
+        """Dictionary containing family and coordinates"""
         return dict(
             family=self.family,
             x=self.x,
@@ -148,14 +153,17 @@ class Feature(object):
 
     @property
     def name_number_chain_str(self):
+        """String containing the residue name, residue number, and chain"""
         return f'{self.res_name} {self.res_number} {self.res_chain}'
 
     @property
     def family_name_number_chain_str(self):
+        """String containing the feature family, residue name, residue number, and chain"""
         return f'{self.family} {self.res_name} {self.res_number} {self.res_chain}'
 
     @property
     def family_name_number_chain_atoms_str(self):
+        """String containing the feature family, residue name, residue number, chain, and atoms"""
         return f'{self.family} {self.res_name} {self.res_number} {self.res_chain} {self.atoms}'
 
     def __sub__(self, other):

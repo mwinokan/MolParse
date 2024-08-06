@@ -832,6 +832,7 @@ class System(AtomGroup):
         return sites
 
     def get_protein_features(self):
+        """Get Feature objects for all interaction features on protein atoms in this system. See molparse/rdkit/features"""
         all_features = []
         for chain in self.chains:
             if chain.type != 'PRO':
