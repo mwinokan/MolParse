@@ -80,6 +80,9 @@ class AtomGroup():
                 if issubclass(item.__class__, cls):
                     group = cls.from_group_subclass(item, group=group)
 
+                elif isinstance(item, AtomGroup):
+                    group = cls.from_group(item, append=group)
+
                 elif isinstance(item, NamedList) or isinstance(item, ase_Atoms):
                     group = cls.from_atoms(name, item, group=group)
 
@@ -174,8 +177,14 @@ class AtomGroup():
         return group
 
     @classmethod
-    def from_group(cls, group):
+    def from_group(cls, group, append=None):
         assert isinstance(group, AtomGroup)
+        if append:
+            group = group.copy()
+            for atom in group.atoms:
+                append.add_atom(atom)
+            return append
+
         return group.copy()
 
     ### PROPERTIES
@@ -569,7 +578,7 @@ class AtomGroup():
         return ax, copy
 
     def plot3d(self, extra=[], alpha=1.0, bonds=True, atoms=True, velocity=False, features=False, v_scale=1.0, fig=None,
-               flat=False, show=True, transform=None):
+               flat=False, show=True, transform=None, **kwargs):
         """Render the atoms with plotly graph objects.
         extra can contain pairs of coordinates to be shown as vectors."""
 
@@ -578,13 +587,18 @@ class AtomGroup():
         else:
             bonds = []
 
-        if not isinstance(features, list) and features:
+        from .amino import AminoAcid
+
+        if isinstance(self, AminoAcid) and isinstance(features, bool) and features:
+            features = self.features
+
+        elif not isinstance(features, list) and features:
             from .rdkit import features_from_group
             features = features_from_group(self)
 
         from .go import plot3d
         return plot3d(self.atoms, extra, bonds, alpha, plot_atoms=atoms, features=features, velocity=velocity,
-                      v_scale=v_scale, fig=fig, flat=flat, show=show, transform=transform, title=self.name)
+                      v_scale=v_scale, fig=fig, flat=flat, show=show, transform=transform, title=self.name, **kwargs)
 
     def set_coordinates(self, reference, velocity=False):
         """Set all coordinates according to a reference ase.Atoms object"""

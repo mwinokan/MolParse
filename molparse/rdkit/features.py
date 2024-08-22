@@ -9,16 +9,28 @@ FDEF = AllChem.BuildFeatureFactory(os.path.join(RDConfig.RDDataDir, 'BaseFeature
 FEATURE_FAMILIES = FDEF.GetFeatureFamilies()
 
 COMPLEMENTARY_FEATURES = {
-    "Donor": "Acceptor",
-    "Acceptor": "Donor",
-    "NegIonizable": "PosIonizable",
-    "PosIonizable": "NegIonizable",
-    "Aromatic": "Aromatic",
-    "Aromatic": "PosIonizable",
-    "PosIonizable": "Aromatic",
-    "Hydrophobe": "Hydrophobe",
+    "Donor": ["Acceptor"], # hydrogen bond
+    "Acceptor": ["Donor"], # hydrogen bond
+    "NegIonizable": ["PosIonizable"], # electrostatic
+    "PosIonizable": ["NegIonizable", "Aromatic"], # electrostatic, pi-cation
+    "Aromatic": ["Aromatic", "PosIonizable"], # pi-stacking, pi-cation
+    "Hydrophobe": ["Hydrophobe", "LumpedHydrophobe"], # hydrophobic
+    "LumpedHydrophobe": ["Hydrophobe", "LumpedHydrophobe"], # hydrophobic
 }
 
+INTERACTION_TYPES = {
+    ('Hydrophobe', 'Hydrophobe') : 'Hydrophobic',
+    ('LumpedHydrophobe', 'Hydrophobe') : 'Hydrophobic',
+    ('Hydrophobe', 'LumpedHydrophobe') : 'Hydrophobic',
+    ('LumpedHydrophobe', 'LumpedHydrophobe') : 'Hydrophobic',
+    ('Donor', 'Acceptor') : 'Hydrogen Bond',
+    ('Acceptor', 'Donor') : 'Hydrogen Bond',
+    ("NegIonizable", "PosIonizable"): "Electrostatic",
+    ("PosIonizable", "NegIonizable"): "Electrostatic",
+    ("Aromatic", "Aromatic"): "π-stacking",
+    ("Aromatic", "PosIonizable"): "π-cation",
+    ("PosIonizable", "Aromatic"): "π-cation",
+}
 
 def features_from_mol(mol, protonate=True):
     raw_features = raw_features_from_mol(mol, protonate=protonate)
@@ -88,8 +100,10 @@ def features_from_group(group, protonate=True):
 
         # position from indices
         if len(indices) == 1:
-            position = group.atoms[indices[0]].np_pos
+            atoms = [group.atoms[indices[0]]]
+            position = atoms[0].np_pos
         else:
+            atoms = [group.atoms[i] for i in indices]
             position = np.mean([group.atoms[i].np_pos for i in indices], axis=0)
 
         feat_obj = Feature(

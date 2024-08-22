@@ -1,5 +1,5 @@
 def plot3d(atoms, extra=[], bonds=[], alpha=1.0, velocity=False, v_scale=1.0, fig=None, flat=False, show=True,
-           transform=None, title=None, plot_atoms=True, features=None):
+           transform=None, title=None, plot_atoms=True, features=None, extra_labels=None):
     """Render the atoms with plotly graph objects.
     extra can contain pairs of coordinates to be shown as vectors."""
 
@@ -124,10 +124,19 @@ def plot3d(atoms, extra=[], bonds=[], alpha=1.0, velocity=False, v_scale=1.0, fi
             fig.add_trace(trace)
 
     if not flat:
-        for i, (a, b) in enumerate(extra):
-            trace = go.Scatter3d(x=[a[0], b[0]], y=[a[1], b[1]], z=[a[2], b[2]], name=f'extra[{i}]')
 
-            fig.add_trace(trace)
+        if extra_labels:
+
+            for (a, b), l in zip(extra, extra_labels):
+                trace = go.Scatter3d(x=[a[0], b[0]], y=[a[1], b[1]], z=[a[2], b[2]], name=l)
+
+                fig.add_trace(trace)
+
+        else:
+            for i, (a, b) in enumerate(extra):
+                trace = go.Scatter3d(x=[a[0], b[0]], y=[a[1], b[1]], z=[a[2], b[2]], name=f'extra[{i}]')
+
+                fig.add_trace(trace)
 
     fig.update_layout(scene_aspectmode='data')
 

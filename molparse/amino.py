@@ -542,7 +542,7 @@ FEATURES = {
         dict(family="Hydrophobe", atoms=["CE1"], source="unsure"),
         dict(family="Hydrophobe", atoms=["CE2"], source="unsure"),
         dict(family="Hydrophobe", atoms=["CZ"], source="unsure"),
-        dict(family="Hydrophobe", atoms=["CG", "CD1", "CD2", "CE1", "CE2", "CZ"], source="unsure"),
+        dict(family="LumpedHydrophobe", atoms=["CG", "CD1", "CD2", "CE1", "CE2", "CZ"], source="unsure"),
         dict(family="Aromatic", atoms=["CG", "CD1", "CD2", "CE1", "CE2", "CZ"], source="unsure"),
     ],
 
@@ -570,12 +570,12 @@ FEATURES = {
         dict(family="Hydrophobe", atoms=["CB"], source="ZV PLIP"),
         dict(family="Aromatic", atoms=["CG", "CD1", "NE1", "CE2", "CD2"], source="unsure"),
         dict(family="Aromatic", atoms=["CE2", "CD2", "CZ2", "CZ3", "CE3", "CH2"], source="unsure"),
-        dict(family="Hydrophobe", atoms=["CE2", "CD2", "CZ2", "CZ3", "CE3", "CH2"], source="unsure"),
+        dict(family="LumpedHydrophobe", atoms=["CE2", "CD2", "CZ2", "CZ3", "CE3", "CH2"], source="unsure"),
     ],
 
     "TYR": [
         dict(family="Aromatic", atoms=["CG", "CD1", "CE1", "CZ", "CE2", "CD2"], source="ZV PLIP"),
-        dict(family="Hydrophobe", atoms=["CG", "CD1", "CE1", "CZ", "CE2", "CD2"], source="ZV PLIP"),
+        dict(family="LumpedHydrophobe", atoms=["CG", "CD1", "CE1", "CZ", "CE2", "CD2"], source="ZV PLIP"),
         dict(family="Hydrophobe", atoms=["CD1"], source="ZV PLIP"),
         dict(family="Hydrophobe", atoms=["CD2"], source="ZV PLIP"),
         dict(family="Hydrophobe", atoms=["CE1"], source="ZV PLIP"),
