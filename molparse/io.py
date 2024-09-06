@@ -1366,3 +1366,98 @@ def parseXYZAtomLine(line, atom_index):
     atom = Atom(s, index=atom_index, position=[x, y, z])
 
     return atom
+
+
+def modifyCIF(
+    cif_file, 
+    out_file,
+    remove_atomtypes: list[str] | None = None,
+):
+
+    from gemmi import cif
+    # from rdkit import Chem, Geometry
+    from .rdkit.xca_utils import strip_quotes, BOND_TYPES
+
+    if remove_atomtypes:
+        remove_atomtypes = [t.upper() for t in remove_atomtypes]
+
+    # mol = Chem.RWMol()
+    # conf = Chem.Conformer()
+
+    doc = cif.read(str(cif_file))
+    
+    # Diamond CIFs have two blocks, but the one we want will be named data_comp_LIG
+    block = doc.find_block("comp_LIG")
+    
+    # Other CIFs have unpredictable block names, so let's hope there is only one
+    if not block:
+        block = doc.sole_block()
+    if not block:
+        print("sole block not found")
+        return None
+    
+    atom_symbols = block.find_loop('_chem_comp_atom.type_symbol')
+
+    # find offending atoms
+    atoms = {}
+    ligand_name = None
+    del_list = []
+    for i, s in enumerate(atom_symbols):
+        if s in remove_atomtypes:
+            del_list.append(i)
+
+    # clean up atom list
+    if del_list:
+
+        loop = atom_symbols.get_loop()
+
+        new_values = []        
+        for tag in loop.tags:
+            
+            col = block.find_loop(tag)
+            l = list(col)
+
+            if 'ordinal' in tag:
+                l = [str(i+1) for i in range(len(l) - len(del_list))]
+
+            else:    
+                for i in reversed(del_list):
+                    del l[i]
+
+            new_values.append(l)
+
+        loop.set_all_values(new_values)
+
+    atom1 = block.find_loop('_chem_comp_bond.atom_id_1')
+    atom2 = block.find_loop('_chem_comp_bond.atom_id_2')
+
+    # find offending bonds
+    del_list = []
+    for i, (a1, a2) in enumerate(zip(atom1, atom2)):
+        if a1 in remove_atomtypes or a2 in remove_atomtypes:
+            del_list.append(i)
+
+    # clean up bond list
+    if del_list:
+
+        loop = atom1.get_loop()
+
+        new_values = []        
+        for tag in loop.tags:
+            
+            col = block.find_loop(tag)
+            l = list(col)
+
+            if 'ordinal' in tag:
+                l = [str(i+1) for i in range(len(l) - len(del_list))]
+
+            else:    
+                for i in reversed(del_list):
+                    del l[i]
+
+            new_values.append(l)
+
+        loop.set_all_values(new_values)
+
+    # write the modified file
+    doc.write_file(out_file)

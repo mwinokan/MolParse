@@ -40,7 +40,7 @@ def draw_mols(ms, p=None, confId=-1, hydrogen=True, colors=('cyanCarbon', 'redCa
 		p.setStyle({'model': i, },
 				   {'stick': {'colorscheme': colors[i % len(colors)]}})
 	p.zoomTo()
-	return p.show()
+	p.show()
 
 
 def draw_grid(mols, labels=None, find_mcs=False, align_substructure=True, highlightAtomLists=None):
