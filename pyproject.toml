@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 [project]
 name = "MolParse"
-version = "0.0.28"
+version = "0.0.29"
 authors = [
     { name = "Max Winokan", email = "max@winokan.com" },
 ]
