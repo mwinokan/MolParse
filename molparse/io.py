@@ -983,7 +983,7 @@ def writePDB(
         strbuff = ""
 
     if write_model:
-        strbuff += "MODEL " + str(model) + end
+        strbuff += "MODEL     " + str(model) + end
 
     for i, atom in enumerate(system.atoms):
 
