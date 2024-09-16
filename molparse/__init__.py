@@ -80,6 +80,8 @@ Parsing coordinate files into System objects
 
 """
 
+__version__ = '0.0.30'
+
 # from .version import import_checks
 # import_checks()
 

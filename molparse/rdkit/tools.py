@@ -67,3 +67,4 @@ def sdf_align(sdf_path: str, source_protein_path: str, target_protein_path: str,
 
 	logger.writing(out_path)
 	PandasTools.WriteSDF(df, out_path, mol_col, name_col, list(df.columns))
+	

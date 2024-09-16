@@ -892,3 +892,10 @@ class System(AtomGroup):
     @property
     def ligand_residues(self):
         return [r for r in self.residues if r.type=='LIG']
+
+
+    def add_hydrogens(self, pH: float = 7.0, **kwargs) -> 'System':
+        """Create a protonated copy"""
+        from .protonate import protonate
+        sys = protonate(self, pH=pH, **kwargs)
+        return sys
