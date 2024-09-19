@@ -192,6 +192,12 @@ class TreeViewer(CursesApp):
             self.add_text(text)
             col = text.endcol + 1
 
+        # alternative sites
+        if self.type_str(obj) == 'Atom' and obj.alternative_site:
+            text = Text(f'({obj.alternative_site})', line, col, bold=True, color_pair=self.YELLOW)
+            self.add_text(text)
+            col = text.endcol + 1
+
         # object type
         text = Text(f'{self.type_str(obj)} ', line, col, bold=True)
         self.add_text(text)
@@ -210,7 +216,7 @@ class TreeViewer(CursesApp):
             self.add_text(text)
 
         # object name is also a button:
-        if self.type_str(obj) not in ['Atom']:
+        if self.type_str(obj) != 'Atom':
             name = obj.name
 
             if len(name) > 23:

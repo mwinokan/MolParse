@@ -6,7 +6,7 @@ assert len(sys.argv) > 1, "Pass a file name"
 
 import molparse as mp
 
-sys = mp.parse(sys.argv[1])
+sys = mp.parse(sys.argv[1], alternative_site_warnings=False)
 
 if isinstance(sys, list):
     if len(sys) == 1:
