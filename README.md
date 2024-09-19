@@ -1,7 +1,8 @@
 ![MolParse](https://github.com/mwinokan/MolParse/blob/master/graphics/molparse-01.png?raw=true)
 
 ![GitHub Tag](https://img.shields.io/github/v/tag/mwinokan/molparse?include_prereleases&label=PyPI&link=https%3A%2F%2Fpypi.org%2Fproject%2Fmolparse%2F)
-![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/mwinokan/molparse/python-publish.yml)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/mwinokan/molparse/python-publish?label=publish&link=https%3A%2F%2Fgithub.com%2Fmwinokan%2FMolParse%2Factions%2Fworkflows%2Fpython-publish.yml)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/mwinokan/molparse/black?label=lint&link=https%3A%2F%2Fgithub.com%2Fmwinokan%2FMolParse%2Factions%2Fworkflows%2Fblack.yml)
 [![Documentation Status](https://readthedocs.org/projects/hippo-db/badge/?version=latest)](https://molparse.winokan.com/en/latest/?badge=latest)
 ![GitHub last commit](https://img.shields.io/github/last-commit/mwinokan/molparse)
 ![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/mwinokan/molparse)
