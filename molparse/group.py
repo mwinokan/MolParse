@@ -332,7 +332,7 @@ class AtomGroup():
     @property
     def contains_alternative_sites(self):
         """Return true if any child atoms have an alternative site defined"""
-        return any([a.alternative_site for a in self.atoms])
+        return any(a.alternative_site for a in self.atoms)
 
     @property
     def pdb_block(self):

@@ -45,13 +45,6 @@ class Residue(AtomGroup):
     @property
     def alternative_sites(self):
         if self.contains_alternative_sites:
-
-            if self.name == 'LIG':
-                import mout
-                atoms_w_alt_site = [a.alternative_site for a in self.atoms if a.alternative_site is not None]
-                # mout.debug(f'{atoms_w_alt_site=}')
-                # mout.debug(f'{list(set(atoms_w_alt_site))=}')
-
             return list(set([a.alternative_site for a in self.atoms if a.alternative_site is not None]))
 
         return []

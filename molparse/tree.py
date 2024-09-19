@@ -339,8 +339,22 @@ class TreeViewer(CursesApp):
                 line, col)
             self.add_text(text)
         elif isinstance(obj, Residue):
-            text = Text(f'contains: {self.quantity_str(obj.num_atoms, "atom")} ', line, col)
+            if self.type_str(obj) in ['Residue', 'AminoAcid', 'NucleicAcid'] and obj.contains_alternative_sites:
+                s = ','.join(sorted(obj.alternative_sites))
+                s = f'{s:5}'
+                text = Text(f'alt=', line, col, bold=True, color_pair=self.YELLOW)
+                self.add_text(text)
+                col = text.endcol
+                text = Text(f'{s}', line, col, bold=True, color_pair=self.YELLOW)
+                self.add_text(text)
+                col = text.endcol + 1
+                text = Text(f'{self.quantity_str(obj.num_atoms, "atom")} ', line, col)
+
+            else:
+                text = Text(f'contains: {self.quantity_str(obj.num_atoms, "atom")} ', line, col)
+            
             self.add_text(text)
+
         else:
             return col
         return text.endcol
