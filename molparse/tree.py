@@ -252,9 +252,10 @@ class TreeViewer(CursesApp):
 
         # residue/chain type
         if self.type_str(obj) not in ['System', 'Atom', 'AtomGroup']:
+            color_pair = self.color_from_type(obj.type)
             text = Text(f'(', line, text.endcol + 1, bold=True)
             self.add_text(text)
-            text = Text(f'{obj.type}', line, text.endcol, color_pair=self.MAGENTA, bold=True)
+            text = Text(f'{obj.type}', line, text.endcol, color_pair=color_pair, bold=True)
             self.add_text(text)
             text = Text(f')', line, text.endcol, bold=True)
             self.add_text(text)
@@ -373,3 +374,29 @@ class TreeViewer(CursesApp):
         if isinstance(obj, Residue): return "Residue"
         if isinstance(obj, Atom): return "Atom"
         if isinstance(obj, AtomGroup): return "AtomGroup"
+
+    def color_from_type(self, t):
+        match t:
+            case 'PRO':
+                return self.GREEN
+
+            case 'DNA':
+                return self.RED
+
+            case 'SOL':
+                return self.WHITE
+
+            case 'ION':
+                return self.CYAN
+
+            case 'LIP':
+                return self.YELLOW
+
+            case 'LIG':
+                return self.MAGENTA
+
+            case 'N/A':
+                return self.WHITE
+
+            case _:
+                return self.WHITE
