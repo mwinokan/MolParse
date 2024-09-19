@@ -8,12 +8,39 @@ class Atom:
     but constructed automatically when parsing a
     coordinate file via amp.parsePDB or otherwise"""
 
-    name_symbol_dict = {'MG': 'Mg', 'Mg': 'Mg', 'LIT': 'Li', 'Li': 'Li', 'SOD': 'Na', 'POT': 'K'}
+    name_symbol_dict = {
+        "MG": "Mg",
+        "Mg": "Mg",
+        "LIT": "Li",
+        "Li": "Li",
+        "SOD": "Na",
+        "POT": "K",
+    }
 
-    def __init__(self, name, index=None, pdb_index=None, position=None, residue=None, chain=None, res_number=None,
-                 charge=None, FF_atomtype=None, mass=None, LJ_sigma=None, LJ_epsilon=None, occupancy=None,
-                 temp_factor=None, heterogen=None, charge_str=None, velocity=None, alternative_site=None,
-                 res_index=None, element=None, element_guess_warning=True):
+    def __init__(
+        self,
+        name,
+        index=None,
+        pdb_index=None,
+        position=None,
+        residue=None,
+        chain=None,
+        res_number=None,
+        charge=None,
+        FF_atomtype=None,
+        mass=None,
+        LJ_sigma=None,
+        LJ_epsilon=None,
+        occupancy=None,
+        temp_factor=None,
+        heterogen=None,
+        charge_str=None,
+        velocity=None,
+        alternative_site=None,
+        res_index=None,
+        element=None,
+        element_guess_warning=True,
+    ):
 
         # necessary upon init
         self._name = name
@@ -29,7 +56,7 @@ class Atom:
             self._element = element
         else:
             if element_guess_warning:
-                mout.warning('Guessing element from first character of atom name!')
+                mout.warning("Guessing element from first character of atom name!")
             self._element = name[0]
         assert self.symbol is not None
 
@@ -51,7 +78,7 @@ class Atom:
         if charge:
             self.charge = charge
         elif charge_str:
-            if charge_str.endswith('-'):
+            if charge_str.endswith("-"):
                 self.charge = -1.0 * float(charge_str[:-1])
             else:
                 self.charge = float(charge_str[:-1])
@@ -99,8 +126,16 @@ class Atom:
         self._parent = obj
 
     def __deepcopy__(self, memodict={}):
-        copy_object = Atom(self.name, self.index, self.pdb_index, self.position, self.residue,
-                           res_number=self.res_number, res_index=self.res_index, element=self.element)
+        copy_object = Atom(
+            self.name,
+            self.index,
+            self.pdb_index,
+            self.position,
+            self.residue,
+            res_number=self.res_number,
+            res_index=self.res_index,
+            element=self.element,
+        )
         copy_object.chain = self.chain
         copy_object.occupancy = self.occupancy
         copy_object.temp_factor = self.temp_factor
@@ -116,6 +151,7 @@ class Atom:
     def print(self):
         """Verbose output of the atom's properties"""
         import mout
+
         mout.varOut("Atom Name", self._name)
         mout.varOut("Atom Species", self.species)
         mout.varOut("Atom (ASE) Index", self.index)
@@ -128,7 +164,8 @@ class Atom:
     def summary(self):
         """Summarised output of the atom's properties"""
         print(
-            f'Atom {self.name} ({self.element}), index={self.index}, pdb_index={self.pdb_index}, res={self.residue}, res_number={self.res_number}, chain={self.chain}, chain_number={self.chain_number}')
+            f"Atom {self.name} ({self.element}), index={self.index}, pdb_index={self.pdb_index}, res={self.residue}, res_number={self.res_number}, chain={self.chain}, chain_number={self.chain_number}"
+        )
 
     def get_name(self, wRes=False, noPrime=False):
         """Returns a string of resname_atomname"""
@@ -146,10 +183,22 @@ class Atom:
         if verbosity > 0:
             import mout
             import mcol
-            mout.out("Renaming atom " +
-                     mcol.arg + self.name + str([self.index]) + mcol.clear + " of residue " +
-                     mcol.varName + self.residue + str([self.res_number]) +
-                     mcol.clear + " to " + mcol.arg + name)
+
+            mout.out(
+                "Renaming atom "
+                + mcol.arg
+                + self.name
+                + str([self.index])
+                + mcol.clear
+                + " of residue "
+                + mcol.varName
+                + self.residue
+                + str([self.res_number])
+                + mcol.clear
+                + " to "
+                + mcol.arg
+                + name
+            )
         self._name = name
 
         assert element
@@ -173,7 +222,7 @@ class Atom:
 
     @property
     def name_number_str(self):
-        return f'{self.name} {self.number}'
+        return f"{self.name} {self.number}"
 
     @property
     def name(self):
@@ -188,18 +237,21 @@ class Atom:
     def atomic_number(self):
         """Atomic number (int) property"""
         from ase.data import atomic_numbers as ase_atomic_numbers  # Atom only
+
         return ase_atomic_numbers[self.species]
 
     @property
     def covalent_radius(self):
         """Covalent radius (float) property"""
         from ase.data import covalent_radii as ase_covalent_radii  # Atom only
+
         return ase_covalent_radii[self.atomic_number]
 
     @property
     def vdw_radius(self):
         """vdW radius (float) property"""
         from ase.data import vdw_radii as ase_vdw_radii  # Atom only
+
         return ase_vdw_radii[self.atomic_number]
 
     @property
@@ -207,6 +259,7 @@ class Atom:
         """Atomic mass (float) property"""
         if self._mass is None:
             from ase.data import atomic_masses as ase_atomic_masses  # Atom only
+
             return ase_atomic_masses[self.atomic_number]
         else:
             return self._mass
@@ -225,12 +278,14 @@ class Atom:
     def np_pos(self):
         """Cartesian position (numpy array)"""
         import numpy as np
+
         return np.array((self._position[0], self._position[1], self._position[2]))
 
     @property
     def np_vel(self):
         """Cartesian velocity (numpy array)"""
         import numpy as np
+
         return np.array((self.velocity[0], self.velocity[1], self.velocity[2]))
 
     @property
@@ -259,10 +314,12 @@ class Atom:
     def copy(self):
         """Returns a deepcopy of the Atom object"""
         import copy
+
         return copy.deepcopy(self)
 
     def is_in_residue(self, residue):
         from .residue import Residue
+
         assert isinstance(residue, Residue)
 
         # print(f"self: {self.residue}, {self.res_number}, {self.chain}")
@@ -279,11 +336,13 @@ class Atom:
     @property
     def type(self):
         from .residue import res_type
+
         return res_type(self.residue)
 
     @property
     def ase_atom(self):
         from ase import Atom
+
         return Atom(self.species, self.position)
 
     def __float__(self):
@@ -297,6 +356,7 @@ class Atom:
 
     def __add__(self, other):
         import numpy as np
+
         if isinstance(other, np.ndarray):
             return self.np_pos + other
         if isinstance(other, Atom):

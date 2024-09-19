@@ -1,14 +1,23 @@
 # to-do:
 
-'''
+"""
 
 	improve performance by creating a smaller subsystem just of varying atoms, interpolating those and writing them to disk. Then use SED or other bash tools to insert the modifications into the original pdb
 
-'''
+"""
 
 
-def interpolate(input1, input2, frames=10, verbosity=2, smooth=False, indices=None, frame_padding=0, grid=False,
-                ratios=None):
+def interpolate(
+    input1,
+    input2,
+    frames=10,
+    verbosity=2,
+    smooth=False,
+    indices=None,
+    frame_padding=0,
+    grid=False,
+    ratios=None,
+):
     import mout
     from ase import Atoms as aseatoms
     from .system import System
@@ -65,24 +74,43 @@ def interpolate(input1, input2, frames=10, verbosity=2, smooth=False, indices=No
                     atom = system.atoms[index]
 
                     if ratios is not None:
-                        atom.position = custom_interpolate(input1.atoms[index].np_pos, input2.atoms[index].np_pos,
-                                                           ratios[j][i])
+                        atom.position = custom_interpolate(
+                            input1.atoms[index].np_pos,
+                            input2.atoms[index].np_pos,
+                            ratios[j][i],
+                        )
                     elif smooth:
-                        atom.position = smooth_interpolate(input1.atoms[index].np_pos, input2.atoms[index].np_pos,
-                                                           frames, i)
+                        atom.position = smooth_interpolate(
+                            input1.atoms[index].np_pos,
+                            input2.atoms[index].np_pos,
+                            frames,
+                            i,
+                        )
                     else:
-                        atom.position = simple_interpolate(input1.atoms[index].np_pos, input2.atoms[index].np_pos,
-                                                           frames, i)
+                        atom.position = simple_interpolate(
+                            input1.atoms[index].np_pos,
+                            input2.atoms[index].np_pos,
+                            frames,
+                            i,
+                        )
 
             else:
 
                 for index, atom in enumerate(system.atoms):
                     if smooth:
-                        atom.position = smooth_interpolate(input1.atoms[index].np_pos, input2.atoms[index].np_pos,
-                                                           frames, i)
+                        atom.position = smooth_interpolate(
+                            input1.atoms[index].np_pos,
+                            input2.atoms[index].np_pos,
+                            frames,
+                            i,
+                        )
                     else:
-                        atom.position = simple_interpolate(input1.atoms[index].np_pos, input2.atoms[index].np_pos,
-                                                           frames, i)
+                        atom.position = simple_interpolate(
+                            input1.atoms[index].np_pos,
+                            input2.atoms[index].np_pos,
+                            frames,
+                            i,
+                        )
 
             # these copy calls take up a very long time
             system_array.append(system.copy(alt=False))
@@ -99,17 +127,19 @@ def interpolate(input1, input2, frames=10, verbosity=2, smooth=False, indices=No
         assert not smooth
         assert ratios is None
 
-        '''
+        """
 
         AA AB AC
         BA BB BC
         CA CB CC
 
-        '''
+        """
 
         import numpy as np
 
-        system_array = np.empty((2 * frame_padding + frames, 2 * frame_padding + frames), dtype=object)
+        system_array = np.empty(
+            (2 * frame_padding + frames, 2 * frame_padding + frames), dtype=object
+        )
         # names_array = np.empty((2*frame_padding+frames,2*frame_padding+frames),dtype=str)
 
         iterange = range(-frame_padding, frames + frame_padding)
@@ -130,7 +160,7 @@ def interpolate(input1, input2, frames=10, verbosity=2, smooth=False, indices=No
         for i in range(frame_padding):
             names.append(ascii_uppercase[-frame_padding + i])
         for i in range(frames):
-            names.append(f'{i}')
+            names.append(f"{i}")
         for i in range(frame_padding):
             names.append(ascii_uppercase[i])
 
@@ -141,15 +171,23 @@ def interpolate(input1, input2, frames=10, verbosity=2, smooth=False, indices=No
                     system = input1.copy()
 
                     atom1 = system.atoms[indices[0]]
-                    atom1.position = simple_interpolate(input1.atoms[indices[0]].np_pos,
-                                                        corner1.atoms[indices[0]].np_pos, frames, i)
+                    atom1.position = simple_interpolate(
+                        input1.atoms[indices[0]].np_pos,
+                        corner1.atoms[indices[0]].np_pos,
+                        frames,
+                        i,
+                    )
                     atom2 = system.atoms[indices[1]]
-                    atom2.position = simple_interpolate(input1.atoms[indices[1]].np_pos,
-                                                        corner2.atoms[indices[1]].np_pos, frames, j)
+                    atom2.position = simple_interpolate(
+                        input1.atoms[indices[1]].np_pos,
+                        corner2.atoms[indices[1]].np_pos,
+                        frames,
+                        j,
+                    )
 
                     system_array[i][j] = system
 
-                system_array[i][j].name = f'{names[i]}{names[j]}'
+                system_array[i][j].name = f"{names[i]}{names[j]}"
 
         return system_array
 
@@ -164,6 +202,7 @@ def simple_interpolate(start, end, frames, i):
 
 def smooth_interpolate(start, end, frames, i):
     import math
+
     angle = simple_interpolate(0.0, math.pi, frames, i)
     return start + 0.5 * (1 - math.cos(angle)) * (end - start)
 
@@ -191,28 +230,37 @@ def auto_rotate(atoms):
     from numpy.linalg import svd
 
     # fit a plane to the atomic positions
-    points = np.reshape(positions, (np.shape(positions)[0], -1))  # Collapse trialing dimensions
-    assert points.shape[0] <= points.shape[1], "There are only {} points in {} dimensions.".format(points.shape[1],
-                                                                                                   points.shape[0])
+    points = np.reshape(
+        positions, (np.shape(positions)[0], -1)
+    )  # Collapse trialing dimensions
+    assert (
+        points.shape[0] <= points.shape[1]
+    ), "There are only {} points in {} dimensions.".format(
+        points.shape[1], points.shape[0]
+    )
     central_point = points.mean(axis=1)
     x = points - central_point[:, np.newaxis]
     M = np.dot(x, x.T)  # Could also use np.cov(x) here.
     normal_vector = svd(M)[0][:, -1]
 
     # rotate the normal onto the Z-axis
-    atoms.rotate(normal_vector, 'z')
+    atoms.rotate(normal_vector, "z")
 
     # rotate the position vector of the first atom onto the x-axis
     positions = atoms.get_positions()
-    index0_vector = np.array([np.dot(positions[0], [1, 0, 0]), np.dot(positions[0], [0, 1, 0]), 0])
-    index1_vector = np.array([np.dot(positions[1], [1, 0, 0]), np.dot(positions[1], [0, 1, 0]), 0])
+    index0_vector = np.array(
+        [np.dot(positions[0], [1, 0, 0]), np.dot(positions[0], [0, 1, 0]), 0]
+    )
+    index1_vector = np.array(
+        [np.dot(positions[1], [1, 0, 0]), np.dot(positions[1], [0, 1, 0]), 0]
+    )
     # index0_vector = positions[0]
     # index1_vector = positions[1]
 
     if index0_vector[0] < 0:
         index0_vector = [index0_vector[0], index0_vector[1], 0]
     # print(index0_vector)
-    atoms.rotate(index1_vector - index0_vector, 'x')
+    atoms.rotate(index1_vector - index0_vector, "x")
     # print(atoms.get_positions()[0])
 
     return atoms

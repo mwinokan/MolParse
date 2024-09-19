@@ -1,7 +1,9 @@
 from .group import AtomGroup
 
 from mlog import setup_logger
-logger = setup_logger('MolParse')
+
+logger = setup_logger("MolParse")
+
 
 class System(AtomGroup):
     """Top-level object for molecular systems
@@ -19,6 +21,7 @@ class System(AtomGroup):
         self._header_data = []
 
         from .list import NamedList
+
         self.chains = NamedList()
 
         self.bondlist = None
@@ -34,35 +37,37 @@ class System(AtomGroup):
         sol_count = 0
 
         for i, chain in enumerate(self.chains):
-            if chain.type == 'PRO':
+            if chain.type == "PRO":
                 if lig_count > 4:
                     mout.warningOut("Too many protein chains!")
-                    chain.name = 'P'
+                    chain.name = "P"
                 else:
-                    chain.name = 'ABCDE'[pro_count]
+                    chain.name = "ABCDE"[pro_count]
                     pro_count += 1
-            elif chain.type == 'DNA':
+            elif chain.type == "DNA":
                 if lig_count > 3:
                     mout.warningOut("Too many DNA chains!")
-                    chain.name = 'X'
+                    chain.name = "X"
                 else:
-                    chain.name = 'XYZ'[dna_count]
+                    chain.name = "XYZ"[dna_count]
                     dna_count += 1
-            elif chain.type == 'LIG':
+            elif chain.type == "LIG":
                 if lig_count > 1:
                     mout.warningOut("Multiple ligand chains!")
-                chain.name = 'L'
+                chain.name = "L"
                 lig_count += 1
-            elif chain.type == 'SOL':
+            elif chain.type == "SOL":
                 if sol_count > 1:
                     mout.warningOut("Multiple solvent chains!")
-                chain.name = 'W'
+                chain.name = "W"
                 sol_count += 1
-            elif chain.type == 'ION':
+            elif chain.type == "ION":
                 chain.name = chain.residues[0].name[0]
 
             if verbosity > 0 and chain.name in [c.name for c in self.chains[0:i]]:
-                mout.warningOut(f"Ambiguous naming! Multiple chains named {chain.name}!")
+                mout.warningOut(
+                    f"Ambiguous naming! Multiple chains named {chain.name}!"
+                )
 
     def check_indices(self):
         """Print all child Atoms who's indices are incorrect"""
@@ -85,9 +90,17 @@ class System(AtomGroup):
 
         for index, residue in enumerate(self.residues):
             if verbosity == 2 and residue.index != index:
-                mout.warningOut(f"Re-indexing residue {residue} (#{residue.index} --> #{index})")
-            elif verbosity == 2 and residue.type not in exclude and residue.index != index:
-                mout.warningOut(f"Re-indexing residue {residue} (#{residue.index} --> #{index})")
+                mout.warningOut(
+                    f"Re-indexing residue {residue} (#{residue.index} --> #{index})"
+                )
+            elif (
+                verbosity == 2
+                and residue.type not in exclude
+                and residue.index != index
+            ):
+                mout.warningOut(
+                    f"Re-indexing residue {residue} (#{residue.index} --> #{index})"
+                )
             residue.index = index
 
             residue.fix_names()
@@ -106,6 +119,7 @@ class System(AtomGroup):
     def fix_atomnames(self, verbosity=1):
         """Attempt to fix all child Atom names"""
         import mout
+
         count = 0
         for index, atom in enumerate(self.atoms):
             if atom.name[0].isnumeric():
@@ -116,11 +130,14 @@ class System(AtomGroup):
                     mout.out(old + " -> " + new)
                 count += 1
         if verbosity > 0 and count != 0:
-            mout.warningOut("Fixed " + str(count) + " atom names which appeared to have cycled.")
+            mout.warningOut(
+                "Fixed " + str(count) + " atom names which appeared to have cycled."
+            )
 
     def add_chain(self, chain):
         """Add a child Chain"""
         from .chain import Chain
+
         assert isinstance(chain, Chain)
         chain.index = len(self.chains)
         chain.parent = self
@@ -139,10 +156,13 @@ class System(AtomGroup):
 
         self.fix_indices()
 
-    def check_intersection(self, system, radius=1, by_residue=True, boolean=False, chain=None):
+    def check_intersection(
+        self, system, radius=1, by_residue=True, boolean=False, chain=None
+    ):
         """Return a list of indices that are intersecting within a given radius between this system and another."""
 
         import mout
+
         # mout.debugOut(f"amp.System.check_intersection({system},radius={radius},by_residue={by_residue},boolean={boolean},chain={chain})")
         import numpy as np
 
@@ -162,7 +182,12 @@ class System(AtomGroup):
             # for each residue
             for i, res in enumerate(residues):
                 if num_residues > 500 and i % 100 == 0:
-                    mout.progress(i, num_residues, prepend="Calculating intersection", append=" of residues checked")
+                    mout.progress(
+                        i,
+                        num_residues,
+                        prepend="Calculating intersection",
+                        append=" of residues checked",
+                    )
 
                 residue_CoM = res.CoM(verbosity=0)
                 d = np.linalg.norm(residue_CoM - system_CoM)
@@ -191,8 +216,12 @@ class System(AtomGroup):
                                 break
 
             if num_residues > 500:
-                mout.progress(num_residues, num_residues, prepend="Calculating intersection",
-                              append=" of residues checked. Done.")
+                mout.progress(
+                    num_residues,
+                    num_residues,
+                    prepend="Calculating intersection",
+                    append=" of residues checked. Done.",
+                )
 
         else:
 
@@ -218,17 +247,28 @@ class System(AtomGroup):
         """Print a summary of the System"""
         import mout
         import mcol
+
         reset = mcol.clear + mcol.bold
         if self.description is not None:
             mout.headerOut(f'\n"{mcol.underline}{self.description}{reset}"')
-        mout.headerOut("\nSystem " + mcol.arg + self.name +
-                       mcol.clear + mcol.bold + " contains " +
-                       mcol.result + str(self.num_chains) +
-                       mcol.clear + mcol.bold + " chains:")
+        mout.headerOut(
+            "\nSystem "
+            + mcol.arg
+            + self.name
+            + mcol.clear
+            + mcol.bold
+            + " contains "
+            + mcol.result
+            + str(self.num_chains)
+            + mcol.clear
+            + mcol.bold
+            + " chains:"
+        )
         for i, chain in enumerate(self.chains):
             mout.headerOut(
-                f'Chain[{mcol.arg}{i}{reset}] {mcol.result}{chain.name}{reset} ({mcol.varType}{chain.type}{reset}) [#={mcol.result}{chain.num_atoms}{reset}] =',
-                end=' ')
+                f"Chain[{mcol.arg}{i}{reset}] {mcol.result}{chain.name}{reset} ({mcol.varType}{chain.type}{reset}) [#={mcol.result}{chain.num_atoms}{reset}] =",
+                end=" ",
+            )
 
             if chain.type == "PRO":
                 names = ""
@@ -267,10 +307,13 @@ class System(AtomGroup):
             names.append(residue.name)
         return names
 
-    def rename_atoms(self, old: str, new: str, res_filter: str = None, verbosity: int = 2):
+    def rename_atoms(
+        self, old: str, new: str, res_filter: str = None, verbosity: int = 2
+    ):
         """Rename all matching atoms"""
         import mcol
         import mout
+
         count = 0
         for residue in self.residues:
             if res_filter is not None and res_filter not in residue.name:
@@ -281,17 +324,44 @@ class System(AtomGroup):
                     atom.set_name(new, verbosity=verbosity - 1)
         if verbosity > 0:
             if res_filter is None:
-                mout.warningOut("Renamed " + mcol.result + str(count) + mcol.warning + " atoms from " + mcol.arg + old +
-                                mcol.warning + " to " + mcol.arg + new)
+                mout.warningOut(
+                    "Renamed "
+                    + mcol.result
+                    + str(count)
+                    + mcol.warning
+                    + " atoms from "
+                    + mcol.arg
+                    + old
+                    + mcol.warning
+                    + " to "
+                    + mcol.arg
+                    + new
+                )
             else:
-                mout.warningOut("Renamed " + mcol.result + str(count) + mcol.warning + " atoms from " + mcol.arg + old +
-                                mcol.warning + " to " + mcol.arg + new + mcol.warning + " with res_filter " + mcol.arg + res_filter)
+                mout.warningOut(
+                    "Renamed "
+                    + mcol.result
+                    + str(count)
+                    + mcol.warning
+                    + " atoms from "
+                    + mcol.arg
+                    + old
+                    + mcol.warning
+                    + " to "
+                    + mcol.arg
+                    + new
+                    + mcol.warning
+                    + " with res_filter "
+                    + mcol.arg
+                    + res_filter
+                )
         return count
 
     def rename_residues(self, old: str, new: str, verbosity=2):
         """Rename all matching residues"""
         import mcol
         import mout
+
         count = 0
         if not isinstance(old, list):
             old = [old]
@@ -302,27 +372,35 @@ class System(AtomGroup):
                 count += 1
         if verbosity > 0:
             mout.warningOut(
-                f"Renamed {mcol.result}{count}{mcol.warning} residues from {mcol.arg}{old}{mcol.warning} to {new}")
+                f"Renamed {mcol.result}{count}{mcol.warning} residues from {mcol.arg}{old}{mcol.warning} to {new}"
+            )
         return count
 
     def get_chain(self, name: str):
         """Get Chain by name"""
         import mout
         import mcol
+
         for chain in self.chains:
             if chain.name == name:
                 return chain
-        mout.errorOut("Chain with name " + mcol.arg + name + mcol.error + " not found.", fatal=True)
+        mout.errorOut(
+            "Chain with name " + mcol.arg + name + mcol.error + " not found.",
+            fatal=True,
+        )
 
     def remove_chain(self, name, verbosity=1):
         """Delete Chain by name"""
         import mcol
         import mout
-        
+
         if name not in self.chain_names:
-            mout.errorOut("Chain with name " + mcol.arg + name + mcol.error + " not found.", fatal=True)
+            mout.errorOut(
+                "Chain with name " + mcol.arg + name + mcol.error + " not found.",
+                fatal=True,
+            )
             return
-        
+
         del_indices = []
         for index, chain in enumerate(self.chains):
             if chain.name == name:
@@ -338,6 +416,7 @@ class System(AtomGroup):
         """Remove HETATM entries"""
         import mcol
         import mout
+
         del_list = []
         atoms = self.atoms
         for index, atom in enumerate(atoms):
@@ -345,29 +424,46 @@ class System(AtomGroup):
                 del_list.append(index)
         number_deleted = self.remove_atoms(indices=del_list, verbosity=verbosity - 1)
         if verbosity > 0:
-            mout.warningOut("Removed " + mcol.result + str(number_deleted) + mcol.warning + " heterogens")
+            mout.warningOut(
+                "Removed "
+                + mcol.result
+                + str(number_deleted)
+                + mcol.warning
+                + " heterogens"
+            )
 
     def remove_hydrogens(self, verbosity: int = 1):
         """Remove hydrogen atoms"""
         import mcol
         import mout
-        number_deleted = self.remove_atoms(symbols=['H'], verbosity=verbosity-2)
-        if verbosity > 0:
-            mout.warningOut("Removed " + mcol.result + str(number_deleted) + mcol.warning + " hydrogens")
 
-    def remove_atoms(self,
-        *, 
+        number_deleted = self.remove_atoms(symbols=["H"], verbosity=verbosity - 2)
+        if verbosity > 0:
+            mout.warningOut(
+                "Removed "
+                + mcol.result
+                + str(number_deleted)
+                + mcol.warning
+                + " hydrogens"
+            )
+
+    def remove_atoms(
+        self,
+        *,
         names: list | None = None,
-        indices: list | None = None, 
-        numbers: list | None = None, 
+        indices: list | None = None,
+        numbers: list | None = None,
         symbols: str | None = None,
         res_filter: str | None = None,
         verbosity: int = 2,
     ) -> int:
 
-        assert names or indices or numbers or symbols, "must supply indices, numbers, names, or symbols"
+        assert (
+            names or indices or numbers or symbols
+        ), "must supply indices, numbers, names, or symbols"
 
         import mcol
+
         mout = logger
 
         number_deleted = 0
@@ -392,24 +488,28 @@ class System(AtomGroup):
                         del residue.atoms[index]
                         number_deleted += 1
                         if verbosity > 1:
-                            mout.warning(f"Removed atom {atom.name_number_str} from {residue.name_number_chain_str}")
+                            mout.warning(
+                                f"Removed atom {atom.name_number_str} from {residue.name_number_chain_str}"
+                            )
 
         if verbosity > 0:
-            mout.var('#atoms deleted', number_deleted)
+            mout.var("#atoms deleted", number_deleted)
 
         return number_deleted
 
-    def remove_residues(self, 
-        *, 
+    def remove_residues(
+        self,
+        *,
         names: list | None = None,
-        indices: list | None = None, 
-        numbers: list | None = None, 
+        indices: list | None = None,
+        numbers: list | None = None,
         verbosity: int = 2,
     ) -> int:
 
         assert names or indices or numbers, "must supply indices or numbers"
 
         import mcol
+
         mout = logger
 
         number_deleted = 0
@@ -433,7 +533,7 @@ class System(AtomGroup):
                         mout.warning(f"Removed residue {residue.name_number_chain_str}")
 
         if verbosity > 0:
-            mout.var('#residues deleted', number_deleted)
+            mout.var("#residues deleted", number_deleted)
 
         return number_deleted
 
@@ -490,7 +590,7 @@ class System(AtomGroup):
     @property
     def res_indices(self):
         return [r.index for r in self.residues]
-    
+
     @property
     def res_numbers(self):
         return [r.number for r in self.residues]
@@ -502,26 +602,38 @@ class System(AtomGroup):
     def write_CJSON(self, filename, use_atom_types=False, gulp_names=False):
         """Export a CJSON"""
         from .io import writeCJSON
+
         writeCJSON(filename, self, use_atom_types=use_atom_types, gulp_names=gulp_names)
 
     def view(self, **kwargs):
         """View the system with ASE"""
         from .gui import view
+
         view(self, **kwargs)
 
     def render(self, **kwargs):
         """View the system with py3Dmol"""
         from .py3d import render
+
         return render(self, **kwargs)
 
     def auto_rotate(self):
         """Rotate the system into the XY plane"""
         from .manipulate import auto_rotate
+
         ase_atoms = self.ase_atoms
         ase_atoms = auto_rotate(ase_atoms)
         self.set_coordinates(ase_atoms)
 
-    def align_to(self, target, protein_only=False, backbone_only=False, heavy_atoms_only=True, return_transformations=False, verbosity=1):
+    def align_to(
+        self,
+        target,
+        protein_only=False,
+        backbone_only=False,
+        heavy_atoms_only=True,
+        return_transformations=False,
+        verbosity=1,
+    ):
         """Align this system to another. use protein_only to align using only the protein, if so the arguments backbone_only and heavy_atoms_only are considered"""
 
         if protein_only:
@@ -534,26 +646,30 @@ class System(AtomGroup):
             if backbone_only:
                 self_protein = self.protein_backbone
                 target_protein = target.protein_backbone
-                
+
             else:
                 self_protein = self.protein_system
                 target_protein = target.protein_system
 
             if heavy_atoms_only:
-                self_protein.remove_hydrogens(verbosity=verbosity-1)
-                target_protein.remove_hydrogens(verbosity=verbosity-1)
+                self_protein.remove_hydrogens(verbosity=verbosity - 1)
+                target_protein.remove_hydrogens(verbosity=verbosity - 1)
 
             # if the protein subsystems have different residues, use only shared residues
             self_strs = set([r.name_number_str for r in self_protein.residues])
             target_strs = set([r.name_number_str for r in target_protein.residues])
 
             if self_protein.num_atoms != target_protein.num_atoms:
-                
-                assert len(self_protein.chains) == 1, f'{self.name} {self_protein.chains=}'
-                assert len(target_protein.chains) == 1, f'{target.name} {target_protein.chains=}'
+
+                assert (
+                    len(self_protein.chains) == 1
+                ), f"{self.name} {self_protein.chains=}"
+                assert (
+                    len(target_protein.chains) == 1
+                ), f"{target.name} {target_protein.chains=}"
 
                 if verbosity:
-                    logger.warning('Proteins have different residues, using common')
+                    logger.warning("Proteins have different residues, using common")
 
                 # set arithmetic
                 self_remove = self_strs - target_strs
@@ -562,22 +678,28 @@ class System(AtomGroup):
                 # remove not shared
                 if self_remove:
                     numbers = [int(s.split()[1]) for s in self_remove]
-                    self_protein.remove_residues(numbers=numbers, verbosity=verbosity-1)
+                    self_protein.remove_residues(
+                        numbers=numbers, verbosity=verbosity - 1
+                    )
 
                 if target_remove:
                     numbers = [int(s.split()[1]) for s in target_remove]
-                    target_protein.remove_residues(numbers=numbers, verbosity=verbosity-1)
+                    target_protein.remove_residues(
+                        numbers=numbers, verbosity=verbosity - 1
+                    )
 
-                for a,b in zip(self_protein.residues, target_protein.residues):
+                for a, b in zip(self_protein.residues, target_protein.residues):
 
                     if a.num_atoms != b.num_atoms:
 
                         if verbosity:
-                            logger.warning(f'{a.name_number_str} has different backbone in self vs target')
-                            logger.warning(f'Pruning alternative sites != A')
+                            logger.warning(
+                                f"{a.name_number_str} has different backbone in self vs target"
+                            )
+                            logger.warning(f"Pruning alternative sites != A")
 
-                        a.prune_alternative_sites(verbosity=verbosity-1)
-                        b.prune_alternative_sites(verbosity=verbosity-1)
+                        a.prune_alternative_sites(verbosity=verbosity - 1)
+                        b.prune_alternative_sites(verbosity=verbosity - 1)
 
                         if a.num_atoms != b.num_atoms:
                             a.summary()
@@ -600,12 +722,14 @@ class System(AtomGroup):
 
             if return_transformations:
                 return cself, ctarget, R
-            
+
             # get ASE atoms
             atoms = self.ase_atoms
 
             # apply the rotation matrix
-            new_positions = apply_rototranslation(atoms.get_positions(), cself, ctarget, R)
+            new_positions = apply_rototranslation(
+                atoms.get_positions(), cself, ctarget, R
+            )
 
             atoms.set_positions(new_positions)
 
@@ -616,6 +740,7 @@ class System(AtomGroup):
         else:
 
             from ase.build import minimize_rotation_and_translation
+
             if isinstance(target, System):
                 target = target.ase_atoms
             atoms = self.ase_atoms
@@ -626,6 +751,7 @@ class System(AtomGroup):
     def apply_transformation(self, matrix):
         """Apply a transformation matrix"""
         from .transform import apply_transformation
+
         atoms = self.ase_atoms
         new_positions = apply_transformation(atoms.get_positions(), matrix)
         atoms.set_positions(new_positions)
@@ -638,17 +764,17 @@ class System(AtomGroup):
     def align_by_pairs(self, target, index_pairs, alt=False):
         """Align the system (i) to the target (j) by consider the vectors:
 
-            a --> b
-            a --> c
+        a --> b
+        a --> c
 
-            where index pairs contains the indices for the three atoms:
-            a,b,c in the respective systems:
+        where index pairs contains the indices for the three atoms:
+        a,b,c in the respective systems:
 
-            index_pairs = [[i_a,j_a],[i_b,j_b],[i_c,j_c]]
+        index_pairs = [[i_a,j_a],[i_b,j_b],[i_c,j_c]]
 
-            Alternatively you can pass the positions j_a, j_b, j_c as target,
-            and index_pairs can be i_a, i_b, i_c.
-            """
+        Alternatively you can pass the positions j_a, j_b, j_c as target,
+        and index_pairs can be i_a, i_b, i_c.
+        """
 
         assert len(index_pairs) == 3
         import numpy as np
@@ -710,7 +836,10 @@ class System(AtomGroup):
 
         for a in self.atoms:
             a_pos = a.np_pos
-            distances = [np.linalg.norm(a_pos - p) if s == a.species else 999 for s, p in zip(species, positions)]
+            distances = [
+                np.linalg.norm(a_pos - p) if s == a.species else 999
+                for s, p in zip(species, positions)
+            ]
             index = np.argmin(distances)
             b = target.atoms[index]
             a.set_name(b.name, verbosity=0)
@@ -719,9 +848,15 @@ class System(AtomGroup):
         """Calculate the RMS displacement between this system and a reference"""
 
         import numpy as np
+
         assert len(self.atoms) == len(reference.atoms)
-        displacements = np.array([np.linalg.norm(a.np_pos - b.np_pos) for a, b in zip(self.atoms, reference.atoms)])
-        return np.sqrt(np.mean(displacements ** 2))
+        displacements = np.array(
+            [
+                np.linalg.norm(a.np_pos - b.np_pos)
+                for a, b in zip(self.atoms, reference.atoms)
+            ]
+        )
+        return np.sqrt(np.mean(displacements**2))
 
     def reorder_atoms(self, reference, map: dict = None):
         new_sys = self.copy()
@@ -732,8 +867,9 @@ class System(AtomGroup):
         self = new_sys
 
     def get_residue(self, name: str, map: dict = None):
-        """ return residues with matching name"""
+        """return residues with matching name"""
         import mout
+
         if map is not None:
             if name in map.keys():
                 name = map[name]
@@ -751,6 +887,7 @@ class System(AtomGroup):
         """Return a deepcopy of the System"""
         if disk:
             from .io import write, parseGRO
+
             write(f"__temp__.gro", self, verbosity=0)
             system = parseGRO(f"__temp__.gro", verbosity=0)
             system.name = self.name
@@ -758,7 +895,10 @@ class System(AtomGroup):
         elif alt:
             if self.num_chains != len(set([str(c) for c in self.chains])):
                 import mout
-                mout.errorOut("System has duplicate chain names so this copying method will have incorrect chains!")
+
+                mout.errorOut(
+                    "System has duplicate chain names so this copying method will have incorrect chains!"
+                )
             copy_system = System(self.name + " (copy)")
             copy_system.box = self.box
             for atom in self.atoms:
@@ -766,6 +906,7 @@ class System(AtomGroup):
             return copy_system
         else:
             import copy
+
             return copy.deepcopy(self)
 
     def subsystem(self, indices, use_pdb_index=True):
@@ -798,8 +939,11 @@ class System(AtomGroup):
 
         else:
 
-            if self.chains and atom.chain == self.chains[-1].name and res_type(atom.residue) == \
-                    self.chains[-1].residues[-1].type:
+            if (
+                self.chains
+                and atom.chain == self.chains[-1].name
+                and res_type(atom.residue) == self.chains[-1].residues[-1].type
+            ):
                 self.chains[-1].add_atom(atom)
             else:
                 chain = Chain(atom.chain)
@@ -810,14 +954,14 @@ class System(AtomGroup):
     def children(self):
         return self.chains
 
-    def prune_alternative_sites(self, site='A', verbosity=1):
+    def prune_alternative_sites(self, site="A", verbosity=1):
         """Remove atoms with alternative sites"""
         import mout
 
         count = 0
 
         for residue in self.residues:
-            count += residue.prune_alternative_sites(site=site, verbosity=verbosity-1)
+            count += residue.prune_alternative_sites(site=site, verbosity=verbosity - 1)
 
         if verbosity > 0 and count > 0:
             mout.warningOut(f"Deleted {count} alternative site atoms")
@@ -825,7 +969,7 @@ class System(AtomGroup):
     def get_protein_interaction_sites(self):
         sites = []
         for chain in self.chains:
-            if chain.type != 'PRO':
+            if chain.type != "PRO":
                 continue
             for residue in chain.residues:
                 sites += residue.interaction_sites
@@ -835,7 +979,7 @@ class System(AtomGroup):
         """Get Feature objects for all interaction features on protein atoms in this system. See molparse/rdkit/features"""
         all_features = []
         for chain in self.chains:
-            if chain.type != 'PRO':
+            if chain.type != "PRO":
                 continue
             for residue in chain.residues:
                 all_features += residue.features
@@ -854,20 +998,25 @@ class System(AtomGroup):
             other_chain = other.get_chain(self_chain.name)
 
             for self_residue in self_chain.residues:
-                other_residue = other_chain[f'r{self_residue.name} n{self_residue.number}']
+                other_residue = other_chain[
+                    f"r{self_residue.name} n{self_residue.number}"
+                ]
 
                 distance = np.linalg.norm(self_residue.CoM() - other_residue.CoM())
 
-                data.append(dict(
-                    name_number_chain_str=self_residue.name_number_chain_str,
-                    self_residue=self_residue,
-                    other_residue=other_residue,
-                    distance=distance,
-                ))
+                data.append(
+                    dict(
+                        name_number_chain_str=self_residue.name_number_chain_str,
+                        self_residue=self_residue,
+                        other_residue=other_residue,
+                        distance=distance,
+                    )
+                )
 
         if plot:
             import plotly.express as px
-            fig = px.bar(data, x='name_number_chain_str', y='distance')
+
+            fig = px.bar(data, x="name_number_chain_str", y="distance")
             return fig
 
         return data
@@ -875,13 +1024,13 @@ class System(AtomGroup):
     @property
     def protein_system(self):
         sys = self.copy()
-        sys.chains = [c for c in sys.chains if c.type == 'PRO']
+        sys.chains = [c for c in sys.chains if c.type == "PRO"]
         return sys
 
     @property
     def protein_backbone(self):
         sys = self.copy()
-        sys.chains = [c for c in sys.chains if c.type == 'PRO']
+        sys.chains = [c for c in sys.chains if c.type == "PRO"]
 
         for chain in sys.chains:
             for residue in chain.residues:
@@ -891,11 +1040,11 @@ class System(AtomGroup):
 
     @property
     def ligand_residues(self):
-        return [r for r in self.residues if r.type=='LIG']
+        return [r for r in self.residues if r.type == "LIG"]
 
-
-    def add_hydrogens(self, pH: float = 7.0, **kwargs) -> 'System':
+    def add_hydrogens(self, pH: float = 7.0, **kwargs) -> "System":
         """Create a protonated copy"""
         from .protonate import protonate
+
         sys = protonate(self, pH=pH, **kwargs)
         return sys

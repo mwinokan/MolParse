@@ -12,7 +12,7 @@ class Histidine(AminoAcid):
         super(Histidine, self).__init__(name, index, number, chain)
 
         assert len(name) == 3
-        assert name in ['HIS', 'HID', 'HIE', 'HSE', 'HSD', 'HSP']
+        assert name in ["HIS", "HID", "HIE", "HSE", "HSD", "HSP"]
 
     @property
     def ND(self):
@@ -65,13 +65,16 @@ class Histidine(AminoAcid):
         if verbosity > 0:
             if delta and epsilon:
                 mout.headerOut(
-                    f"Protonating {mcol.arg}{self.longname}{mcol.clear + mcol.bold} --> {mcol.arg} Histidine (Protonated)")
+                    f"Protonating {mcol.arg}{self.longname}{mcol.clear + mcol.bold} --> {mcol.arg} Histidine (Protonated)"
+                )
             elif delta and not epsilon:
                 mout.headerOut(
-                    f"Protonating {mcol.arg}{self.longname}{mcol.clear + mcol.bold} --> {mcol.arg} Histidine (Delta)")
+                    f"Protonating {mcol.arg}{self.longname}{mcol.clear + mcol.bold} --> {mcol.arg} Histidine (Delta)"
+                )
             elif epsilon and not delta:
                 mout.headerOut(
-                    f"Protonating {mcol.arg}{self.longname}{mcol.clear + mcol.bold} --> {mcol.arg} Histidine (Epsilon)")
+                    f"Protonating {mcol.arg}{self.longname}{mcol.clear + mcol.bold} --> {mcol.arg} Histidine (Epsilon)"
+                )
             else:
                 mout.errorOut(f"Unsupported protonation {delta=} {epsilon=}")
                 return
@@ -134,8 +137,8 @@ class Histidine(AminoAcid):
 
         # rename the residue
         if self.has_HD and not self.has_HE:
-            self.name = 'HSD'
+            self.name = "HSD"
         elif self.has_HE and not self.has_HD:
-            self.name = 'HSE'
+            self.name = "HSE"
         elif self.has_HD and self.has_HE:
-            self.name = 'HSP'
+            self.name = "HSP"

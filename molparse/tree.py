@@ -35,6 +35,7 @@ class TreeViewer(CursesApp):
 
         if isinstance(obj, str):
             from .io import parse
+
             obj = parse(obj)
 
         self._obj = obj
@@ -54,6 +55,7 @@ class TreeViewer(CursesApp):
 
         else:
             import mout
+
             mout.errorOut(f"TreeViewer not supported with {self._obj_type}")
 
         try:
@@ -76,26 +78,32 @@ class TreeViewer(CursesApp):
             self.close()
             print()
             import mout
+
             mout.errorOut("TreeViewer exited due to a curses error.")
-            if 'prefresh() returned ERR' in str(e):
-                mout.error('Maybe you resized the terminal window?')
+            if "prefresh() returned ERR" in str(e):
+                mout.error("Maybe you resized the terminal window?")
             mout.error(e)
         except KeyError as e:
             self.close()
             print()
             import mout
+
             mout.errorOut("TreeViewer exited due to a KeyError (maybe plot3d?).")
             mout.error(e)
         except AttributeError as e:
             self.close()
             print()
             import mout
-            mout.error("TreeViewer exited due to an AttributeError (maybe outdated MPyTools?).")
+
+            mout.error(
+                "TreeViewer exited due to an AttributeError (maybe outdated MPyTools?)."
+            )
             mout.error(e)
         except Exception as e:
             self.close()
             print()
             import mout
+
             mout.errorOut("TreeViewer exited due to an error.")
             mout.error(e)
 
@@ -107,7 +115,7 @@ class TreeViewer(CursesApp):
 
     def drawtree(self):
         max_index = self.obj.children[-1].index
-        if self.type_str(self.obj.children[-1]) not in ['System', 'AtomGroup', 'Chain']:
+        if self.type_str(self.obj.children[-1]) not in ["System", "AtomGroup", "Chain"]:
             max_number = self.obj.children[-1].number
         else:
             max_number = None
@@ -120,7 +128,13 @@ class TreeViewer(CursesApp):
         if parent.children and parent._expand:
             max_index = parent.children[-1].index
             for child in parent.children:
-                line = self.recursive_tree(child, line, max_index, max_number, depth + 1, )
+                line = self.recursive_tree(
+                    child,
+                    line,
+                    max_index,
+                    max_number,
+                    depth + 1,
+                )
 
         return line
 
@@ -138,8 +152,12 @@ class TreeViewer(CursesApp):
         widgets = []
 
         for i, (key, prop) in enumerate(items.items()):
-            label = Text(f"{key}: ", line + 1 + i, col, color_pair=self.WHITE_INV | curses.A_BOLD)
-            data = Text(f"{prop} ", line + 1 + i, label.endcol, color_pair=self.WHITE_INV)
+            label = Text(
+                f"{key}: ", line + 1 + i, col, color_pair=self.WHITE_INV | curses.A_BOLD
+            )
+            data = Text(
+                f"{prop} ", line + 1 + i, label.endcol, color_pair=self.WHITE_INV
+            )
             widgets.append(label)
             widgets.append(data)
 
@@ -154,7 +172,8 @@ class TreeViewer(CursesApp):
                 disabler=func,
                 color_inactive=self.GREEN_INV,
                 color_active=self.GREEN_INV,
-                name=key)
+                name=key,
+            )
             widgets.append(label)
 
         self.context_menu(line, col, widgets)
@@ -172,55 +191,75 @@ class TreeViewer(CursesApp):
             f1 = lambda x: x.expand()
             f2 = lambda x: x.collapse()
 
-            button = Button(app=self,
-                            line=line,
-                            col=col,
-                            active=obj._expand,
-                            enabler=f1,
-                            color_active=self.RED_INV,
-                            disabler=f2,
-                            target=obj,
-                            name=f' > ',
-                            activename=f' v ')
+            button = Button(
+                app=self,
+                line=line,
+                col=col,
+                active=obj._expand,
+                enabler=f1,
+                color_active=self.RED_INV,
+                disabler=f2,
+                target=obj,
+                name=f" > ",
+                activename=f" v ",
+            )
             self.add_button(button)
             col = button.endcol + 1
 
         # no expand functionality
         else:
 
-            text = Text(f'   ', line, col, bold=False)
+            text = Text(f"   ", line, col, bold=False)
             self.add_text(text)
             col = text.endcol + 1
 
         # alternative sites
-        if self.type_str(obj) == 'Atom' and obj.alternative_site:
-            text = Text(f'({obj.alternative_site})', line, col, bold=True, color_pair=self.YELLOW)
+        if self.type_str(obj) == "Atom" and obj.alternative_site:
+            text = Text(
+                f"({obj.alternative_site})",
+                line,
+                col,
+                bold=True,
+                color_pair=self.YELLOW,
+            )
             self.add_text(text)
             col = text.endcol + 1
 
         # object type
-        text = Text(f'{self.type_str(obj)} ', line, col, bold=True)
+        text = Text(f"{self.type_str(obj)} ", line, col, bold=True)
         self.add_text(text)
 
         # object index
-        if self.type_str(obj) not in ['System', 'AtomGroup']:
+        if self.type_str(obj) not in ["System", "AtomGroup"]:
             # index
             width = len(str(max_index))
-            text = Text(f'{str(obj.index).rjust(width)} ', line, text.endcol, color_pair=self.GREEN, bold=True)
+            text = Text(
+                f"{str(obj.index).rjust(width)} ",
+                line,
+                text.endcol,
+                color_pair=self.GREEN,
+                bold=True,
+            )
             self.add_text(text)
 
-        if self.type_str(obj) not in ['System', 'AtomGroup', 'Chain']:
+        if self.type_str(obj) not in ["System", "AtomGroup", "Chain"]:
             # number
             width = len(str(max_number))
-            text = Text(f'{str(obj.number).rjust(width)} ', line, text.endcol, color_pair=self.GREEN, bold=True)
+            text = Text(
+                f"{str(obj.number).rjust(width)} ",
+                line,
+                text.endcol,
+                color_pair=self.GREEN,
+                bold=True,
+            )
             self.add_text(text)
 
         # object name is also a button:
-        if self.type_str(obj) != 'Atom':
+        if self.type_str(obj) != "Atom":
             name = obj.name
 
             if len(name) > 23:
-                name = f'{name[0:20]}...'
+                name = f"{name[0:20]}..."
 
         else:
             name = obj.symbol
@@ -231,18 +270,20 @@ class TreeViewer(CursesApp):
         if not isinstance(obj, Atom):
             # obj._show_context = False
 
-            text = Button(app=self,
-                          line=line,
-                          col=text.endcol,
-                          active=obj._show_context,
-                          enabler=f1,
-                          color_active=self.CYAN_INV,
-                          color_inactive=self.CYAN_INV,
-                          # color_active=self.WHITE_INV|curses.A_BOLD,
-                          # color_inactive=curses.A_UNDERLINE|self.CYAN|curses.A_BOLD,
-                          disabler=f2,
-                          target=obj,
-                          name=name)
+            text = Button(
+                app=self,
+                line=line,
+                col=text.endcol,
+                active=obj._show_context,
+                enabler=f1,
+                color_active=self.CYAN_INV,
+                color_inactive=self.CYAN_INV,
+                # color_active=self.WHITE_INV|curses.A_BOLD,
+                # color_inactive=curses.A_UNDERLINE|self.CYAN|curses.A_BOLD,
+                disabler=f2,
+                target=obj,
+                name=name,
+            )
             # activename=f'!{name}!')
             self.add_button(text)
 
@@ -251,21 +292,27 @@ class TreeViewer(CursesApp):
             self.add_text(text)
 
         # residue/chain type
-        if self.type_str(obj) not in ['System', 'Atom', 'AtomGroup']:
+        if self.type_str(obj) not in ["System", "Atom", "AtomGroup"]:
             color_pair = self.color_from_type(obj.type)
-            text = Text(f'(', line, text.endcol + 1, bold=True)
+            text = Text(f"(", line, text.endcol + 1, bold=True)
             self.add_text(text)
-            text = Text(f'{obj.type}', line, text.endcol, color_pair=color_pair, bold=True)
+            text = Text(
+                f"{obj.type}", line, text.endcol, color_pair=color_pair, bold=True
+            )
             self.add_text(text)
-            text = Text(f')', line, text.endcol, bold=True)
+            text = Text(f")", line, text.endcol, bold=True)
             self.add_text(text)
 
         # position
-        if self.type_str(obj) in ['Atom']:
-            text = Text(f' [{obj.x:7.3f}, {obj.y:7.3f}, {obj.z:7.3f}]', line, text.endcol)
+        if self.type_str(obj) in ["Atom"]:
+            text = Text(
+                f" [{obj.x:7.3f}, {obj.y:7.3f}, {obj.z:7.3f}]", line, text.endcol
+            )
             self.add_text(text)
 
-            text = Text(f' {obj.name}', line, text.endcol, color_pair=self.MAGENTA, bold=True)
+            text = Text(
+                f" {obj.name}", line, text.endcol, color_pair=self.MAGENTA, bold=True
+            )
             self.add_text(text)
 
         # extra info
@@ -275,53 +322,66 @@ class TreeViewer(CursesApp):
             col = text.endcol
 
         # plotting buttons
-        if self.type_str(obj) in ['System', 'Chain', 'Residue', 'AminoAcid', 'NucleicAcid', 'AtomGroup']:
+        if self.type_str(obj) in [
+            "System",
+            "Chain",
+            "Residue",
+            "AminoAcid",
+            "NucleicAcid",
+            "AtomGroup",
+        ]:
             col += 1
 
             f1 = lambda x: x.plot3d()
 
-            button = Button(app=self,
-                            line=line,
-                            col=col,
-                            active=False,
-                            color_inactive=curses.A_UNDERLINE | curses.A_BOLD,
-                            enabler=f1,
-                            disabler=f1,
-                            target=obj,
-                            name=f'plotly')
+            button = Button(
+                app=self,
+                line=line,
+                col=col,
+                active=False,
+                color_inactive=curses.A_UNDERLINE | curses.A_BOLD,
+                enabler=f1,
+                disabler=f1,
+                target=obj,
+                name=f"plotly",
+            )
 
             self.add_button(button)
             col = button.endcol + 1
 
             f1 = lambda x: x.view()
 
-            button = Button(app=self,
-                            line=line,
-                            col=col,
-                            active=False,
-                            color_inactive=curses.A_UNDERLINE | curses.A_BOLD,
-                            enabler=f1,
-                            disabler=f1,
-                            target=obj,
-                            name=f'ASE')
+            button = Button(
+                app=self,
+                line=line,
+                col=col,
+                active=False,
+                color_inactive=curses.A_UNDERLINE | curses.A_BOLD,
+                enabler=f1,
+                disabler=f1,
+                target=obj,
+                name=f"ASE",
+            )
 
             self.add_button(button)
             col = button.endcol + 1
 
-        if self.type_str(obj) in ['Residue', 'AminoAcid', 'NucleicAcid', 'Chain']:
-            file_out = f'{self.type_str(obj)}_{obj.name}_{obj.index}.pdb'
+        if self.type_str(obj) in ["Residue", "AminoAcid", "NucleicAcid", "Chain"]:
+            file_out = f"{self.type_str(obj)}_{obj.name}_{obj.index}.pdb"
 
             f1 = lambda x: x.write(file_out)
 
-            button = Button(app=self,
-                            line=line,
-                            col=col,
-                            active=False,
-                            color_inactive=curses.A_UNDERLINE | curses.A_BOLD,
-                            enabler=f1,
-                            disabler=f1,
-                            target=obj,
-                            name=f'PDB')
+            button = Button(
+                app=self,
+                line=line,
+                col=col,
+                active=False,
+                color_inactive=curses.A_UNDERLINE | curses.A_BOLD,
+                enabler=f1,
+                disabler=f1,
+                target=obj,
+                name=f"PDB",
+            )
 
             self.add_button(button)
             col = button.endcol + 1
@@ -332,28 +392,37 @@ class TreeViewer(CursesApp):
         if isinstance(obj, System):
             text = Text(
                 f'contains: {self.quantity_str(obj.num_chains, "chain")}, {self.quantity_str(obj.num_residues, "residue")}, {self.quantity_str(obj.num_atoms, "atom")} ',
-                line, col)
+                line,
+                col,
+            )
             self.add_text(text)
         elif isinstance(obj, Chain):
             text = Text(
                 f'contains: {self.quantity_str(obj.num_residues, "residue")}, {self.quantity_str(obj.num_atoms, "atom")} ',
-                line, col)
+                line,
+                col,
+            )
             self.add_text(text)
         elif isinstance(obj, Residue):
-            if self.type_str(obj) in ['Residue', 'AminoAcid', 'NucleicAcid'] and obj.contains_alternative_sites:
-                s = ','.join(sorted(obj.alternative_sites))
-                s = f'{s:5}'
-                text = Text(f'alt=', line, col, bold=True, color_pair=self.YELLOW)
+            if (
+                self.type_str(obj) in ["Residue", "AminoAcid", "NucleicAcid"]
+                and obj.contains_alternative_sites
+            ):
+                s = ",".join(sorted(obj.alternative_sites))
+                s = f"{s:5}"
+                text = Text(f"alt=", line, col, bold=True, color_pair=self.YELLOW)
                 self.add_text(text)
                 col = text.endcol
-                text = Text(f'{s}', line, col, bold=True, color_pair=self.YELLOW)
+                text = Text(f"{s}", line, col, bold=True, color_pair=self.YELLOW)
                 self.add_text(text)
                 col = text.endcol + 1
                 text = Text(f'{self.quantity_str(obj.num_atoms, "atom")} ', line, col)
 
             else:
-                text = Text(f'contains: {self.quantity_str(obj.num_atoms, "atom")} ', line, col)
-            
+                text = Text(
+                    f'contains: {self.quantity_str(obj.num_atoms, "atom")} ', line, col
+                )
+
             self.add_text(text)
 
         else:
@@ -362,40 +431,47 @@ class TreeViewer(CursesApp):
 
     def quantity_str(self, number, name):
         if number > 1:
-            return f'{number} {name}s'
+            return f"{number} {name}s"
         else:
-            return f'{number} {name}'
+            return f"{number} {name}"
 
     def type_str(self, obj):
-        if isinstance(obj, System): return "System"
-        if isinstance(obj, Chain): return "Chain"
-        if isinstance(obj, AminoAcid): return "AminoAcid"
-        if isinstance(obj, NucleicAcid): return "NucleicAcid"
-        if isinstance(obj, Residue): return "Residue"
-        if isinstance(obj, Atom): return "Atom"
-        if isinstance(obj, AtomGroup): return "AtomGroup"
+        if isinstance(obj, System):
+            return "System"
+        if isinstance(obj, Chain):
+            return "Chain"
+        if isinstance(obj, AminoAcid):
+            return "AminoAcid"
+        if isinstance(obj, NucleicAcid):
+            return "NucleicAcid"
+        if isinstance(obj, Residue):
+            return "Residue"
+        if isinstance(obj, Atom):
+            return "Atom"
+        if isinstance(obj, AtomGroup):
+            return "AtomGroup"
 
     def color_from_type(self, t):
         match t:
-            case 'PRO':
+            case "PRO":
                 return self.GREEN
 
-            case 'DNA':
+            case "DNA":
                 return self.RED
 
-            case 'SOL':
+            case "SOL":
                 return self.WHITE
 
-            case 'ION':
+            case "ION":
                 return self.CYAN
 
-            case 'LIP':
+            case "LIP":
                 return self.YELLOW
 
-            case 'LIG':
+            case "LIG":
                 return self.MAGENTA
 
-            case 'N/A':
+            case "N/A":
                 return self.WHITE
 
             case _:

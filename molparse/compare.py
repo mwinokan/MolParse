@@ -45,7 +45,9 @@ def compareSystems(system1, system2):
 
             for residue in system.residues:
 
-                this_bond_list, this_improper_list = getFFBondList(residue, rtp_filepath, use_atomtypes=False)
+                this_bond_list, this_improper_list = getFFBondList(
+                    residue, rtp_filepath, use_atomtypes=False
+                )
 
                 for bond in this_bond_list:
 
@@ -59,20 +61,20 @@ def compareSystems(system1, system2):
                     # else:
                     # value_list.append(None)
 
-            system_data[index]['bond_list'] = bond_list
-            system_data[index]['values'] = value_list
+            system_data[index]["bond_list"] = bond_list
+            system_data[index]["values"] = value_list
 
         import json
 
         # Write the CJSON files
-        with open('system1.json', 'w') as f:
+        with open("system1.json", "w") as f:
             json.dump(system_data[0], f, indent=4)
-        with open('system2.json', 'w') as f:
+        with open("system2.json", "w") as f:
             json.dump(system_data[1], f, indent=4)
 
         system_data = compare_bond_stat_lists(system_data, dataFile=True)
 
-        with open('compare.json', 'w') as f:
+        with open("compare.json", "w") as f:
             json.dump(system_data[2], f, indent=4)
 
 
@@ -85,31 +87,34 @@ def compare_bond_stat_lists(system_data, precision=6, diffPrecision=2, dataFile=
 
     if dataFile:
         import os
+
         datfile = "compare.dat"
-        f_dat = open(datfile, 'w')
-        f_dat.write('BOND, DIFFERENCE, % \n')
+        f_dat = open(datfile, "w")
+        f_dat.write("BOND, DIFFERENCE, % \n")
         f_dat.close()
-        f_dat = open(datfile, 'a')
+        f_dat = open(datfile, "a")
     else:
         f_dat = None
 
-    for index, bond in enumerate(system_data[0]['bond_list']):
+    for index, bond in enumerate(system_data[0]["bond_list"]):
 
-        assert system_data[0]['bond_list'][index] == system_data[1]['bond_list'][index]
+        assert system_data[0]["bond_list"][index] == system_data[1]["bond_list"][index]
 
         if len(bond) == 2:
             bondStr = bond[0] + " - " + bond[1]
         elif len(bond) == 3:
             bondStr = bond[0] + " - " + bond[1] + " - " + bond[2]
 
-        diff, pcnt_diff = mout.differenceOut(bondStr,
-                                             system_data[0]['values'][index],
-                                             system_data[1]['values'][index],
-                                             valCol=mcol.result,
-                                             precision=precision,
-                                             diffPrecision=diffPrecision,
-                                             unit="Angstroms",
-                                             dataFile=f_dat)
+        diff, pcnt_diff = mout.differenceOut(
+            bondStr,
+            system_data[0]["values"][index],
+            system_data[1]["values"][index],
+            valCol=mcol.result,
+            precision=precision,
+            diffPrecision=diffPrecision,
+            unit="Angstroms",
+            dataFile=f_dat,
+        )
 
         diff_list.append(diff)
         pcnt_diff_list.append(pcnt_diff)
@@ -121,12 +126,12 @@ def compare_bond_stat_lists(system_data, precision=6, diffPrecision=2, dataFile=
 
     if len(system_data) == 2:
         system_data.append({})
-    system_data[2]['bond_list'] = system_data[0]['bond_list']
-    system_data[2]['diff'] = diff_list
-    system_data[2]['pcnt_diff'] = pcnt_diff_list
-    system_data[2]['avg_diff'] = diff_avg
+    system_data[2]["bond_list"] = system_data[0]["bond_list"]
+    system_data[2]["diff"] = diff_list
+    system_data[2]["pcnt_diff"] = pcnt_diff_list
+    system_data[2]["avg_diff"] = diff_avg
 
-    f_dat.write('AVERAGE, N/A, ' + str(round(diff_avg, 2)) + ' \n')
+    f_dat.write("AVERAGE, N/A, " + str(round(diff_avg, 2)) + " \n")
 
     return system_data
 

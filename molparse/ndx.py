@@ -6,7 +6,7 @@ def parseNDX(file, verbosity=1):
     import mcol
 
     if verbosity:
-        mout.out(f'parsing {mcol.file}{file}{mcol.clear} ... ', end='')
+        mout.out(f"parsing {mcol.file}{file}{mcol.clear} ... ", end="")
 
     index_dict = GromacsIndex()
 
@@ -19,12 +19,12 @@ def parseNDX(file, verbosity=1):
 
             line = line.strip()
 
-            if line.startswith('['):
+            if line.startswith("["):
 
                 if group_name:
                     index_dict[group_name] = group_indices
 
-                group_name = line.replace('[', '').replace(']', '').strip()
+                group_name = line.replace("[", "").replace("]", "").strip()
                 group_indices = []
 
             elif group_name:
@@ -43,7 +43,7 @@ def parseNDX(file, verbosity=1):
                 index_dict[group_name] = group_indices
 
     if verbosity:
-        mout.out(f'Done.')
+        mout.out(f"Done.")
 
     return index_dict
 
@@ -53,13 +53,13 @@ def writeNDX(file, ndx, chunk_size=15, verbosity=1):
     import mcol
 
     if verbosity:
-        mout.out(f'writing {mcol.file}{file}{mcol.clear} ... ', end='')
+        mout.out(f"writing {mcol.file}{file}{mcol.clear} ... ", end="")
 
-    with open(file, 'wt') as f:
+    with open(file, "wt") as f:
 
         for group_name in ndx:
 
-            f.write(f'[ {group_name} ]\n')
+            f.write(f"[ {group_name} ]\n")
 
             indices = ndx[group_name]
 
@@ -68,37 +68,36 @@ def writeNDX(file, ndx, chunk_size=15, verbosity=1):
                 f.write(f'{" ".join(indices)}\n')
 
             else:
-                for index_chunk in grouper(indices, chunk_size, incomplete='ignore'):
+                for index_chunk in grouper(indices, chunk_size, incomplete="ignore"):
                     index_chunk = [str(i) for i in index_chunk]
                     f.write(f'{" ".join(index_chunk)}\n')
 
     if verbosity:
-        mout.out(f'Done.')
+        mout.out(f"Done.")
 
 
 # https://docs.python.org/3/library/itertools.html#itertools-recipes
-def grouper(iterable, n, *, incomplete='fill', fillvalue=None):
+def grouper(iterable, n, *, incomplete="fill", fillvalue=None):
     """Collect data into non-overlapping fixed-length chunks or blocks
-	   
-	* grouper('ABCDEFG', 3, fillvalue='x') --> ABC DEF Gxx
-	* grouper('ABCDEFG', 3, incomplete='strict') --> ABC DEF ValueError
-	* grouper('ABCDEFG', 3, incomplete='ignore') --> ABC DEF
-	   
+
+    * grouper('ABCDEFG', 3, fillvalue='x') --> ABC DEF Gxx
+    * grouper('ABCDEFG', 3, incomplete='strict') --> ABC DEF ValueError
+    * grouper('ABCDEFG', 3, incomplete='ignore') --> ABC DEF
+
     """
 
     args = [iter(iterable)] * n
-    if incomplete == 'fill':
+    if incomplete == "fill":
         return zip_longest(*args, fillvalue=fillvalue)
-    if incomplete == 'strict':
+    if incomplete == "strict":
         return zip(*args, strict=True)
-    if incomplete == 'ignore':
+    if incomplete == "ignore":
         return zip(*args)
     else:
-        raise ValueError('Expected fill, strict, or ignore')
+        raise ValueError("Expected fill, strict, or ignore")
 
 
 class GromacsIndex(UserDict):
-
     def __init__(self):
         super(GromacsIndex, self).__init__()
 
@@ -117,7 +116,8 @@ class GromacsIndex(UserDict):
 
         for group in self.data:
             print(
-                f'{mcol.varType}Group {mcol.arg}{group}{mcol.clear} contains {mcol.result}{len(self.data[group])}{mcol.clear} indices')
+                f"{mcol.varType}Group {mcol.arg}{group}{mcol.clear} contains {mcol.result}{len(self.data[group])}{mcol.clear} indices"
+            )
 
     def write(self, file):
         writeNDX(file, self)

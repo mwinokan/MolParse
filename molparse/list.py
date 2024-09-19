@@ -29,13 +29,16 @@ class NamedList(UserList):
 
         # name and number
         elif name and number is not None:
-            matches = [obj for obj in self.data if obj.number == number and obj.name == name]
+            matches = [
+                obj for obj in self.data if obj.number == number and obj.name == name
+            ]
 
             if not matches:
                 return None
             elif len(matches) > 1:
                 import mout
-                mout.error(f'{self}.get_matches({name=}, {number=})')
+
+                mout.error(f"{self}.get_matches({name=}, {number=})")
                 mout.error("Multiple matches to a supposedly unique query!", fatal=True)
             else:
                 return matches[0]
@@ -48,7 +51,8 @@ class NamedList(UserList):
                 return None
             elif len(matches) > 1:
                 import mout
-                mout.error(f'{self}.get_matches({name=}, {number=})')
+
+                mout.error(f"{self}.get_matches({name=}, {number=})")
                 mout.error("Multiple matches to a supposedly unique query!", fatal=True)
             else:
                 return matches[0]
@@ -76,22 +80,25 @@ class NamedList(UserList):
         except ValueError:
 
             # use
-            if key.startswith('n'):
+            if key.startswith("n"):
 
                 try:
                     number = int(key[1:])
                 except ValueError:
                     import mout
+
                     mout.error(f"Could not convert {key[1:]} to int")
-                    mout.error("Lookup key should be in the form 'n'INDEX for a specific lookup")
-                    raise ValueError('Could not convert {key[1:]} to int')
+                    mout.error(
+                        "Lookup key should be in the form 'n'INDEX for a specific lookup"
+                    )
+                    raise ValueError("Could not convert {key[1:]} to int")
 
                 # find matches
                 matches = self.get_matches(number=number)
                 return matches
 
             # get by type
-            if key.startswith('t'):
+            if key.startswith("t"):
                 type_str = key[1:]
                 return [d for d in self.data if d.type == type_str]
 
@@ -108,13 +115,16 @@ class NamedList(UserList):
                 # first word should be a name
                 name = split_key[0]
 
-                if split_key[1].startswith('n'):
+                if split_key[1].startswith("n"):
                     try:
                         number = int(split_key[1][1:])
                     except ValueError:
                         import mout
+
                         mout.error(f"Could not convert {key[1:]} to int")
-                        mout.error("Lookup key should be in the form NAME' n'INDEX for a specific lookup")
+                        mout.error(
+                            "Lookup key should be in the form NAME' n'INDEX for a specific lookup"
+                        )
                         return None
 
                     # find matches
@@ -128,8 +138,11 @@ class NamedList(UserList):
                         index = int(split_key[1])
                     except ValueError:
                         import mout
+
                         mout.error(f"Could not convert {split_key[1]} to int")
-                        mout.error("Lookup key should be in the form NAME' 'INDEX for a specific lookup")
+                        mout.error(
+                            "Lookup key should be in the form NAME' 'INDEX for a specific lookup"
+                        )
                         return None
 
                 match = self.data[index]
@@ -140,5 +153,6 @@ class NamedList(UserList):
 
             else:
                 import mout
+
                 mout.error("key must be an integer, object name or 'obj_name index'")
                 return None

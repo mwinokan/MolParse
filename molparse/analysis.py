@@ -26,8 +26,18 @@ def getBondLabel(trajectory, index_pair, full=False):
     atom_label1, atom_symbol1, atom_tag1 = getAtomLabel(trajectory, index1, full=True)
     atom_label2, atom_symbol2, atom_tag2 = getAtomLabel(trajectory, index2, full=True)
 
-    bond_title = atom_symbol1 + str(atom_tag1) + "-" + atom_symbol2 + str(atom_tag2) + " bond [" + str(
-        index1) + "-" + str(index2) + "]"
+    bond_title = (
+        atom_symbol1
+        + str(atom_tag1)
+        + "-"
+        + atom_symbol2
+        + str(atom_tag2)
+        + " bond ["
+        + str(index1)
+        + "-"
+        + str(index2)
+        + "]"
+    )
 
     if full:
         return bond_title, atom_label1, atom_label2
@@ -35,8 +45,18 @@ def getBondLabel(trajectory, index_pair, full=False):
         return bond_title
 
 
-def bondLengthStats(trajectory, index_pair, printScript=False, verbosity=1, timestep=None, yUnit="Angstroms",
-                    fitMin=None, fitMax=None, returnData=False, dataFile=None):
+def bondLengthStats(
+    trajectory,
+    index_pair,
+    printScript=False,
+    verbosity=1,
+    timestep=None,
+    yUnit="Angstroms",
+    fitMin=None,
+    fitMax=None,
+    returnData=False,
+    dataFile=None,
+):
     import mcol
     import mout
     import mplot
@@ -70,15 +90,32 @@ def bondLengthStats(trajectory, index_pair, printScript=False, verbosity=1, time
 
             ydata.append(dist)
 
-        val, err, fit_func = mplot.fit(xdata, ydata, rank=0, verbosity=verbosity - 1, fitMin=fitMin, fitMax=fitMax,
-                                       title=bond_title, yUnit=yUnit, xUnit=xUnit)
+        val, err, fit_func = mplot.fit(
+            xdata,
+            ydata,
+            rank=0,
+            verbosity=verbosity - 1,
+            fitMin=fitMin,
+            fitMax=fitMax,
+            title=bond_title,
+            yUnit=yUnit,
+            xUnit=xUnit,
+        )
 
     else:
 
         val = trajectory[0].get_distance(index1, index2)
         err = None
 
-    mout.varOut(bond_title, val, error=err, unit=yUnit, valCol=mcol.result, dataFile=dataFile, verbosity=verbosity)
+    mout.varOut(
+        bond_title,
+        val,
+        error=err,
+        unit=yUnit,
+        valCol=mcol.result,
+        dataFile=dataFile,
+        verbosity=verbosity,
+    )
 
     if returnData:
         return val, err, bond_title, xdata, ydata
@@ -86,8 +123,18 @@ def bondLengthStats(trajectory, index_pair, printScript=False, verbosity=1, time
         return val, err, bond_title
 
 
-def bondAngleStats(trajectory, index_triplet, printScript=False, verbosity=1, timestep=None, fitMin=None, fitMax=None,
-                   yUnit="degrees", returnData=False, dataFile=None):
+def bondAngleStats(
+    trajectory,
+    index_triplet,
+    printScript=False,
+    verbosity=1,
+    timestep=None,
+    fitMin=None,
+    fitMax=None,
+    yUnit="degrees",
+    returnData=False,
+    dataFile=None,
+):
     import mcol
     import mout
     import mplot
@@ -121,8 +168,23 @@ def bondAngleStats(trajectory, index_triplet, printScript=False, verbosity=1, ti
     atom_label2 = atom_symbol2 + str(atom_tag2) + "[" + str(index2) + "]"
     atom_label3 = atom_symbol3 + str(atom_tag3) + "[" + str(index3) + "]"
     labels = [atom_label1, atom_label2, atom_label3]
-    bond_title = atom_symbol1 + str(atom_tag1) + "-" + atom_symbol2 + str(atom_tag2) + "-" + atom_symbol3 + str(
-        atom_tag3) + " bond [" + str(index1) + "-" + str(index2) + "-" + str(index3) + "]"
+    bond_title = (
+        atom_symbol1
+        + str(atom_tag1)
+        + "-"
+        + atom_symbol2
+        + str(atom_tag2)
+        + "-"
+        + atom_symbol3
+        + str(atom_tag3)
+        + " bond ["
+        + str(index1)
+        + "-"
+        + str(index2)
+        + "-"
+        + str(index3)
+        + "]"
+    )
 
     xdata = []
     ydata = []
@@ -146,14 +208,31 @@ def bondAngleStats(trajectory, index_triplet, printScript=False, verbosity=1, ti
 
             ydata.append(ang)
 
-        val, err, fit_func = mplot.fit(xdata, ydata, rank=0, verbosity=verbosity - 1, fitMin=fitMin, fitMax=fitMax,
-                                       title=bond_title, yUnit=yUnit, xUnit=xUnit)
+        val, err, fit_func = mplot.fit(
+            xdata,
+            ydata,
+            rank=0,
+            verbosity=verbosity - 1,
+            fitMin=fitMin,
+            fitMax=fitMax,
+            title=bond_title,
+            yUnit=yUnit,
+            xUnit=xUnit,
+        )
 
     else:
         val = trajectory[0].get_angle(index1, index2, index3)
         err = None
 
-    mout.varOut(bond_title, val, error=err, unit=yUnit, valCol=mcol.result, dataFile=dataFile, verbosity=verbosity)
+    mout.varOut(
+        bond_title,
+        val,
+        error=err,
+        unit=yUnit,
+        valCol=mcol.result,
+        dataFile=dataFile,
+        verbosity=verbosity,
+    )
 
     if returnData:
         return val, err, bond_title, xdata, ydata
@@ -164,9 +243,11 @@ def bondAngleStats(trajectory, index_triplet, printScript=False, verbosity=1, ti
 def getCentreOfMass(atoms, verbosity=1):
     positions = getPositions(atoms)
 
-    this_com = [sum([pos[0] for pos in positions]) / len(positions),
-                sum([pos[1] for pos in positions]) / len(positions),
-                sum([pos[2] for pos in positions]) / len(positions)]
+    this_com = [
+        sum([pos[0] for pos in positions]) / len(positions),
+        sum([pos[1] for pos in positions]) / len(positions),
+        sum([pos[2] for pos in positions]) / len(positions),
+    ]
 
     if verbosity > 0:
         mout.varOut("CoM (" + str(atoms) + ")", this_com, unit="Å")

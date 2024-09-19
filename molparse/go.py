@@ -1,5 +1,19 @@
-def plot3d(atoms, extra=[], bonds=[], alpha=1.0, velocity=False, v_scale=1.0, fig=None, flat=False, show=True,
-           transform=None, title=None, plot_atoms=True, features=None, extra_labels=None):
+def plot3d(
+    atoms,
+    extra=[],
+    bonds=[],
+    alpha=1.0,
+    velocity=False,
+    v_scale=1.0,
+    fig=None,
+    flat=False,
+    show=True,
+    transform=None,
+    title=None,
+    plot_atoms=True,
+    features=None,
+    extra_labels=None,
+):
     """Render the atoms with plotly graph objects.
     extra can contain pairs of coordinates to be shown as vectors."""
 
@@ -25,18 +39,29 @@ def plot3d(atoms, extra=[], bonds=[], alpha=1.0, velocity=False, v_scale=1.0, fi
         from .rdkit import Feature
 
         if isinstance(features[0], Feature):
-            features = [dict(family=f.family, position=f.position, indices=None, x=f.x, y=f.y, z=f.z) for f in features]
+            features = [
+                dict(
+                    family=f.family,
+                    position=f.position,
+                    indices=None,
+                    x=f.x,
+                    y=f.y,
+                    z=f.z,
+                )
+                for f in features
+            ]
 
         import plotly.express as px
+
         px_fig = px.scatter_3d(
             features,
-            x='x',
-            y='y',
-            z='z',
-            color='family',
+            x="x",
+            y="y",
+            z="z",
+            color="family",
             size_max=100,
             size=[100] * len(features),
-            opacity=0.5
+            opacity=0.5,
         )
 
         for trace in px_fig.data:
@@ -54,9 +79,18 @@ def plot3d(atoms, extra=[], bonds=[], alpha=1.0, velocity=False, v_scale=1.0, fi
             x, y = zip(*transform(list(zip(x, y))))
 
         if flat:
-            trace = go.Scatter(x=x, y=y, mode='lines', name='bonds', line=dict(color='black', width=16))
+            trace = go.Scatter(
+                x=x, y=y, mode="lines", name="bonds", line=dict(color="black", width=16)
+            )
         else:
-            trace = go.Scatter3d(x=x, y=y, z=z, mode='lines', name='bonds', line=dict(color='black', width=16))
+            trace = go.Scatter3d(
+                x=x,
+                y=y,
+                z=z,
+                mode="lines",
+                name="bonds",
+                line=dict(color="black", width=16),
+            )
 
         fig.add_trace(trace)
 
@@ -77,7 +111,14 @@ def plot3d(atoms, extra=[], bonds=[], alpha=1.0, velocity=False, v_scale=1.0, fi
             y.extend([a[1], b[1], None])
             z.extend([a[2], b[2], None])
 
-        trace = go.Scatter3d(x=x, y=y, z=z, mode='lines', name='velocity', line=dict(color='red', width=16))
+        trace = go.Scatter3d(
+            x=x,
+            y=y,
+            z=z,
+            mode="lines",
+            name="velocity",
+            line=dict(color="red", width=16),
+        )
 
         fig.add_trace(trace)
 
@@ -94,32 +135,54 @@ def plot3d(atoms, extra=[], bonds=[], alpha=1.0, velocity=False, v_scale=1.0, fi
             if transform and flat:
                 x, y = zip(*transform(list(zip(x, y))))
 
-            data['x'] = x
-            data['y'] = y
-            data['z'] = z
+            data["x"] = x
+            data["y"] = y
+            data["z"] = z
 
             atomic_number = atomic_numbers[s]
             size = vdw_radii[atomic_number] * 15
             color = jmol_colors[atomic_number]
             color = (color[0] * 256, color[1] * 256, color[2] * 256, alpha)
 
-            data['index'] = [a.index for a in atom_subset]
-            data['residue'] = [a.residue for a in atom_subset]
-            data['res_number'] = [a.res_number for a in atom_subset]
-            data['name'] = [a.name for a in atom_subset]
+            data["index"] = [a.index for a in atom_subset]
+            data["residue"] = [a.residue for a in atom_subset]
+            data["res_number"] = [a.res_number for a in atom_subset]
+            data["name"] = [a.name for a in atom_subset]
 
             customdata = [
-                f'name={a.name}<br>chain={a.chain}<br>index={a.index}<br>number={a.number}<br>residue={a.residue}<br>res_index={a.res_index}<br>res_number={a.res_number}<br>x={a.x:.3f}<br>y={a.y:.3f}<br>z={a.z:.3f}'
-                for a in atom_subset]
+                f"name={a.name}<br>chain={a.chain}<br>index={a.index}<br>number={a.number}<br>residue={a.residue}<br>res_index={a.res_index}<br>res_number={a.res_number}<br>x={a.x:.3f}<br>y={a.y:.3f}<br>z={a.z:.3f}"
+                for a in atom_subset
+            ]
 
             if flat:
-                trace = go.Scatter(x=x, y=y, mode='markers', name=s,
-                                   marker=dict(size=size, color=f'rgba{color}', line=dict(color='black', width=2)),
-                                   customdata=customdata, hovertemplate="%{customdata}<extra></extra>")
+                trace = go.Scatter(
+                    x=x,
+                    y=y,
+                    mode="markers",
+                    name=s,
+                    marker=dict(
+                        size=size,
+                        color=f"rgba{color}",
+                        line=dict(color="black", width=2),
+                    ),
+                    customdata=customdata,
+                    hovertemplate="%{customdata}<extra></extra>",
+                )
             else:
-                trace = go.Scatter3d(x=x, y=y, z=z, mode='markers', name=s,
-                                     marker=dict(size=size, color=f'rgba{color}', line=dict(color='black', width=2)),
-                                     customdata=customdata, hovertemplate="%{customdata}<extra></extra>")
+                trace = go.Scatter3d(
+                    x=x,
+                    y=y,
+                    z=z,
+                    mode="markers",
+                    name=s,
+                    marker=dict(
+                        size=size,
+                        color=f"rgba{color}",
+                        line=dict(color="black", width=2),
+                    ),
+                    customdata=customdata,
+                    hovertemplate="%{customdata}<extra></extra>",
+                )
 
             fig.add_trace(trace)
 
@@ -128,17 +191,21 @@ def plot3d(atoms, extra=[], bonds=[], alpha=1.0, velocity=False, v_scale=1.0, fi
         if extra_labels:
 
             for (a, b), l in zip(extra, extra_labels):
-                trace = go.Scatter3d(x=[a[0], b[0]], y=[a[1], b[1]], z=[a[2], b[2]], name=l)
+                trace = go.Scatter3d(
+                    x=[a[0], b[0]], y=[a[1], b[1]], z=[a[2], b[2]], name=l
+                )
 
                 fig.add_trace(trace)
 
         else:
             for i, (a, b) in enumerate(extra):
-                trace = go.Scatter3d(x=[a[0], b[0]], y=[a[1], b[1]], z=[a[2], b[2]], name=f'extra[{i}]')
+                trace = go.Scatter3d(
+                    x=[a[0], b[0]], y=[a[1], b[1]], z=[a[2], b[2]], name=f"extra[{i}]"
+                )
 
                 fig.add_trace(trace)
 
-    fig.update_layout(scene_aspectmode='data')
+    fig.update_layout(scene_aspectmode="data")
 
     if title:
         fig.update_layout(title=title)

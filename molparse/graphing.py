@@ -9,19 +9,31 @@
 """
 
 
-def graphEnergy(trajectory, perAtom=True, filename=None, show=True, verbosity=2, kJpermol=False, xlab=None,
-                timestep=None, xmin=None, xmax=None, ymin=None, ymax=None):
+def graphEnergy(
+    trajectory,
+    perAtom=True,
+    filename=None,
+    show=True,
+    verbosity=2,
+    kJpermol=False,
+    xlab=None,
+    timestep=None,
+    xmin=None,
+    xmax=None,
+    ymin=None,
+    ymax=None,
+):
     import mcol
     import mout
     import mplot
     from ase import units
 
-    if (verbosity > 0):
-        mout.out("graphing " + mcol.varName +
-                 "Energy" +
-                 mcol.clear + " ... ",
-                 printScript=True,
-                 end='')  # user output
+    if verbosity > 0:
+        mout.out(
+            "graphing " + mcol.varName + "Energy" + mcol.clear + " ... ",
+            printScript=True,
+            end="",
+        )  # user output
 
     xdata = []
     ekins = []
@@ -63,26 +75,49 @@ def graphEnergy(trajectory, perAtom=True, filename=None, show=True, verbosity=2,
         ekins.append(ekin)
         etots.append(epot + ekin)
 
-    mplot.graph2D(xdata, [epots, ekins, etots], ytitles=["Potential", "Kinetic", "Total"], show=show, xlab=xlab,
-                  ylab=ylab, filename=filename, verbosity=verbosity - 1, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax)
+    mplot.graph2D(
+        xdata,
+        [epots, ekins, etots],
+        ytitles=["Potential", "Kinetic", "Total"],
+        show=show,
+        xlab=xlab,
+        ylab=ylab,
+        filename=filename,
+        verbosity=verbosity - 1,
+        xmin=xmin,
+        xmax=xmax,
+        ymin=ymin,
+        ymax=ymax,
+    )
 
-    if (verbosity > 0):
+    if verbosity > 0:
         mout.out("Done.")  # user output
 
 
-def graphForces(trajectory, filename=None, max=True, show=True, verbosity=2, xlab="Step", xmin=None, xmax=None,
-                ymin=None, ymax=None, yLog=False):
+def graphForces(
+    trajectory,
+    filename=None,
+    max=True,
+    show=True,
+    verbosity=2,
+    xlab="Step",
+    xmin=None,
+    xmax=None,
+    ymin=None,
+    ymax=None,
+    yLog=False,
+):
     import mcol
     import mout
     import mplot
     import numpy as np
 
-    if (verbosity > 0):
-        mout.out("graphing " + mcol.varName +
-                 "Forces" +
-                 mcol.clear + " ... ",
-                 printScript=True,
-                 end='')  # user output
+    if verbosity > 0:
+        mout.out(
+            "graphing " + mcol.varName + "Forces" + mcol.clear + " ... ",
+            printScript=True,
+            end="",
+        )  # user output
 
     xdata = []
     fmax = []
@@ -111,16 +146,32 @@ def graphForces(trajectory, filename=None, max=True, show=True, verbosity=2, xla
         ydata = favg
         ytitles = "Average"
 
-    mplot.graph2D(xdata, ydata, ytitles=ytitles, show=show, xlab=xlab, ylab=ylab, filename=filename,
-                  verbosity=verbosity - 1, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, ySci=True, yLog=yLog)
+    mplot.graph2D(
+        xdata,
+        ydata,
+        ytitles=ytitles,
+        show=show,
+        xlab=xlab,
+        ylab=ylab,
+        filename=filename,
+        verbosity=verbosity - 1,
+        xmin=xmin,
+        xmax=xmax,
+        ymin=ymin,
+        ymax=ymax,
+        ySci=True,
+        yLog=yLog,
+    )
 
-    if (verbosity > 0):
+    if verbosity > 0:
         mout.out("Done.")  # user output
 
 
-def graphDisplacement(trajectory, show=True, filename=None, relative=True, verbosity=2, timestep=None):
+def graphDisplacement(
+    trajectory, show=True, filename=None, relative=True, verbosity=2, timestep=None
+):
     """
-      Root Mean Square Displacement
+    Root Mean Square Displacement
 
     """
 
@@ -130,12 +181,12 @@ def graphDisplacement(trajectory, show=True, filename=None, relative=True, verbo
     import numpy as np
     from ase import units
 
-    if (verbosity > 0):
-        mout.out("graphing " + mcol.varName +
-                 "RMSD" +
-                 mcol.clear + " ... ",
-                 printScript=True,
-                 end='')  # user output
+    if verbosity > 0:
+        mout.out(
+            "graphing " + mcol.varName + "RMSD" + mcol.clear + " ... ",
+            printScript=True,
+            end="",
+        )  # user output
 
     xdata = []
     rmsd = []
@@ -152,28 +203,58 @@ def graphDisplacement(trajectory, show=True, filename=None, relative=True, verbo
         positions = atoms.get_positions()
 
         if relative:
-            if (n == 0):
+            if n == 0:
                 reference = positions.copy()
             positions -= reference
 
-        rmsd.append(np.sqrt(np.mean(positions ** 2)))
+        rmsd.append(np.sqrt(np.mean(positions**2)))
 
-    mplot.graph2D(xdata, rmsd, show=show, xlab="MD Steps", ylab="RMS Displacement", filename=filename,
-                  verbosity=verbosity - 1)
+    mplot.graph2D(
+        xdata,
+        rmsd,
+        show=show,
+        xlab="MD Steps",
+        ylab="RMS Displacement",
+        filename=filename,
+        verbosity=verbosity - 1,
+    )
 
-    if (verbosity > 0):
+    if verbosity > 0:
         mout.out("Done.")  # user output
 
 
-def graphBondLength(trajectory, indices, torsion_indices=None, printScript=False, show=True, filename=None, fitMin=None,
-                    fitMax=None, verbosity=2, timestep=None, title=None, fitOrder=None, yUnit="Angstroms",
-                    dataFile=None, ymin=0, ymax=None, xmin=None, xmax=None, noplot=False, write_data=False,
-                    write_ang=False, write_torsion=False, write_exang=False, debug_plot=False, return_data=False):
+def graphBondLength(
+    trajectory,
+    indices,
+    torsion_indices=None,
+    printScript=False,
+    show=True,
+    filename=None,
+    fitMin=None,
+    fitMax=None,
+    verbosity=2,
+    timestep=None,
+    title=None,
+    fitOrder=None,
+    yUnit="Angstroms",
+    dataFile=None,
+    ymin=0,
+    ymax=None,
+    xmin=None,
+    xmax=None,
+    noplot=False,
+    write_data=False,
+    write_ang=False,
+    write_torsion=False,
+    write_exang=False,
+    debug_plot=False,
+    return_data=False,
+):
     from .analysis import bondLengthStats
 
     """
       Graph the bond lengths (displacement) between atoms.
-  
+
     """
 
     # import mcol
@@ -199,18 +280,36 @@ def graphBondLength(trajectory, indices, torsion_indices=None, printScript=False
 
             if verbosity > 2:
                 print("")
-            val, err, label, xdata, this_data = bondLengthStats(trajectory, pair, printScript=printScript,
-                                                                verbosity=verbosity - 2, timestep=timestep, yUnit=yUnit,
-                                                                returnData=True)
+            val, err, label, xdata, this_data = bondLengthStats(
+                trajectory,
+                pair,
+                printScript=printScript,
+                verbosity=verbosity - 2,
+                timestep=timestep,
+                yUnit=yUnit,
+                returnData=True,
+            )
 
             labels.append(label)
             ydata.append(this_data)
 
         if fitOrder is None:
             if not noplot:
-                mplot.graph2D(xdata, ydata, ytitles=labels, show=show, xlab=xlab, ylab="Distance [Angstrom]",
-                              filename=filename, title=title, verbosity=verbosity - 1, ymin=ymin, ymax=ymax, xmin=xmin,
-                              xmax=xmax)
+                mplot.graph2D(
+                    xdata,
+                    ydata,
+                    ytitles=labels,
+                    show=show,
+                    xlab=xlab,
+                    ylab="Distance [Angstrom]",
+                    filename=filename,
+                    title=title,
+                    verbosity=verbosity - 1,
+                    ymin=ymin,
+                    ymax=ymax,
+                    xmin=xmin,
+                    xmax=xmax,
+                )
         else:
             if verbosity > 1:
                 print("")
@@ -218,29 +317,71 @@ def graphBondLength(trajectory, indices, torsion_indices=None, printScript=False
                 mout.warningOut("Not enough data-points for fitting.")
                 fitOrder = None
             if title is not None:
-                dataFile.write('# ')
+                dataFile.write("# ")
                 dataFile.write(title)
-                dataFile.write('\n')
-            val, err, fit_func = mplot.fit(xdata, ydata, rank=fitOrder, verbosity=verbosity - 1, title=title,
-                                           fitMin=fitMin, fitMax=fitMax, yUnit=yUnit, xUnit=xUnit, dataFile=dataFile)
+                dataFile.write("\n")
+            val, err, fit_func = mplot.fit(
+                xdata,
+                ydata,
+                rank=fitOrder,
+                verbosity=verbosity - 1,
+                title=title,
+                fitMin=fitMin,
+                fitMax=fitMax,
+                yUnit=yUnit,
+                xUnit=xUnit,
+                dataFile=dataFile,
+            )
             text = mplot.getCoeffStr(val, err, 1, yUnit=yUnit, xUnit=xUnit)
             if not noplot:
-                mplot.graph2D(xdata, ydata, fitFunc=fit_func, ytitles=labels, show=show, xlab=xlab,
-                              ylab="Distance [Angstrom]", filename=filename, title=title, verbosity=verbosity,
-                              subtitle=text, ymin=ymin, ymax=ymax, xmin=xmin, xmax=xmax)
+                mplot.graph2D(
+                    xdata,
+                    ydata,
+                    fitFunc=fit_func,
+                    ytitles=labels,
+                    show=show,
+                    xlab=xlab,
+                    ylab="Distance [Angstrom]",
+                    filename=filename,
+                    title=title,
+                    verbosity=verbosity,
+                    subtitle=text,
+                    ymin=ymin,
+                    ymax=ymax,
+                    xmin=xmin,
+                    xmax=xmax,
+                )
 
     else:
 
         if verbosity > 2:
             print("")
-        val, err, label, xdata, ydata = bondLengthStats(trajectory, indices, printScript=printScript,
-                                                        verbosity=verbosity - 2, timestep=timestep, yUnit=yUnit,
-                                                        returnData=True)
+        val, err, label, xdata, ydata = bondLengthStats(
+            trajectory,
+            indices,
+            printScript=printScript,
+            verbosity=verbosity - 2,
+            timestep=timestep,
+            yUnit=yUnit,
+            returnData=True,
+        )
 
         if fitOrder is None:
             if not noplot:
-                mplot.graph2D(xdata, ydata, show=show, xlab=xlab, ylab="Distance [Angstrom]", filename=filename,
-                              title=label, verbosity=verbosity - 1, ymin=ymin, ymax=ymax, xmin=xmin, xmax=xmax)
+                mplot.graph2D(
+                    xdata,
+                    ydata,
+                    show=show,
+                    xlab=xlab,
+                    ylab="Distance [Angstrom]",
+                    filename=filename,
+                    title=label,
+                    verbosity=verbosity - 1,
+                    ymin=ymin,
+                    ymax=ymax,
+                    xmin=xmin,
+                    xmax=xmax,
+                )
         else:
             if verbosity > 1:
                 print("")
@@ -248,23 +389,47 @@ def graphBondLength(trajectory, indices, torsion_indices=None, printScript=False
                 mout.warningOut("Not enough data-points for fitting.")
                 fitOrder = None
             if title is not None:
-                dataFile.write('#')
+                dataFile.write("#")
                 dataFile.write(title)
-                dataFile.write('\n')
-            val, err, fit_func = mplot.fit(xdata, ydata, rank=fitOrder, verbosity=verbosity - 1, fitMin=fitMin,
-                                           fitMax=fitMax, title=title, yUnit=yUnit, xUnit=xUnit, dataFile=dataFile)
+                dataFile.write("\n")
+            val, err, fit_func = mplot.fit(
+                xdata,
+                ydata,
+                rank=fitOrder,
+                verbosity=verbosity - 1,
+                fitMin=fitMin,
+                fitMax=fitMax,
+                title=title,
+                yUnit=yUnit,
+                xUnit=xUnit,
+                dataFile=dataFile,
+            )
             text = mplot.getCoeffStr(val, err, 1, yUnit=yUnit, xUnit=xUnit)
             if not noplot:
-                mplot.graph2D(xdata, ydata, fitFunc=fit_func, show=show, xlab=xlab, ylab="Distance [Angstrom]",
-                              filename=filename, title=label, verbosity=verbosity, subtitle=text, ymin=ymin, ymax=ymax,
-                              xmin=xmin, xmax=xmax)
+                mplot.graph2D(
+                    xdata,
+                    ydata,
+                    fitFunc=fit_func,
+                    show=show,
+                    xlab=xlab,
+                    ylab="Distance [Angstrom]",
+                    filename=filename,
+                    title=label,
+                    verbosity=verbosity,
+                    subtitle=text,
+                    ymin=ymin,
+                    ymax=ymax,
+                    xmin=xmin,
+                    xmax=xmax,
+                )
 
     if write_data:
 
         import os
+
         # base=os.path.basename(filename)
         # data_dump = open(os.path.splitext(base)[0]+".dat",'w')
-        data_dump = open(filename.replace(".png", ".dat"), 'w')
+        data_dump = open(filename.replace(".png", ".dat"), "w")
 
         if many:
 
@@ -300,11 +465,15 @@ def graphBondLength(trajectory, indices, torsion_indices=None, printScript=False
 
                     # DC:N1 -> DC:N3
                     # print(3,symbols[torsion_indices[3]],symbols[torsion_indices[2]])
-                    vec1p = positions[torsion_indices[3]] - positions[torsion_indices[2]]
+                    vec1p = (
+                        positions[torsion_indices[3]] - positions[torsion_indices[2]]
+                    )
 
                     # DG:C4 -> DG:N1
                     # print(4,symbols[torsion_indices[7]],symbols[torsion_indices[6]])
-                    vec2p = positions[torsion_indices[7]] - positions[torsion_indices[6]]
+                    vec2p = (
+                        positions[torsion_indices[7]] - positions[torsion_indices[6]]
+                    )
 
                     vec1pp = np.cross(vec1, vec1p)
                     vec2pp = np.cross(vec2, vec2p)
@@ -344,6 +513,7 @@ def graphBondLength(trajectory, indices, torsion_indices=None, printScript=False
 
                 if debug_plot:
                     import matplotlib.pyplot as plt
+
                     fig, ax = plt.subplots()
                     plt.plot(xdata, ydata[0], label="bot")
                     # plt.plot(xdata,ydata[1],label="mid")
@@ -353,7 +523,7 @@ def graphBondLength(trajectory, indices, torsion_indices=None, printScript=False
                     plt.plot(xdata, exangdata2, label="phi")
                     plt.plot(xdata, torsdata, label="tors")
                     ax.set_xlim(0, xdata[100])
-                    plt.legend(loc='best')
+                    plt.legend(loc="best")
                     plt.show()
                     plt.close()
                     exit()
@@ -374,7 +544,7 @@ def graphBondLength(trajectory, indices, torsion_indices=None, printScript=False
                     angdata.append(angle)
 
             # data_dump = open(os.path.splitext(base)[0]+".dat",'a')
-            data_dump = open(filename.replace(".png", ".dat"), 'a')
+            data_dump = open(filename.replace(".png", ".dat"), "a")
 
             for index, x in enumerate(xdata):
                 # data_dump.write(str(xdata[index])+" ")
@@ -400,7 +570,7 @@ def graphBondLength(trajectory, indices, torsion_indices=None, printScript=False
             data_dump.close()
 
             # data_dump = open(os.path.splitext(base)[0]+".dat",'a')
-            data_dump = open(filename.replace(".png", ".dat"), 'a')
+            data_dump = open(filename.replace(".png", ".dat"), "a")
 
             for index, x in enumerate(xdata):
                 data_dump.write(str(xdata[index]) + " ")
@@ -421,9 +591,23 @@ def graphBondLength(trajectory, indices, torsion_indices=None, printScript=False
         return None, None, None
 
 
-def graphBondVibSpec(trajectory, indices, printScript=False, show=True, filename=None, verbosity=2, timestep=None,
-                     title=None, ymin=None, ymax=None, power_spec=False, power_segment=None, wave_number=False,
-                     xlab="Frequency [Hz]", write_data=False):
+def graphBondVibSpec(
+    trajectory,
+    indices,
+    printScript=False,
+    show=True,
+    filename=None,
+    verbosity=2,
+    timestep=None,
+    title=None,
+    ymin=None,
+    ymax=None,
+    power_spec=False,
+    power_segment=None,
+    wave_number=False,
+    xlab="Frequency [Hz]",
+    write_data=False,
+):
     # import mcol
     import mout
     import mplot
@@ -431,7 +615,7 @@ def graphBondVibSpec(trajectory, indices, printScript=False, show=True, filename
 
     """
       Graph the fourier transfort of bond lengths (displacement) between atoms.
-  
+
     """
 
     # if (verbosity > 0):
@@ -469,20 +653,23 @@ def graphBondVibSpec(trajectory, indices, printScript=False, show=True, filename
         # import scipy
         import scipy.fftpack
 
-        Ydata = scipy.fftpack.fft(ydata)[:len(ydata) // 2]
+        Ydata = scipy.fftpack.fft(ydata)[: len(ydata) // 2]
 
         if timestep is not None:
-            Xdata = scipy.fftpack.fftfreq(n, timestep)[:len(ydata) // 2]
+            Xdata = scipy.fftpack.fftfreq(n, timestep)[: len(ydata) // 2]
         else:
-            Xdata = xdata[:len(ydata) // 2]
+            Xdata = xdata[: len(ydata) // 2]
 
         if power_spec:
             if timestep is None:
                 mout.errorOut("Timestep required for power spectrum", fatal=True)
             import scipy.signal
+
             if power_segment is None:
                 power_segment = len(ydata) // 10
-            f, Pxx_den = scipy.signal.welch(ydata, fs=1 / timestep, nperseg=power_segment)
+            f, Pxx_den = scipy.signal.welch(
+                ydata, fs=1 / timestep, nperseg=power_segment
+            )
 
             Xdata = f
             Ydata = Pxx_den
@@ -502,14 +689,25 @@ def graphBondVibSpec(trajectory, indices, printScript=False, show=True, filename
         # if ymax is None:
         #   ymax=max(ydata)
 
-        mplot.graph2D(Xdata, Ydata, ytitles=bond_label, show=show, filename=filename, verbosity=verbosity - 1,
-                      yLog=True, ymin=ymin, ymax=ymax, xlab=xlab)
+        mplot.graph2D(
+            Xdata,
+            Ydata,
+            ytitles=bond_label,
+            show=show,
+            filename=filename,
+            verbosity=verbosity - 1,
+            yLog=True,
+            ymin=ymin,
+            ymax=ymax,
+            xlab=xlab,
+        )
 
         if write_data:
 
             import os
+
             base = os.path.basename(filename)
-            data_dump = open(os.path.splitext(base)[0] + ".dat", 'w')
+            data_dump = open(os.path.splitext(base)[0] + ".dat", "w")
 
             if many:
 
@@ -518,7 +716,7 @@ def graphBondVibSpec(trajectory, indices, printScript=False, show=True, filename
                 data_dump.write("# x " + str(labels) + "\n")
                 data_dump.close()
 
-                data_dump = open(os.path.splitext(base)[0] + ".dat", 'a')
+                data_dump = open(os.path.splitext(base)[0] + ".dat", "a")
 
                 for index, x in enumerate(xdata):
                     data_dump.write(str(xdata[index]) + " ")
@@ -536,7 +734,7 @@ def graphBondVibSpec(trajectory, indices, printScript=False, show=True, filename
                     data_dump.write("# frequency [Hz], " + bond_label + "\n")
                 data_dump.close()
 
-                data_dump = open(os.path.splitext(base)[0] + ".dat", 'a')
+                data_dump = open(os.path.splitext(base)[0] + ".dat", "a")
 
                 for index, x in enumerate(Xdata):
                     data_dump.write(str(Xdata[index]) + " ")
@@ -551,16 +749,32 @@ def showFigs(verbosity=1):
     mplot.show(verbosity=verbosity)
 
 
-def graphBondAngle(trajectory, indices, printScript=False, show=True, filename=None, fitMin=None, fitMax=None,
-                   verbosity=2, timestep=None, title=None, fitOrder=None, yUnit="Degrees", dataFile=None, ymin=0,
-                   ymax=180, xmin=None, xmax=None):
+def graphBondAngle(
+    trajectory,
+    indices,
+    printScript=False,
+    show=True,
+    filename=None,
+    fitMin=None,
+    fitMax=None,
+    verbosity=2,
+    timestep=None,
+    title=None,
+    fitOrder=None,
+    yUnit="Degrees",
+    dataFile=None,
+    ymin=0,
+    ymax=180,
+    xmin=None,
+    xmax=None,
+):
     import mout
     import mplot
     from .analysis import bondAngleStats
 
     """
       Graph the bond angle (acute) between atoms.
-  
+
     """
 
     many = any(isinstance(el, list) for el in indices)
@@ -581,16 +795,31 @@ def graphBondAngle(trajectory, indices, printScript=False, show=True, filename=N
 
             if verbosity > 2:
                 print("")
-            val, err, label, xdata, this_data = bondAngleStats(trajectory, triple, printScript=printScript,
-                                                               verbosity=verbosity - 2, timestep=timestep, yUnit=yUnit,
-                                                               returnData=True)
+            val, err, label, xdata, this_data = bondAngleStats(
+                trajectory,
+                triple,
+                printScript=printScript,
+                verbosity=verbosity - 2,
+                timestep=timestep,
+                yUnit=yUnit,
+                returnData=True,
+            )
 
             labels.append(label)
             ydata.append(this_data)
 
         if fitOrder is None:
-            mplot.graph2D(xdata, ydata, ytitles=labels, show=show, xlab=xlab, ylab="Distance [Angstrom]",
-                          filename=filename, title=title, verbosity=verbosity - 1)
+            mplot.graph2D(
+                xdata,
+                ydata,
+                ytitles=labels,
+                show=show,
+                xlab=xlab,
+                ylab="Distance [Angstrom]",
+                filename=filename,
+                title=title,
+                verbosity=verbosity - 1,
+            )
         else:
             if verbosity > 1:
                 print("")
@@ -598,27 +827,65 @@ def graphBondAngle(trajectory, indices, printScript=False, show=True, filename=N
                 mout.warningOut("Not enough data-points for fitting.")
                 fitOrder = None
             if title is not None:
-                dataFile.write('#')
+                dataFile.write("#")
                 dataFile.write(title)
-                dataFile.write('\n')
-            val, err, fit_func = mplot.fit(xdata, ydata, rank=fitOrder, verbosity=verbosity - 1, title=title,
-                                           fitMin=fitMin, fitMax=fitMax, yUnit=yUnit, xUnit=xUnit, dataFile=dataFile)
+                dataFile.write("\n")
+            val, err, fit_func = mplot.fit(
+                xdata,
+                ydata,
+                rank=fitOrder,
+                verbosity=verbosity - 1,
+                title=title,
+                fitMin=fitMin,
+                fitMax=fitMax,
+                yUnit=yUnit,
+                xUnit=xUnit,
+                dataFile=dataFile,
+            )
             text = mplot.getCoeffStr(val, err, 1, yUnit=yUnit, xUnit=xUnit)
-            mplot.graph2D(xdata, ydata, fitFunc=fit_func, ytitles=labels, show=show, xlab=xlab, ylab="Angle [Degrees]",
-                          filename=filename, title=title, verbosity=verbosity, subtitle=text, ymin=ymin, ymax=ymax,
-                          xmin=xmin, xmax=xmax)
+            mplot.graph2D(
+                xdata,
+                ydata,
+                fitFunc=fit_func,
+                ytitles=labels,
+                show=show,
+                xlab=xlab,
+                ylab="Angle [Degrees]",
+                filename=filename,
+                title=title,
+                verbosity=verbosity,
+                subtitle=text,
+                ymin=ymin,
+                ymax=ymax,
+                xmin=xmin,
+                xmax=xmax,
+            )
 
     else:
 
         if verbosity > 2:
             print("")
-        val, err, label, xdata, ydata = bondAngleStats(trajectory, indices, printScript=printScript,
-                                                       verbosity=verbosity - 2, timestep=timestep, yUnit=yUnit,
-                                                       returnData=True)
+        val, err, label, xdata, ydata = bondAngleStats(
+            trajectory,
+            indices,
+            printScript=printScript,
+            verbosity=verbosity - 2,
+            timestep=timestep,
+            yUnit=yUnit,
+            returnData=True,
+        )
 
         if fitOrder is None:
-            mplot.graph2D(xdata, ydata, show=show, xlab=xlab, ylab="Distance [Angstrom]", filename=filename,
-                          title=label, verbosity=verbosity - 1)
+            mplot.graph2D(
+                xdata,
+                ydata,
+                show=show,
+                xlab=xlab,
+                ylab="Distance [Angstrom]",
+                filename=filename,
+                title=label,
+                verbosity=verbosity - 1,
+            )
         else:
             if verbosity > 1:
                 print("")
@@ -626,15 +893,38 @@ def graphBondAngle(trajectory, indices, printScript=False, show=True, filename=N
                 mout.warningOut("Not enough data-points for fitting.")
                 fitOrder = None
             if title is not None:
-                dataFile.write('# ')
+                dataFile.write("# ")
                 dataFile.write(title)
-                dataFile.write('\n')
-            val, err, fit_func = mplot.fit(xdata, ydata, rank=fitOrder, verbosity=verbosity - 1, fitMin=fitMin,
-                                           fitMax=fitMax, title=title, yUnit=yUnit, xUnit=xUnit, dataFile=dataFile)
+                dataFile.write("\n")
+            val, err, fit_func = mplot.fit(
+                xdata,
+                ydata,
+                rank=fitOrder,
+                verbosity=verbosity - 1,
+                fitMin=fitMin,
+                fitMax=fitMax,
+                title=title,
+                yUnit=yUnit,
+                xUnit=xUnit,
+                dataFile=dataFile,
+            )
             text = mplot.getCoeffStr(val, err, 1, yUnit=yUnit, xUnit=xUnit)
-            mplot.graph2D(xdata, ydata, fitFunc=fit_func, show=show, xlab=xlab, ylab="Distance [Angstrom]",
-                          filename=filename, title=label, verbosity=verbosity, subtitle=text, ymin=ymin, ymax=ymax,
-                          xmin=xmin, xmax=xmax)
+            mplot.graph2D(
+                xdata,
+                ydata,
+                fitFunc=fit_func,
+                show=show,
+                xlab=xlab,
+                ylab="Distance [Angstrom]",
+                filename=filename,
+                title=label,
+                verbosity=verbosity,
+                subtitle=text,
+                ymin=ymin,
+                ymax=ymax,
+                xmin=xmin,
+                xmax=xmax,
+            )
 
     if fitOrder is not None:
         return val, err, fit_func

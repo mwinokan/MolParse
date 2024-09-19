@@ -4,7 +4,7 @@
 MolParse
 ========
 
-A python package for parsing, modifying, and analysis of molecular structure files. 
+A python package for parsing, modifying, and analysis of molecular structure files.
 
 It is recommended to import as the acronym:
 
@@ -53,13 +53,13 @@ Parsing coordinate files into System objects
 * Functions to render images and animations of ASE Atoms:
 
 	with matplotlib:
-		mp.makeImage, 
-		mp.makeImages, 
+		mp.makeImage,
+		mp.makeImages,
 		mp.makeAnimation
 
 	with PoVRay:
-		mp.makePovImage, 
-		mp.makePovImages, 
+		mp.makePovImage,
+		mp.makePovImages,
 		mp.makePovAnimation
 
 * Methods relating to DNA:
@@ -80,7 +80,7 @@ Parsing coordinate files into System objects
 
 """
 
-__version__ = '0.0.30'
+__version__ = "0.0.30"
 
 # from .version import import_checks
 # import_checks()
@@ -185,6 +185,7 @@ from .convert import xyz2traj  # needs documentation
 
 from . import styles
 from . import units
+
 # from . import dl_poly
 from . import dna
 from . import signal

@@ -4,7 +4,8 @@ from .group import AtomGroup
 # from enum import Enum
 # class UnknownSiteHandlingMethod(Enum):
 #   IGNORE = 0 # atoms with no alternative sites are ignored when separating
-#   UNION = 1  # all atoms with no alternative sites are added to each separated residue     
+#   UNION = 1  # all atoms with no alternative sites are added to each separated residue
+
 
 class Residue(AtomGroup):
     """Class for chemical Residue
@@ -13,7 +14,14 @@ class Residue(AtomGroup):
     but constructed automatically when parsing a
     coordinate file via amp.parsePDB or otherwise"""
 
-    def __init__(self, name: str, index: int = None, number: int = None, chain: str = None, atoms=None):
+    def __init__(
+        self,
+        name: str,
+        index: int = None,
+        number: int = None,
+        chain: str = None,
+        atoms=None,
+    ):
 
         super(Residue, self).__init__(name)
 
@@ -22,6 +30,7 @@ class Residue(AtomGroup):
         self._number = number
 
         from .list import NamedList
+
         self._atoms = NamedList()
 
         if atoms:
@@ -38,32 +47,44 @@ class Residue(AtomGroup):
                         residue=self.name,
                         res_number=self.number,
                         chain=self.chain,
-                    ))
+                    )
+                )
 
         self._parent = None
 
     @property
     def alternative_sites(self):
         if self.contains_alternative_sites:
-            return list(set([a.alternative_site for a in self.atoms if a.alternative_site is not None]))
+            return list(
+                set(
+                    [
+                        a.alternative_site
+                        for a in self.atoms
+                        if a.alternative_site is not None
+                    ]
+                )
+            )
 
         return []
 
-    def split_by_site(self, unknown_site_handling='ignore'):
+    def split_by_site(self, unknown_site_handling="ignore"):
         """return a list of Residue objects, one for each site"""
         if self.contains_alternative_sites:
             ignore_count = 0
             separated_residues = []
             import mout
+
             # mout.debug(f'{self.alternative_sites=}')
             for site in self.alternative_sites:
 
-                res = Residue(self.name, index=self.index, number=self.number, chain=self.chain)
+                res = Residue(
+                    self.name, index=self.index, number=self.number, chain=self.chain
+                )
                 for atom in self.atoms:
                     if atom.alternative_site == site:
                         res.add_atom(atom)
                     elif atom.alternative_site is None:
-                        if unknown_site_handling == 'union':
+                        if unknown_site_handling == "union":
                             res.add_atom(atom)
                         else:
                             ignore_count += 1
@@ -72,7 +93,10 @@ class Residue(AtomGroup):
 
             if ignore_count:
                 import mout
-                mout.warning(f'Ignored {ignore_count} atoms with no alternative site [{self.name_number_str}]')
+
+                mout.warning(
+                    f"Ignored {ignore_count} atoms with no alternative site [{self.name_number_str}]"
+                )
 
             return separated_residues
         else:
@@ -80,11 +104,11 @@ class Residue(AtomGroup):
 
     @property
     def name_number_str(self):
-        return f'{self.name} {self.number}'
+        return f"{self.name} {self.number}"
 
     @property
     def name_number_chain_str(self):
-        return f'{self.name} {self.number} {self.chain}'
+        return f"{self.name} {self.number} {self.chain}"
 
     @property
     def parent(self):
@@ -101,10 +125,21 @@ class Residue(AtomGroup):
         if verbosity > 0:
             import mcol
             import mout
-            mout.out("Renaming residue " +
-                     mcol.arg + self.name + str([self.number]) + mcol.clear + " of chain " +
-                     mcol.varName + self.chain +
-                     mcol.clear + " to " + mcol.arg + new)
+
+            mout.out(
+                "Renaming residue "
+                + mcol.arg
+                + self.name
+                + str([self.number])
+                + mcol.clear
+                + " of chain "
+                + mcol.varName
+                + self.chain
+                + mcol.clear
+                + " to "
+                + mcol.arg
+                + new
+            )
         self._name = new
         self.fix_names()
 
@@ -128,6 +163,7 @@ class Residue(AtomGroup):
     @property
     def ase_atoms(self):
         from ase import Atoms
+
         atoms = self.atoms
         symbols = [a.symbol for a in atoms]
         positions = [a.position for a in atoms]
@@ -136,6 +172,7 @@ class Residue(AtomGroup):
     def view(self):
         """View the system with ASE"""
         from .gui import view
+
         view(self.ase_atoms)
 
     def fix_names(self):
@@ -183,6 +220,7 @@ class Residue(AtomGroup):
     def addAtom(self, atom, copy=True):
         """add an Atom"""
         from .atom import Atom
+
         assert isinstance(atom, Atom)
 
         if copy:
@@ -213,6 +251,7 @@ class Residue(AtomGroup):
     def print(self):
         """Verbose output of the Residue's properties"""
         import mout
+
         mout.varOut("Residue Name", self.name)
         mout.varOut("Residue Chain", self.chain)
         mout.varOut("Residue Number", self.number)
@@ -229,15 +268,25 @@ class Residue(AtomGroup):
             return [self.get_atom(n, verbosity=verbosity - 1) for n in name]
 
         for atom in self._atoms:
-            if atom.name == name: return atom
+            if atom.name == name:
+                return atom
 
         import mout
         import mcol
+
         if verbosity > 0:
-            mout.errorOut("No atom " +
-                          mcol.arg + name +
-                          mcol.error + " in residue " +
-                          mcol.arg + self.name + str([self.number]), fatal=False, code="Residue.1")
+            mout.errorOut(
+                "No atom "
+                + mcol.arg
+                + name
+                + mcol.error
+                + " in residue "
+                + mcol.arg
+                + self.name
+                + str([self.number]),
+                fatal=False,
+                code="Residue.1",
+            )
         return None
 
     def set_positions(self, positions):
@@ -287,6 +336,7 @@ class Residue(AtomGroup):
         """Delete a child Atom by name"""
         import mcol
         import mout
+
         if isinstance(name, list):
             for n in name:
                 self.delete_atom(n, verbosity=verbosity - 1)
@@ -295,18 +345,34 @@ class Residue(AtomGroup):
             if atom.name == name:
                 del self._atoms[index]
                 if verbosity > 0:
-                    mout.warningOut("Deleted " + mcol.result + "1" +
-                                    mcol.warning + " atom of name " +
-                                    mcol.arg + name +
-                                    mcol.warning + " in residue " +
-                                    mcol.arg + self.name)
+                    mout.warningOut(
+                        "Deleted "
+                        + mcol.result
+                        + "1"
+                        + mcol.warning
+                        + " atom of name "
+                        + mcol.arg
+                        + name
+                        + mcol.warning
+                        + " in residue "
+                        + mcol.arg
+                        + self.name
+                    )
                 return
         if verbosity > 1:
-            mout.warningOut("Deleted " + mcol.result + "0" +
-                            mcol.warning + " atom of name " +
-                            mcol.arg + name +
-                            mcol.warning + " in residue " +
-                            mcol.arg + self.name)
+            mout.warningOut(
+                "Deleted "
+                + mcol.result
+                + "0"
+                + mcol.warning
+                + " atom of name "
+                + mcol.arg
+                + name
+                + mcol.warning
+                + " in residue "
+                + mcol.arg
+                + self.name
+            )
 
     def copy(self, fast: bool = False):
         """Return a deepcopy of the Residue"""
@@ -317,6 +383,7 @@ class Residue(AtomGroup):
             return new_residue
         else:
             import copy
+
             return copy.deepcopy(self)
 
     def get_distance(self, i: str, j: str):
@@ -353,14 +420,18 @@ class Residue(AtomGroup):
         """Summarised output of the Residue"""
         import mout
         import mcol
+
         mout.headerOut(
-            f'\nResidue {self.name}, index={self.index}, number={self.number}, chain={self.chain}, #atoms={self.num_atoms}')
+            f"\nResidue {self.name}, index={self.index}, number={self.number}, chain={self.chain}, #atoms={self.num_atoms}"
+        )
 
         mout.out(
-            f"{mcol.underline}{'Sy':2} {'NAME':4} {'INDEX':>6} {'NUMBER':>6} {'X':>7} {'Y':>7} {'Z':>7} {'Alt.':>4}{mcol.clear} ")
+            f"{mcol.underline}{'Sy':2} {'NAME':4} {'INDEX':>6} {'NUMBER':>6} {'X':>7} {'Y':>7} {'Z':>7} {'Alt.':>4}{mcol.clear} "
+        )
         for atom in self.atoms:
             mout.out(
-                f'{atom.symbol:2} {atom.name:4} {atom.index if atom.index is not None else " ":>6} {atom.number if atom.number is not None else " ":>6} {atom.x:>7.2f} {atom.y:>7.2f} {atom.z:>7.2f} {atom.alternative_site or " ":>4}')
+                f'{atom.symbol:2} {atom.name:4} {atom.index if atom.index is not None else " ":>6} {atom.number if atom.number is not None else " ":>6} {atom.x:>7.2f} {atom.y:>7.2f} {atom.z:>7.2f} {atom.alternative_site or " ":>4}'
+            )
 
     def is_same_as(self, residue):
         assert isinstance(residue, Residue)
@@ -385,9 +456,10 @@ class Residue(AtomGroup):
     def children(self):
         return self.atoms
 
-    def prune_alternative_sites(self, site='A', verbosity=1):
+    def prune_alternative_sites(self, site="A", verbosity=1):
         """Remove atoms with alternative sites"""
         import mout
+
         count = 0
         delete_list = []
         for index, atom in enumerate(self.atoms):
@@ -407,31 +479,73 @@ class Residue(AtomGroup):
 
         return count
 
+
 RES_TYPES = {
-    'DNA': ('DA', 'DT', 'DC', 'DG', 'ADE9', 'THMN', 'GUA9', 'CTSN', 'DOG'),
-    'SOL': ('SOL', 'WAT', 'TIP', 'T3P', 'HOH', 'PEG', 'SO4', 'DMS', 'H2S'),
-    'ION': ('ION', 'MG', 'CL', 'NA', 'SOD', 'POT', 'CAL', 'LIT', 'Na+', 'Cl-', 'CA', 'ZN'),
-    'LIP': ('DPPC', 'POPC', 'DAG', 'TAG'),
-    'LIG': ('ATP', 'GTP', 'LIG', 'UNL', 'CTP', 'TTP', 'OGTP', 'TRS', 'APR'),
-    'N/A': ('QM', 'MM'),
-    'PRO': ("ALA", "ARG", "ASN", "ASP", "CYS", "GLN", "GLU", "GLY", "HSD", "HSE", "HIS",
-            "ILE", "LEU", "LYS", "MET", "PHE", "PRO", "SER", "THR", "TRP", "TYR", "VAL",
-            "HID", "HIE", "HIP", "HSP"),
+    "DNA": ("DA", "DT", "DC", "DG", "ADE9", "THMN", "GUA9", "CTSN", "DOG"),
+    "SOL": ("SOL", "WAT", "TIP", "T3P", "HOH", "PEG", "SO4", "DMS", "H2S"),
+    "ION": (
+        "ION",
+        "MG",
+        "CL",
+        "NA",
+        "SOD",
+        "POT",
+        "CAL",
+        "LIT",
+        "Na+",
+        "Cl-",
+        "CA",
+        "ZN",
+    ),
+    "LIP": ("DPPC", "POPC", "DAG", "TAG"),
+    "LIG": ("ATP", "GTP", "LIG", "UNL", "CTP", "TTP", "OGTP", "TRS", "APR"),
+    "N/A": ("QM", "MM"),
+    "PRO": (
+        "ALA",
+        "ARG",
+        "ASN",
+        "ASP",
+        "CYS",
+        "GLN",
+        "GLU",
+        "GLY",
+        "HSD",
+        "HSE",
+        "HIS",
+        "ILE",
+        "LEU",
+        "LYS",
+        "MET",
+        "PHE",
+        "PRO",
+        "SER",
+        "THR",
+        "TRP",
+        "TYR",
+        "VAL",
+        "HID",
+        "HIE",
+        "HIP",
+        "HSP",
+    ),
 }
 
 EXTRA_TYPES = {}
 
-WARNED_TYPES = [] 
+WARNED_TYPES = []
 
 WARN_UNKNOWN_RES = True
+
 
 def add_res_type(resname, type):
     global EXTRA_TYPES
     EXTRA_TYPES[resname] = type
 
+
 def silence_unknown_res_warning():
     global WARN_UNKNOWN_RES
     WARN_UNKNOWN_RES = False
+
 
 def res_type(resname):
     """Guess type from residue name"""
@@ -446,17 +560,23 @@ def res_type(resname):
             return k
 
     # Amber style amino acid termini
-    if resname[0] in ("N", "C") and len(resname) == 4 and resname[1:] in RES_TYPES['PRO']:
-        return 'PRO'
+    if (
+        resname[0] in ("N", "C")
+        and len(resname) == 4
+        and resname[1:] in RES_TYPES["PRO"]
+    ):
+        return "PRO"
 
     # Chromophore
-    if resname in ['SYG','CRO','NTYG','DGLU','AS2T','SYTY','ASYG']:
-        return 'PRO'
+    if resname in ["SYG", "CRO", "NTYG", "DGLU", "AS2T", "SYTY", "ASYG"]:
+        return "PRO"
 
     import mcol
     import mout
 
     if WARN_UNKNOWN_RES and resname not in WARNED_TYPES:
-        mout.warningOut(f"Unknown residue type for {mcol.arg}{resname}{mcol.warning}. Defaulted to {mcol.arg}LIG")
+        mout.warningOut(
+            f"Unknown residue type for {mcol.arg}{resname}{mcol.warning}. Defaulted to {mcol.arg}LIG"
+        )
         WARNED_TYPES.append(resname)
-    return 'LIG'
+    return "LIG"

@@ -5,6 +5,7 @@
 [![Documentation Status](https://readthedocs.org/projects/hippo-db/badge/?version=latest)](https://molparse.winokan.com/en/latest/?badge=latest)
 ![GitHub last commit](https://img.shields.io/github/last-commit/mwinokan/molparse)
 ![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/mwinokan/molparse)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 A python package for parsing, modifying, and analysis of molecular structure files.
 

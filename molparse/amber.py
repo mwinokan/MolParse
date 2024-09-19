@@ -3,7 +3,9 @@
 from .restraint import Restraint
 
 
-def write_amber_restraints(restraint_list, filename_prefix, zfill=2, filename_suffix=".RST"):
+def write_amber_restraints(
+    restraint_list, filename_prefix, zfill=2, filename_suffix=".RST"
+):
     import mcol
     import mout
     import os
@@ -47,12 +49,13 @@ def write_amber_restraints(restraint_list, filename_prefix, zfill=2, filename_su
     import pickle
 
     pickle_file = os.path.dirname(filename_prefix) + "/amp_res.pkl"
-    with open(pickle_file, 'wb') as file:
+    with open(pickle_file, "wb") as file:
         pickle.dump(restraint_list, file)
     mout.out("Restraints dumped to to " + mcol.file + pickle_file)
 
 
 # exit()
+
 
 def umbrella_plotter(filenames, bins=20, subdir=None, show_level=2):
     import os
@@ -72,7 +75,7 @@ def umbrella_plotter(filenames, bins=20, subdir=None, show_level=2):
 
         xdata, ydata = signal.parseDat(file, num_columns=2, pre_strip=True)
 
-        label = os.path.basename(file).replace(".rco", '')
+        label = os.path.basename(file).replace(".rco", "")
         labels.append(label)
 
         plotfile = None
@@ -84,8 +87,15 @@ def umbrella_plotter(filenames, bins=20, subdir=None, show_level=2):
         else:
             show = False
 
-        mplot.hist1D(ydata, show=show, xlab="Reaction Coordinate", ylab="Frequency", bins=bins, title=label,
-                     filename=plotfile)
+        mplot.hist1D(
+            ydata,
+            show=show,
+            xlab="Reaction Coordinate",
+            ylab="Frequency",
+            bins=bins,
+            title=label,
+            filename=plotfile,
+        )
 
         big_ydata.append(ydata)
 
@@ -98,12 +108,28 @@ def umbrella_plotter(filenames, bins=20, subdir=None, show_level=2):
     if subdir is not None:
         plotfile = subdir + "/allwindows.png"
 
-    mplot.graph2D(xdata, big_ydata, show=show, filename=plotfile, ytitles=labels, xlab="MD Step",
-                  ylab="Reaction Coordinate")
+    mplot.graph2D(
+        xdata,
+        big_ydata,
+        show=show,
+        filename=plotfile,
+        ytitles=labels,
+        xlab="MD Step",
+        ylab="Reaction Coordinate",
+    )
 
 
-def umbrella_helper_2dist(atoms, weights, coord_range, num_windows, force_constant, harmonic_width, subdir=None,
-                          samples=1000, graph=False):
+def umbrella_helper_2dist(
+    atoms,
+    weights,
+    coord_range,
+    num_windows,
+    force_constant,
+    harmonic_width,
+    subdir=None,
+    samples=1000,
+    graph=False,
+):
     import mcol
     import mout
     import os
@@ -115,7 +141,12 @@ def umbrella_helper_2dist(atoms, weights, coord_range, num_windows, force_consta
     mout.headerOut("Atoms")
 
     for i, atom in enumerate(atoms):
-        mout.varOut("Atom #" + str(i + 1), [atom.name, atom.residue, atom.pdb_index], integer=True, list_length=False)
+        mout.varOut(
+            "Atom #" + str(i + 1),
+            [atom.name, atom.residue, atom.pdb_index],
+            integer=True,
+            list_length=False,
+        )
 
     mout.headerOut("Windows")
     mout.varOut("#Windows", num_windows, valCol=mcol.arg)
@@ -123,7 +154,9 @@ def umbrella_helper_2dist(atoms, weights, coord_range, num_windows, force_consta
     centres = []
 
     for i in range(num_windows):
-        centres.append(coord_range[0] + i * (coord_range[1] - coord_range[0]) / (num_windows - 1))
+        centres.append(
+            coord_range[0] + i * (coord_range[1] - coord_range[0]) / (num_windows - 1)
+        )
 
         mout.varOut("Window #" + str(i + 1) + " Centre", centres[-1], precision=4)
 
@@ -169,38 +202,51 @@ def umbrella_helper_2dist(atoms, weights, coord_range, num_windows, force_consta
 
         rst_buffer += "/" + end + end
 
-        restraints.append({'centre': centre,
-                           'r1': r1,
-                           'r2': r2,
-                           'r3': r3,
-                           'r4': r4,
-                           'rk2': rk2,
-                           'rk3': rk3})
+        restraints.append(
+            {
+                "centre": centre,
+                "r1": r1,
+                "r2": r2,
+                "r3": r3,
+                "r4": r4,
+                "rk2": rk2,
+                "rk3": rk3,
+            }
+        )
 
         if subdir is not None:
             out_rst = open(subdir + "/window_" + str(i + 1).zfill(2) + ".RST", "w")
             out_rst.write(rst_buffer)
             out_rst.close()
-            mout.out("File written to " + mcol.file + subdir + "/window_" + str(i + 1).zfill(2) + ".RST")
+            mout.out(
+                "File written to "
+                + mcol.file
+                + subdir
+                + "/window_"
+                + str(i + 1).zfill(2)
+                + ".RST"
+            )
 
     xdata = []
     big_ydata = []
 
     for i in range(samples):
         # print(i,coord_range[0]+i*(coord_range[1]-coord_range[0])/(samples-1))
-        x = coord_range[0] + (i * 1.4 / (samples - 1) - 0.2) * (coord_range[1] - coord_range[0])
+        x = coord_range[0] + (i * 1.4 / (samples - 1) - 0.2) * (
+            coord_range[1] - coord_range[0]
+        )
         xdata.append(x)
 
     for restraint in restraints:
 
         ydata = []
 
-        r1 = restraint['r1']
-        r2 = restraint['r2']
-        r3 = restraint['r3']
-        r4 = restraint['r4']
-        rk2 = restraint['rk2']
-        rk3 = restraint['rk3']
+        r1 = restraint["r1"]
+        r2 = restraint["r2"]
+        r3 = restraint["r3"]
+        r4 = restraint["r4"]
+        rk2 = restraint["rk2"]
+        rk3 = restraint["rk3"]
 
         for x in xdata:
             y = restraint_potential(x, r1, r2, r3, r4, rk2, rk3)
@@ -216,7 +262,9 @@ def umbrella_helper_2dist(atoms, weights, coord_range, num_windows, force_consta
         graphfile = None
 
     if subdir is not None and graph is not None:
-        mplot.graph2D(xdata, big_ydata, show=graph, ymax=120, ymin=-5, filename=graphfile)
+        mplot.graph2D(
+            xdata, big_ydata, show=graph, ymax=120, ymin=-5, filename=graphfile
+        )
 
     if subdir is not None:
 
@@ -225,12 +273,12 @@ def umbrella_helper_2dist(atoms, weights, coord_range, num_windows, force_consta
         pot_buffer += str(x) + " "
 
         for restraint in restraints:
-            r1 = restraint['r1']
-            r2 = restraint['r2']
-            r3 = restraint['r3']
-            r4 = restraint['r4']
-            rk2 = restraint['rk2']
-            rk3 = restraint['rk3']
+            r1 = restraint["r1"]
+            r2 = restraint["r2"]
+            r3 = restraint["r3"]
+            r4 = restraint["r4"]
+            rk2 = restraint["rk2"]
+            rk3 = restraint["rk3"]
             y = restraint_potential(x, r1, r2, r3, r4, rk2, rk3)
             pot_buffer += str(y) + " "
 
@@ -239,8 +287,20 @@ def umbrella_helper_2dist(atoms, weights, coord_range, num_windows, force_consta
         out_dat.close()
 
 
-def umb_rst_2prot(atoms, weights, coord_range, num_windows, force_constant, harmonic_width, subdir=None, samples=1000,
-                  graph=False, adiab_windows=True, fix_angle=None, fix_third=None):
+def umb_rst_2prot(
+    atoms,
+    weights,
+    coord_range,
+    num_windows,
+    force_constant,
+    harmonic_width,
+    subdir=None,
+    samples=1000,
+    graph=False,
+    adiab_windows=True,
+    fix_angle=None,
+    fix_third=None,
+):
     import mcol
     import mout
     import os
@@ -254,7 +314,12 @@ def umb_rst_2prot(atoms, weights, coord_range, num_windows, force_constant, harm
     mout.headerOut("Atoms")
 
     for i, atom in enumerate(atoms):
-        mout.varOut("Atom #" + str(i + 1), [atom.name, atom.residue, atom.pdb_index], integer=True, list_length=False)
+        mout.varOut(
+            "Atom #" + str(i + 1),
+            [atom.name, atom.residue, atom.pdb_index],
+            integer=True,
+            list_length=False,
+        )
 
     mout.headerOut("Windows")
     mout.varOut("#Windows", num_windows, valCol=mcol.arg)
@@ -262,7 +327,9 @@ def umb_rst_2prot(atoms, weights, coord_range, num_windows, force_constant, harm
     centres = []
 
     for i in range(num_windows):
-        centres.append(coord_range[0] + i * (coord_range[1] - coord_range[0]) / (num_windows - 1))
+        centres.append(
+            coord_range[0] + i * (coord_range[1] - coord_range[0]) / (num_windows - 1)
+        )
 
         mout.varOut("Window #" + str(i + 1) + " Centre", centres[-1], precision=4)
 
@@ -355,13 +422,17 @@ def umb_rst_2prot(atoms, weights, coord_range, num_windows, force_constant, harm
 
         rst_buffer += "/" + end
 
-        restraints.append({'centre': centre,
-                           'r1': r1,
-                           'r2': r2,
-                           'r3': r3,
-                           'r4': r4,
-                           'rk2': rk2,
-                           'rk3': rk3})
+        restraints.append(
+            {
+                "centre": centre,
+                "r1": r1,
+                "r2": r2,
+                "r3": r3,
+                "r4": r4,
+                "rk2": rk2,
+                "rk3": rk3,
+            }
+        )
 
         ###### ANGLE FIX ######
 
@@ -462,7 +533,14 @@ def umb_rst_2prot(atoms, weights, coord_range, num_windows, force_constant, harm
             out_rst = open(subdir + "/window_" + str(i + 1).zfill(2) + ".RST", "w")
             out_rst.write(rst_buffer)
             out_rst.close()
-            mout.out("File written to " + mcol.file + subdir + "/window_" + str(i + 1).zfill(2) + ".RST")
+            mout.out(
+                "File written to "
+                + mcol.file
+                + subdir
+                + "/window_"
+                + str(i + 1).zfill(2)
+                + ".RST"
+            )
 
     if adiab_windows:
 
@@ -540,26 +618,35 @@ def umb_rst_2prot(atoms, weights, coord_range, num_windows, force_constant, harm
                 out_rst = open(subdir + "/adiab_" + str(i + 1).zfill(2) + ".RST", "w")
                 out_rst.write(rst_buffer)
                 out_rst.close()
-                mout.out("File written to " + mcol.file + subdir + "/adiab_" + str(i + 1).zfill(2) + ".RST")
+                mout.out(
+                    "File written to "
+                    + mcol.file
+                    + subdir
+                    + "/adiab_"
+                    + str(i + 1).zfill(2)
+                    + ".RST"
+                )
 
     xdata = []
     big_ydata = []
 
     for i in range(samples):
         # print(i,coord_range[0]+i*(coord_range[1]-coord_range[0])/(samples-1))
-        x = coord_range[0] + (i * 1.4 / (samples - 1) - 0.2) * (coord_range[1] - coord_range[0])
+        x = coord_range[0] + (i * 1.4 / (samples - 1) - 0.2) * (
+            coord_range[1] - coord_range[0]
+        )
         xdata.append(x)
 
     for restraint in restraints:
 
         ydata = []
 
-        r1 = restraint['r1']
-        r2 = restraint['r2']
-        r3 = restraint['r3']
-        r4 = restraint['r4']
-        rk2 = restraint['rk2']
-        rk3 = restraint['rk3']
+        r1 = restraint["r1"]
+        r2 = restraint["r2"]
+        r3 = restraint["r3"]
+        r4 = restraint["r4"]
+        rk2 = restraint["rk2"]
+        rk3 = restraint["rk3"]
 
         for x in xdata:
             y = restraint_potential(x, r1, r2, r3, r4, rk2, rk3)
@@ -575,7 +662,9 @@ def umb_rst_2prot(atoms, weights, coord_range, num_windows, force_constant, harm
         graphfile = None
 
     if subdir is not None and graph is not None:
-        mplot.graph2D(xdata, big_ydata, show=graph, ymax=120, ymin=-5, filename=graphfile)
+        mplot.graph2D(
+            xdata, big_ydata, show=graph, ymax=120, ymin=-5, filename=graphfile
+        )
 
     if subdir is not None:
 
@@ -584,12 +673,12 @@ def umb_rst_2prot(atoms, weights, coord_range, num_windows, force_constant, harm
         pot_buffer += str(x) + " "
 
         for restraint in restraints:
-            r1 = restraint['r1']
-            r2 = restraint['r2']
-            r3 = restraint['r3']
-            r4 = restraint['r4']
-            rk2 = restraint['rk2']
-            rk3 = restraint['rk3']
+            r1 = restraint["r1"]
+            r2 = restraint["r2"]
+            r3 = restraint["r3"]
+            r4 = restraint["r4"]
+            rk2 = restraint["rk2"]
+            rk3 = restraint["rk3"]
             y = restraint_potential(x, r1, r2, r3, r4, rk2, rk3)
             pot_buffer += str(y) + " "
 
@@ -598,8 +687,21 @@ def umb_rst_2prot(atoms, weights, coord_range, num_windows, force_constant, harm
         out_dat.close()
 
 
-def umb_rst_2prot_new(atoms, weights, coord_range, num_windows, force_constant, harmonic_width, subdir=None,
-                      samples=1000, graph=False, adiab_windows=True, fix_angle=None, fix_third=None, add_len=None):
+def umb_rst_2prot_new(
+    atoms,
+    weights,
+    coord_range,
+    num_windows,
+    force_constant,
+    harmonic_width,
+    subdir=None,
+    samples=1000,
+    graph=False,
+    adiab_windows=True,
+    fix_angle=None,
+    fix_third=None,
+    add_len=None,
+):
     import mcol
     import mout
     import os
@@ -612,7 +714,12 @@ def umb_rst_2prot_new(atoms, weights, coord_range, num_windows, force_constant, 
     mout.headerOut("Atoms")
 
     for i, atom in enumerate(atoms):
-        mout.varOut("Atom #" + str(i + 1), [atom.name, atom.residue, atom.pdb_index], integer=True, list_length=False)
+        mout.varOut(
+            "Atom #" + str(i + 1),
+            [atom.name, atom.residue, atom.pdb_index],
+            integer=True,
+            list_length=False,
+        )
 
     mout.headerOut("Windows")
     mout.varOut("#Windows", num_windows, valCol=mcol.arg)
@@ -629,8 +736,12 @@ def umb_rst_2prot_new(atoms, weights, coord_range, num_windows, force_constant, 
     centres = []
 
     for i in range(num_windows):
-        centre_1 = coord_range[0] + i * (coord_range[1] - coord_range[0]) / (num_windows - 1)
-        centre_2 = coord_range[2] + i * (coord_range[3] - coord_range[2]) / (num_windows - 1)
+        centre_1 = coord_range[0] + i * (coord_range[1] - coord_range[0]) / (
+            num_windows - 1
+        )
+        centre_2 = coord_range[2] + i * (coord_range[3] - coord_range[2]) / (
+            num_windows - 1
+        )
 
         centres.append([centre_1, centre_2])
 
@@ -885,11 +996,29 @@ def umb_rst_2prot_new(atoms, weights, coord_range, num_windows, force_constant, 
             out_rst = open(subdir + "/window_" + str(i + 1).zfill(2) + ".RST", "w")
             out_rst.write(rst_buffer)
             out_rst.close()
-            mout.out("File written to " + mcol.file + subdir + "/window_" + str(i + 1).zfill(2) + ".RST")
+            mout.out(
+                "File written to "
+                + mcol.file
+                + subdir
+                + "/window_"
+                + str(i + 1).zfill(2)
+                + ".RST"
+            )
 
 
-def umb_rst_2prot_1rc(atoms, weights, coord_range, num_windows, force_constant, harmonic_width, subdir=None,
-                      samples=1000, graph=False, adiab_windows=False, fix_length=False):
+def umb_rst_2prot_1rc(
+    atoms,
+    weights,
+    coord_range,
+    num_windows,
+    force_constant,
+    harmonic_width,
+    subdir=None,
+    samples=1000,
+    graph=False,
+    adiab_windows=False,
+    fix_length=False,
+):
     import mcol
     import mout
     import os
@@ -902,7 +1031,12 @@ def umb_rst_2prot_1rc(atoms, weights, coord_range, num_windows, force_constant, 
     mout.headerOut("Atoms")
 
     for i, atom in enumerate(atoms):
-        mout.varOut("Atom #" + str(i + 1), [atom.name, atom.residue, atom.pdb_index], integer=True, list_length=False)
+        mout.varOut(
+            "Atom #" + str(i + 1),
+            [atom.name, atom.residue, atom.pdb_index],
+            integer=True,
+            list_length=False,
+        )
 
     mout.headerOut("Windows")
     mout.varOut("#Windows", num_windows, valCol=mcol.arg)
@@ -910,7 +1044,9 @@ def umb_rst_2prot_1rc(atoms, weights, coord_range, num_windows, force_constant, 
     centres = []
 
     for i in range(num_windows):
-        centres.append(coord_range[0] + i * (coord_range[1] - coord_range[0]) / (num_windows - 1))
+        centres.append(
+            coord_range[0] + i * (coord_range[1] - coord_range[0]) / (num_windows - 1)
+        )
 
         mout.varOut("Window #" + str(i + 1) + " Centre", centres[-1], precision=4)
 
@@ -1056,14 +1192,32 @@ def umb_rst_2prot_1rc(atoms, weights, coord_range, num_windows, force_constant, 
             out_rst = open(subdir + "/window_" + str(i + 1).zfill(2) + ".RST", "w")
             out_rst.write(rst_buffer)
             out_rst.close()
-            mout.out("File written to " + mcol.file + subdir + "/window_" + str(i + 1).zfill(2) + ".RST")
+            mout.out(
+                "File written to "
+                + mcol.file
+                + subdir
+                + "/window_"
+                + str(i + 1).zfill(2)
+                + ".RST"
+            )
 
     if adiab_windows:
         mout.warningOut("Adiabatic windows not implemented")
 
 
-def umb_rst_2prot_asy(atoms, weights, coord_range, num_windows, force_constant, harmonic_width, subdir=None,
-                      samples=1000, graph=False, adiab_windows=True, reverse=False):
+def umb_rst_2prot_asy(
+    atoms,
+    weights,
+    coord_range,
+    num_windows,
+    force_constant,
+    harmonic_width,
+    subdir=None,
+    samples=1000,
+    graph=False,
+    adiab_windows=True,
+    reverse=False,
+):
     import mcol
     import mout
     import os
@@ -1078,7 +1232,12 @@ def umb_rst_2prot_asy(atoms, weights, coord_range, num_windows, force_constant, 
     mout.headerOut("Atoms")
 
     for i, atom in enumerate(atoms):
-        mout.varOut("Atom #" + str(i + 1), [atom.name, atom.residue, atom.pdb_index], integer=True, list_length=False)
+        mout.varOut(
+            "Atom #" + str(i + 1),
+            [atom.name, atom.residue, atom.pdb_index],
+            integer=True,
+            list_length=False,
+        )
 
     mout.headerOut("Windows")
     mout.varOut("#Windows", num_windows, valCol=mcol.arg)
@@ -1086,7 +1245,9 @@ def umb_rst_2prot_asy(atoms, weights, coord_range, num_windows, force_constant, 
     centres = []
 
     for i in range(num_windows):
-        centres.append(coord_range[0] + i * (coord_range[1] - coord_range[0]) / (num_windows - 1))
+        centres.append(
+            coord_range[0] + i * (coord_range[1] - coord_range[0]) / (num_windows - 1)
+        )
 
         mout.varOut("Window #" + str(i + 1) + " Centre", centres[-1], precision=4)
 
@@ -1096,13 +1257,15 @@ def umb_rst_2prot_asy(atoms, weights, coord_range, num_windows, force_constant, 
         for centre in centres:
             centres_2d.append([centre, centres[0]])
         for centre in centres:
-            if centre == centres[0]: continue
+            if centre == centres[0]:
+                continue
             centres_2d.append([centres[-1], centre])
     else:
         for centre in centres:
             centres_2d.append([centres[0], centre])
         for centre in centres:
-            if centre == centres[0]: continue
+            if centre == centres[0]:
+                continue
             centres_2d.append([centre, centres[-1]])
 
     mout.headerOut("Amber Restraint File:")
@@ -1189,19 +1352,30 @@ def umb_rst_2prot_asy(atoms, weights, coord_range, num_windows, force_constant, 
 
         rst_buffer += "/" + end + end
 
-        restraints.append({'centre_pair': centre_pair,
-                           'r1': r1,
-                           'r2': r2,
-                           'r3': r3,
-                           'r4': r4,
-                           'rk2': rk2,
-                           'rk3': rk3})
+        restraints.append(
+            {
+                "centre_pair": centre_pair,
+                "r1": r1,
+                "r2": r2,
+                "r3": r3,
+                "r4": r4,
+                "rk2": rk2,
+                "rk3": rk3,
+            }
+        )
 
         if subdir is not None:
             out_rst = open(subdir + "/window_" + str(i + 1).zfill(2) + ".RST", "w")
             out_rst.write(rst_buffer)
             out_rst.close()
-            mout.out("File written to " + mcol.file + subdir + "/window_" + str(i + 1).zfill(2) + ".RST")
+            mout.out(
+                "File written to "
+                + mcol.file
+                + subdir
+                + "/window_"
+                + str(i + 1).zfill(2)
+                + ".RST"
+            )
 
     if adiab_windows:
 
@@ -1279,7 +1453,14 @@ def umb_rst_2prot_asy(atoms, weights, coord_range, num_windows, force_constant, 
                 out_rst = open(subdir + "/adiab_" + str(i + 1).zfill(2) + ".RST", "w")
                 out_rst.write(rst_buffer)
                 out_rst.close()
-                mout.out("File written to " + mcol.file + subdir + "/adiab_" + str(i + 1).zfill(2) + ".RST")
+                mout.out(
+                    "File written to "
+                    + mcol.file
+                    + subdir
+                    + "/adiab_"
+                    + str(i + 1).zfill(2)
+                    + ".RST"
+                )
 
 
 # import mplot
@@ -1341,14 +1522,15 @@ def umb_rst_2prot_asy(atoms, weights, coord_range, num_windows, force_constant, 
 # 	out_dat.write(pot_buffer)
 # 	out_dat.close()
 
+
 def restraint_potential(x, r1, r2, r3, r4, rk2, rk3):
     if x < r1:
         return lin1(x, r1, r2, rk2)
 
-    if (x >= r1 and x <= r2):
+    if x >= r1 and x <= r2:
         return par2(x, r2, rk2)
 
-    if (x >= r3 and x <= r4):
+    if x >= r3 and x <= r4:
         return par3(x, r3, rk3)
 
     if x > r4:
@@ -1380,47 +1562,120 @@ def prep4amber(system):
     # Fix histidine residue names
     if "HSD" in str(system.residues):
         i = system.rename_residues("HSD", "HID", verbosity=0)
-        mout.out("Fixed names of " + mcol.result + str(i) + mcol.clear + " instances of " + mcol.arg + "HSD")
+        mout.out(
+            "Fixed names of "
+            + mcol.result
+            + str(i)
+            + mcol.clear
+            + " instances of "
+            + mcol.arg
+            + "HSD"
+        )
 
     ###### Fix names common to many animo acids
 
     # HN -> H
-    aa_hnfix_residues = ["ALA", "ARG", "ASN", "ASP", "CYS", "GLN", "GLU",
-                         "GLY", "HID", "ILE", "LEU", "LYS", "MET", "PHE",
-                         "SER", "THR", "TRP", "TYR", "VAL"]
+    aa_hnfix_residues = [
+        "ALA",
+        "ARG",
+        "ASN",
+        "ASP",
+        "CYS",
+        "GLN",
+        "GLU",
+        "GLY",
+        "HID",
+        "ILE",
+        "LEU",
+        "LYS",
+        "MET",
+        "PHE",
+        "SER",
+        "THR",
+        "TRP",
+        "TYR",
+        "VAL",
+    ]
 
     i = 0
     for resname in aa_hnfix_residues:
         i += system.rename_atoms("HN", "H", res_filter=resname, verbosity=0)
-    mout.out(mcol.arg + "HN->H" + mcol.clear + " rename performed in " +
-             mcol.result + str(i) + mcol.clear + " instances of amino acids")
+    mout.out(
+        mcol.arg
+        + "HN->H"
+        + mcol.clear
+        + " rename performed in "
+        + mcol.result
+        + str(i)
+        + mcol.clear
+        + " instances of amino acids"
+    )
 
     # HBN->HBN+1
-    aa_hbfix_residues = ["ARG", "ASN", "ASP", "CYS", "GLN", "GLU", "HID", "LEU",
-                         "LYS", "MET", "PHE", "PRO", "SER", "TRP", "TYR"]
+    aa_hbfix_residues = [
+        "ARG",
+        "ASN",
+        "ASP",
+        "CYS",
+        "GLN",
+        "GLU",
+        "HID",
+        "LEU",
+        "LYS",
+        "MET",
+        "PHE",
+        "PRO",
+        "SER",
+        "TRP",
+        "TYR",
+    ]
 
     i = 0
     for resname in aa_hbfix_residues:
         system.rename_atoms("HB2", "HB3", res_filter=resname, verbosity=0)
         i += system.rename_atoms("HB1", "HB2", res_filter=resname, verbosity=0)
-    mout.out(mcol.arg + "HBn->HBn+1" + mcol.clear + " rename performed in " +
-             mcol.result + str(i) + mcol.clear + " instances of amino acids")
+    mout.out(
+        mcol.arg
+        + "HBn->HBn+1"
+        + mcol.clear
+        + " rename performed in "
+        + mcol.result
+        + str(i)
+        + mcol.clear
+        + " instances of amino acids"
+    )
 
     # HGN->HGN+1
     i = 0
     for resname in ["ALA", "ARG", "GLN", "GLU", "LYS", "MET", "PRO"]:
         system.rename_atoms("HG2", "HG3", res_filter=resname, verbosity=0)
         i += system.rename_atoms("HG1", "HG2", res_filter=resname, verbosity=0)
-    mout.out(mcol.arg + "HGn->HGn+1" + mcol.clear + " rename performed in " +
-             mcol.result + str(i) + mcol.clear + " instances of amino acids")
+    mout.out(
+        mcol.arg
+        + "HGn->HGn+1"
+        + mcol.clear
+        + " rename performed in "
+        + mcol.result
+        + str(i)
+        + mcol.clear
+        + " instances of amino acids"
+    )
 
     # HDN->HDN+1
     i = 0
     for resname in ["ARG", "LYS", "PRO"]:
         system.rename_atoms("HD2", "HD3", res_filter=resname, verbosity=0)
         i += system.rename_atoms("HD1", "HD2", res_filter=resname, verbosity=0)
-    mout.out(mcol.arg + "HDn->HDn+1" + mcol.clear + " rename performed in " +
-             mcol.result + str(i) + mcol.clear + " instances of amino acids")
+    mout.out(
+        mcol.arg
+        + "HDn->HDn+1"
+        + mcol.clear
+        + " rename performed in "
+        + mcol.result
+        + str(i)
+        + mcol.clear
+        + " instances of amino acids"
+    )
 
     ###### Fix atom names in specific amino acids
 
@@ -1429,24 +1684,56 @@ def prep4amber(system):
         system.rename_atoms("HT1", "H1", res_filter="LEU", verbosity=0)
         system.rename_atoms("HT2", "H2", res_filter="LEU", verbosity=0)
         i = system.rename_atoms("HT3", "H3", res_filter="LEU", verbosity=0)
-        mout.out("Fixed atom names in " + mcol.result + str(i) + mcol.clear + " instances of " + mcol.arg + "LEU")
+        mout.out(
+            "Fixed atom names in "
+            + mcol.result
+            + str(i)
+            + mcol.clear
+            + " instances of "
+            + mcol.arg
+            + "LEU"
+        )
 
     # Fix SER atom names
     if "SER" in str(system.residues):
         i = system.rename_atoms("HG1", "HG", res_filter="SER", verbosity=0)
-        mout.out("Fixed atom names in " + mcol.result + str(i) + mcol.clear + " instances of " + mcol.arg + "SER")
+        mout.out(
+            "Fixed atom names in "
+            + mcol.result
+            + str(i)
+            + mcol.clear
+            + " instances of "
+            + mcol.arg
+            + "SER"
+        )
 
     # Fix LYS atom names
     if "LYS" in str(system.residues):
         system.rename_atoms("HE2", "HE3", res_filter="LYS", verbosity=0)
         i = system.rename_atoms("HE1", "HE2", res_filter="LYS", verbosity=0)
-        mout.out("Fixed atom names in " + mcol.result + str(i) + mcol.clear + " instances of " + mcol.arg + "LYS")
+        mout.out(
+            "Fixed atom names in "
+            + mcol.result
+            + str(i)
+            + mcol.clear
+            + " instances of "
+            + mcol.arg
+            + "LYS"
+        )
 
     # Fix GLY atom names
     if "GLY" in str(system.residues):
         system.rename_atoms("HA2", "HA3", res_filter="GLY", verbosity=0)
         i = system.rename_atoms("HA1", "HA2", res_filter="GLY", verbosity=0)
-        mout.out("Fixed atom names in " + mcol.result + str(i) + mcol.clear + " instances of " + mcol.arg + "GLY")
+        mout.out(
+            "Fixed atom names in "
+            + mcol.result
+            + str(i)
+            + mcol.clear
+            + " instances of "
+            + mcol.arg
+            + "GLY"
+        )
 
     # Fix ILE atom names
     if "ILE" in str(system.residues):
@@ -1458,32 +1745,72 @@ def prep4amber(system):
         system.rename_atoms("HD1", "HD11", res_filter="ILE", verbosity=0)
         system.rename_atoms("HD2", "HD12", res_filter="ILE", verbosity=0)
         i = system.rename_atoms("HD3", "HD13", res_filter="ILE", verbosity=0)
-        mout.out("Fixed atom names in " + mcol.result + str(i) + mcol.clear + " instances of " + mcol.arg + "ILE")
+        mout.out(
+            "Fixed atom names in "
+            + mcol.result
+            + str(i)
+            + mcol.clear
+            + " instances of "
+            + mcol.arg
+            + "ILE"
+        )
 
     # Fix CYS atom names
     if "CYS" in str(system.residues):
         i = system.rename_atoms("HG1", "HG", res_filter="CYS", verbosity=0)
-        mout.out("Fixed atom names in " + mcol.result + str(i) + mcol.clear + " instances of " + mcol.arg + "CYS")
+        mout.out(
+            "Fixed atom names in "
+            + mcol.result
+            + str(i)
+            + mcol.clear
+            + " instances of "
+            + mcol.arg
+            + "CYS"
+        )
 
     # Fix ARG atom names
     if "ARG" in str(system.residues):
         system.rename_atoms("OT1", "O", res_filter="ARG", verbosity=0)
         i = system.rename_atoms("OT2", "OXT", res_filter="ARG", verbosity=0)
-        mout.out("Fixed atom names in " + mcol.result + str(i) + mcol.clear + " instances of " + mcol.arg + "ARG")
+        mout.out(
+            "Fixed atom names in "
+            + mcol.result
+            + str(i)
+            + mcol.clear
+            + " instances of "
+            + mcol.arg
+            + "ARG"
+        )
 
     # Fix thymine atom names
     if "DT" in str(system.residues):
         system.rename_atoms("H51", "H71", res_filter="DT", verbosity=0)
         system.rename_atoms("H52", "H72", res_filter="DT", verbosity=0)
         i = system.rename_atoms("H53", "H73", res_filter="DT", verbosity=0)
-        mout.out("Fixed atom names in " + mcol.result + str(i) + mcol.clear + " instances of " + mcol.arg + "DT")
+        mout.out(
+            "Fixed atom names in "
+            + mcol.result
+            + str(i)
+            + mcol.clear
+            + " instances of "
+            + mcol.arg
+            + "DT"
+        )
 
     # HCAP
     i = 0
     for resname in ["DC3", "DA3", "DT3", "DG3"]:
         i += system.rename_atoms("HCAP", "HO3'", res_filter=resname, verbosity=0)
-    mout.out(mcol.arg + "HCAP->HO3'" + mcol.clear + " rename performed in " +
-             mcol.result + str(i) + mcol.clear + " instances of 3TER")
+    mout.out(
+        mcol.arg
+        + "HCAP->HO3'"
+        + mcol.clear
+        + " rename performed in "
+        + mcol.result
+        + str(i)
+        + mcol.clear
+        + " instances of 3TER"
+    )
 
     # Fix ATP atom names
     if "ATP" in str(system.residues):
@@ -1505,7 +1832,15 @@ def prep4amber(system):
         system.rename_atoms("H62", "H61", res_filter="ATP", verbosity=0)
         system.rename_atoms("H2''", "H20", res_filter="ATP", verbosity=0)
         i = system.rename_atoms("H3T", "H30", res_filter="ATP", verbosity=0)
-        mout.out("Fixed atom names in " + mcol.result + str(i) + mcol.clear + " instances of " + mcol.arg + "ATP")
+        mout.out(
+            "Fixed atom names in "
+            + mcol.result
+            + str(i)
+            + mcol.clear
+            + " instances of "
+            + mcol.arg
+            + "ATP"
+        )
 
 
 def amber2charmm(system):
@@ -1515,47 +1850,120 @@ def amber2charmm(system):
     # Fix histidine residue names
     if "HSD" in str(system.residues):
         i = system.rename_residues("HSD", "HID", verbosity=0)
-        mout.out("Fixed names of " + mcol.result + str(i) + mcol.clear + " instances of " + mcol.arg + "HSD")
+        mout.out(
+            "Fixed names of "
+            + mcol.result
+            + str(i)
+            + mcol.clear
+            + " instances of "
+            + mcol.arg
+            + "HSD"
+        )
 
     ###### Fix names common to many animo acids
 
     # H -> HN
-    aa_hnfix_residues = ["ALA", "ARG", "ASN", "ASP", "CYS", "GLN", "GLU",
-                         "GLY", "HID", "ILE", "LEU", "LYS", "MET", "PHE",
-                         "SER", "THR", "TRP", "TYR", "VAL"]
+    aa_hnfix_residues = [
+        "ALA",
+        "ARG",
+        "ASN",
+        "ASP",
+        "CYS",
+        "GLN",
+        "GLU",
+        "GLY",
+        "HID",
+        "ILE",
+        "LEU",
+        "LYS",
+        "MET",
+        "PHE",
+        "SER",
+        "THR",
+        "TRP",
+        "TYR",
+        "VAL",
+    ]
 
     i = 0
     for resname in aa_hnfix_residues:
         i += system.rename_atoms("H", "HN", res_filter=resname, verbosity=0)
-    mout.out(mcol.arg + "H->HN" + mcol.clear + " rename performed in " +
-             mcol.result + str(i) + mcol.clear + " instances of amino acids")
+    mout.out(
+        mcol.arg
+        + "H->HN"
+        + mcol.clear
+        + " rename performed in "
+        + mcol.result
+        + str(i)
+        + mcol.clear
+        + " instances of amino acids"
+    )
 
     # HBN->HBN-1
-    aa_hbfix_residues = ["ARG", "ASN", "ASP", "CYS", "GLN", "GLU", "HID", "LEU",
-                         "LYS", "MET", "PHE", "PRO", "SER", "TRP", "TYR"]
+    aa_hbfix_residues = [
+        "ARG",
+        "ASN",
+        "ASP",
+        "CYS",
+        "GLN",
+        "GLU",
+        "HID",
+        "LEU",
+        "LYS",
+        "MET",
+        "PHE",
+        "PRO",
+        "SER",
+        "TRP",
+        "TYR",
+    ]
 
     i = 0
     for resname in aa_hbfix_residues:
         i += system.rename_atoms("HB2", "HB1", res_filter=resname, verbosity=0)
         system.rename_atoms("HB3", "HB2", res_filter=resname, verbosity=0)
-    mout.out(mcol.arg + "HBn->HBn-1" + mcol.clear + " rename performed in " +
-             mcol.result + str(i) + mcol.clear + " instances of amino acids")
+    mout.out(
+        mcol.arg
+        + "HBn->HBn-1"
+        + mcol.clear
+        + " rename performed in "
+        + mcol.result
+        + str(i)
+        + mcol.clear
+        + " instances of amino acids"
+    )
 
     # HGN->HGN-1
     i = 0
     for resname in ["ALA", "ARG", "GLN", "GLU", "LYS", "MET", "PRO"]:
         i += system.rename_atoms("HG2", "HG1", res_filter=resname, verbosity=0)
         system.rename_atoms("HG3", "HG2", res_filter=resname, verbosity=0)
-    mout.out(mcol.arg + "HGn->HGn-1" + mcol.clear + " rename performed in " +
-             mcol.result + str(i) + mcol.clear + " instances of amino acids")
+    mout.out(
+        mcol.arg
+        + "HGn->HGn-1"
+        + mcol.clear
+        + " rename performed in "
+        + mcol.result
+        + str(i)
+        + mcol.clear
+        + " instances of amino acids"
+    )
 
     # HDN->HDN-1
     i = 0
     for resname in ["ARG", "LYS", "PRO"]:
         i += system.rename_atoms("HD2", "HD1", res_filter=resname, verbosity=0)
         system.rename_atoms("HD3", "HD2", res_filter=resname, verbosity=0)
-    mout.out(mcol.arg + "HDn->HDn-1" + mcol.clear + " rename performed in " +
-             mcol.result + str(i) + mcol.clear + " instances of amino acids")
+    mout.out(
+        mcol.arg
+        + "HDn->HDn-1"
+        + mcol.clear
+        + " rename performed in "
+        + mcol.result
+        + str(i)
+        + mcol.clear
+        + " instances of amino acids"
+    )
 
     ###### Fix atom names in specific amino acids
 
@@ -1564,24 +1972,56 @@ def amber2charmm(system):
         system.rename_atoms("H1", "HT1", res_filter="LEU", verbosity=0)
         system.rename_atoms("H2", "HT2", res_filter="LEU", verbosity=0)
         i = system.rename_atoms("H3", "HT3", res_filter="LEU", verbosity=0)
-        mout.out("Fixed atom names in " + mcol.result + str(i) + mcol.clear + " instances of " + mcol.arg + "LEU")
+        mout.out(
+            "Fixed atom names in "
+            + mcol.result
+            + str(i)
+            + mcol.clear
+            + " instances of "
+            + mcol.arg
+            + "LEU"
+        )
 
     # Fix SER atom names
     if "SER" in str(system.residues):
         i = system.rename_atoms("HG", "HG1", res_filter="SER", verbosity=0)
-        mout.out("Fixed atom names in " + mcol.result + str(i) + mcol.clear + " instances of " + mcol.arg + "SER")
+        mout.out(
+            "Fixed atom names in "
+            + mcol.result
+            + str(i)
+            + mcol.clear
+            + " instances of "
+            + mcol.arg
+            + "SER"
+        )
 
     # Fix LYS atom names
     if "LYS" in str(system.residues):
         i = system.rename_atoms("HE2", "HE1", res_filter="LYS", verbosity=0)
         system.rename_atoms("HE3", "HE2", res_filter="LYS", verbosity=0)
-        mout.out("Fixed atom names in " + mcol.result + str(i) + mcol.clear + " instances of " + mcol.arg + "LYS")
+        mout.out(
+            "Fixed atom names in "
+            + mcol.result
+            + str(i)
+            + mcol.clear
+            + " instances of "
+            + mcol.arg
+            + "LYS"
+        )
 
     # Fix GLY atom names
     if "GLY" in str(system.residues):
         i = system.rename_atoms("HA2", "HA1", res_filter="GLY", verbosity=0)
         system.rename_atoms("HA3", "HA2", res_filter="GLY", verbosity=0)
-        mout.out("Fixed atom names in " + mcol.result + str(i) + mcol.clear + " instances of " + mcol.arg + "GLY")
+        mout.out(
+            "Fixed atom names in "
+            + mcol.result
+            + str(i)
+            + mcol.clear
+            + " instances of "
+            + mcol.arg
+            + "GLY"
+        )
 
     # Fix ILE atom names
     if "ILE" in str(system.residues):
@@ -1593,25 +2033,57 @@ def amber2charmm(system):
         system.rename_atoms("HD11", "HD1", res_filter="ILE", verbosity=0)
         system.rename_atoms("HD12", "HD2", res_filter="ILE", verbosity=0)
         i = system.rename_atoms("HD13", "HD3", res_filter="ILE", verbosity=0)
-        mout.out("Fixed atom names in " + mcol.result + str(i) + mcol.clear + " instances of " + mcol.arg + "ILE")
+        mout.out(
+            "Fixed atom names in "
+            + mcol.result
+            + str(i)
+            + mcol.clear
+            + " instances of "
+            + mcol.arg
+            + "ILE"
+        )
 
     # Fix CYS atom names
     if "CYS" in str(system.residues):
         i = system.rename_atoms("HG", "HG1", res_filter="CYS", verbosity=0)
-        mout.out("Fixed atom names in " + mcol.result + str(i) + mcol.clear + " instances of " + mcol.arg + "CYS")
+        mout.out(
+            "Fixed atom names in "
+            + mcol.result
+            + str(i)
+            + mcol.clear
+            + " instances of "
+            + mcol.arg
+            + "CYS"
+        )
 
     # Fix ARG atom names
     if "ARG" in str(system.residues):
         system.rename_atoms("OT1", "O", res_filter="ARG", verbosity=0)
         i = system.rename_atoms("OXT", "OT2", res_filter="ARG", verbosity=0)
-        mout.out("Fixed atom names in " + mcol.result + str(i) + mcol.clear + " instances of " + mcol.arg + "ARG")
+        mout.out(
+            "Fixed atom names in "
+            + mcol.result
+            + str(i)
+            + mcol.clear
+            + " instances of "
+            + mcol.arg
+            + "ARG"
+        )
 
     # Fix thymine atom names
     if "DT" in str(system.residues):
         system.rename_atoms("H71", "H51", res_filter="DT", verbosity=0)
         system.rename_atoms("H72", "H52", res_filter="DT", verbosity=0)
         i = system.rename_atoms("H73", "H53", res_filter="DT", verbosity=0)
-        mout.out("Fixed atom names in " + mcol.result + str(i) + mcol.clear + " instances of " + mcol.arg + "DT")
+        mout.out(
+            "Fixed atom names in "
+            + mcol.result
+            + str(i)
+            + mcol.clear
+            + " instances of "
+            + mcol.arg
+            + "DT"
+        )
 
 
 # # Fix HIS atom names
@@ -1641,6 +2113,7 @@ def amber2charmm(system):
 # 	i = system.rename_atoms("H3T","H30",res_filter="ATP",verbosity=0)
 # 	mout.out("Fixed atom names in "+mcol.result+str(i)+mcol.clear+" instances of "+mcol.arg+"ATP")
 
+
 def parseRST(filename, key, convert_to_float=True):
     import re
 
@@ -1649,10 +2122,11 @@ def parseRST(filename, key, convert_to_float=True):
     output = []
 
     for line in file:
-        result = re.search(key + '=(.*),', line)
+        result = re.search(key + "=(.*),", line)
         if result is not None:
             value = result.group(1)
-            if convert_to_float: value = float(value)
+            if convert_to_float:
+                value = float(value)
             output.append(value)
 
         # print(result.group(1))

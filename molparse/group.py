@@ -1,4 +1,4 @@
-class AtomGroup():
+class AtomGroup:
     """General class for a group of atoms. Do not construct this object! Let Molparse handle it"""
 
     def __init__(self, name: str):
@@ -16,6 +16,7 @@ class AtomGroup():
         self._header_data = []
 
         from .list import NamedList
+
         self._atoms = NamedList()
 
     """ To-Do's:
@@ -28,17 +29,16 @@ class AtomGroup():
 
     @classmethod
     def from_any(cls, name, source):
-
         """Construct a new AtomGroup from:
-            - an mp.NamedList of mp.Atom objects (i.e. mp.System.atoms)
-            - an mp.System object
-            - an mp.AtomGroup object
-            - an mp.Chain object
-            - an mp.Residue object
-            - a list of ase.Atom objects
-            - an ase.Atoms object
-            - a list containing any combination of ase.Atom(s), mp.Atom, mp.Chain, mp.Residue, objects
-            - a string containing a PDB Block
+        - an mp.NamedList of mp.Atom objects (i.e. mp.System.atoms)
+        - an mp.System object
+        - an mp.AtomGroup object
+        - an mp.Chain object
+        - an mp.Residue object
+        - a list of ase.Atom objects
+        - an ase.Atoms object
+        - a list containing any combination of ase.Atom(s), mp.Atom, mp.Chain, mp.Residue, objects
+        - a string containing a PDB Block
         """
 
         import mout
@@ -108,13 +108,13 @@ class AtomGroup():
         name = None
         atom_lines = []
 
-        for line in pdb_block.split('\n'):
+        for line in pdb_block.split("\n"):
 
-            if line.startswith('COMPND'):
+            if line.startswith("COMPND"):
                 name = line.split()[1]
                 continue
 
-            if line.startswith('HETATM') or line.startswith('ATOM'):
+            if line.startswith("HETATM") or line.startswith("ATOM"):
                 atom_lines.append(line)
                 continue
 
@@ -134,7 +134,12 @@ class AtomGroup():
 
         from .list import NamedList
         from ase import Atoms as ase_Atoms
-        assert isinstance(atoms, list) or isinstance(atoms, NamedList) or isinstance(atoms, ase_Atoms)
+
+        assert (
+            isinstance(atoms, list)
+            or isinstance(atoms, NamedList)
+            or isinstance(atoms, ase_Atoms)
+        )
 
         # create new object
         if group is None:
@@ -158,7 +163,10 @@ class AtomGroup():
                     group.add_atom(a.copy())
 
             else:
-                mout.errorOut("item in named list is neither mp.Atom, ase.Atom, mp.Residue", fatal=True)
+                mout.errorOut(
+                    "item in named list is neither mp.Atom, ase.Atom, mp.Residue",
+                    fatal=True,
+                )
 
         return group
 
@@ -255,7 +263,7 @@ class AtomGroup():
     @property
     def species(self):
         """Returns species of all child Atoms (str)"""
-        return ''.join([atom.species for atom in self.atoms])
+        return "".join([atom.species for atom in self.atoms])
 
     @property
     def atom_indices(self):
@@ -276,15 +284,26 @@ class AtomGroup():
     def bbox(self):
         """Bounding box of the AtomGroup"""
         import numpy as np
-        x = [min([a.np_pos[0] for a in self.atoms]), max([a.np_pos[0] for a in self.atoms])]
-        y = [min([a.np_pos[1] for a in self.atoms]), max([a.np_pos[1] for a in self.atoms])]
-        z = [min([a.np_pos[2] for a in self.atoms]), max([a.np_pos[2] for a in self.atoms])]
+
+        x = [
+            min([a.np_pos[0] for a in self.atoms]),
+            max([a.np_pos[0] for a in self.atoms]),
+        ]
+        y = [
+            min([a.np_pos[1] for a in self.atoms]),
+            max([a.np_pos[1] for a in self.atoms]),
+        ]
+        z = [
+            min([a.np_pos[2] for a in self.atoms]),
+            max([a.np_pos[2] for a in self.atoms]),
+        ]
         return [x, y, z]
 
     @property
     def bbox(self):
         """Bounding box of the AtomGroup"""
         import numpy as np
+
         atoms = self.atoms
         x_coords = [a.np_pos[0] for a in atoms]
         y_coords = [a.np_pos[1] for a in atoms]
@@ -314,7 +333,10 @@ class AtomGroup():
         """Construct an equivalent ase.Atoms object"""
 
         from ase import Atoms
-        return Atoms(symbols=self.symbols, cell=None, pbc=None, positions=self.positions)
+
+        return Atoms(
+            symbols=self.symbols, cell=None, pbc=None, positions=self.positions
+        )
 
     @property
     def covalent_radii(self):
@@ -341,7 +363,7 @@ class AtomGroup():
         str_buffer = []
         for atom in self.atoms:
             str_buffer.append(constructPDBAtomLine(atom, atom.number, alt_sites=False))
-        return ''.join(str_buffer)
+        return "".join(str_buffer)
 
     @property
     def pdb_block_with_alt_sites(self):
@@ -350,17 +372,19 @@ class AtomGroup():
         str_buffer = []
         for atom in self.atoms:
             str_buffer.append(constructPDBAtomLine(atom, atom.number, alt_sites=True))
-        return ''.join(str_buffer)
+        return "".join(str_buffer)
 
     @property
     def rdkit_mol(self):
         from .rdkit import mol_from_pdb_block
+
         return mol_from_pdb_block(self.pdb_block)
 
     @property
     def smiles(self):
         if self._smiles is None:
             from .rdkit import mol_to_smiles
+
             self._smiles = mol_to_smiles(self.rdkit_mol)
         return self._smiles
 
@@ -368,12 +392,14 @@ class AtomGroup():
 
     def _bbox_center(self, bbox=None):
         import numpy as np
+
         if bbox is None:
             bbox = self.bbox
         return np.array([np.mean(bbox[0]), np.mean(bbox[1]), np.mean(bbox[2])])
 
     def _bbox_norm(self, bbox=None):
         import numpy as np
+
         if bbox is None:
             bbox = self.bbox
         return np.linalg.norm([x[1] - x[0] for x in bbox])
@@ -381,40 +407,51 @@ class AtomGroup():
     def _bbox_sides(self, bbox=None):
         if bbox is None:
             bbox = self.bbox
-        return [bbox[0][1] - bbox[0][0], bbox[1][1] - bbox[1][0], bbox[2][1] - bbox[2][0]]
+        return [
+            bbox[0][1] - bbox[0][0],
+            bbox[1][1] - bbox[1][0],
+            bbox[2][1] - bbox[2][0],
+        ]
 
     ### METHODS
 
     def add_atom(self, atom):
         import mout
+
         atom.parent = self
         if atom.chain is None:
             atom.chain = self._atoms[-1].chain
-            mout.warningOut('Taking atom chain from last atom in group!')
+            mout.warningOut("Taking atom chain from last atom in group!")
         if atom.res_number is None:
             if len(self._atoms):
                 atom._res_number = self._atoms[-1].res_number
-                mout.warningOut('Taking atom res_number from last atom in group!')
+                mout.warningOut("Taking atom res_number from last atom in group!")
         self._atoms.append(atom)
 
     def summary(self):
         import mcol
         import mout
-        mout.header(f'{mcol.varType}AtomGroup{mcol.clear}{mcol.bold}: {mcol.func}{self.name}{mcol.clear}')
 
-        mout.out(f'{mcol.underline}Sy name {"index":>6} {"number":>6} {"res":>4} {"res#":>6} {"chain":<5}')
+        mout.header(
+            f"{mcol.varType}AtomGroup{mcol.clear}{mcol.bold}: {mcol.func}{self.name}{mcol.clear}"
+        )
+
+        mout.out(
+            f'{mcol.underline}Sy name {"index":>6} {"number":>6} {"res":>4} {"res#":>6} {"chain":<5}'
+        )
 
         for a in self.atoms:
-            mout.out(f'{mcol.varName}{a.name:<2}{mcol.clear}', end=' ')
-            mout.out(f'{mcol.varName}{a.name:<4}{mcol.clear}', end=' ')
-            mout.out(f'{a.index:>6}', end=' ')
-            mout.out(f'{a.number:>6}', end=' ')
-            mout.out(f'{a.residue:>4}', end=' ')
-            mout.out(f'{a.res_number:>6}', end=' ')
-            mout.out(f'{a.chain:<5}', end='\n')
+            mout.out(f"{mcol.varName}{a.name:<2}{mcol.clear}", end=" ")
+            mout.out(f"{mcol.varName}{a.name:<4}{mcol.clear}", end=" ")
+            mout.out(f"{a.index:>6}", end=" ")
+            mout.out(f"{a.number:>6}", end=" ")
+            mout.out(f"{a.residue:>4}", end=" ")
+            mout.out(f"{a.res_number:>6}", end=" ")
+            mout.out(f"{a.chain:<5}", end="\n")
 
     def write(self, filename, **kwargs):
         from .io import write
+
         write(filename, self, **kwargs)
 
     # overloaded by child classes
@@ -451,14 +488,18 @@ class AtomGroup():
 
         position_list = self.positions
 
-        centre_of_mass = np.array([sum([pos[0] for pos in position_list]) / len(position_list),
-                                   sum([pos[1] for pos in position_list]) / len(position_list),
-                                   sum([pos[2] for pos in position_list]) / len(position_list)])
+        centre_of_mass = np.array(
+            [
+                sum([pos[0] for pos in position_list]) / len(position_list),
+                sum([pos[1] for pos in position_list]) / len(position_list),
+                sum([pos[2] for pos in position_list]) / len(position_list),
+            ]
+        )
 
         if verbosity > 0:
-            mout.varOut("CoM of " + self.name,
-                        centre_of_mass,
-                        unit="Angstroms", precision=4)
+            mout.varOut(
+                "CoM of " + self.name, centre_of_mass, unit="Angstroms", precision=4
+            )
 
         if set is not None:
 
@@ -497,6 +538,7 @@ class AtomGroup():
         """Guess connectivity using covalent radii (list of pairs)"""
         import numpy as np
         from ase.gui.view import get_bonds
+
         ase_atoms = self.ase_atoms
         radii = np.array(self.covalent_radii) * (scale / 1.5)
         bonds = get_bonds(ase_atoms, radii)
@@ -513,13 +555,27 @@ class AtomGroup():
 
         for a in self.atoms:
             a_pos = a.np_pos
-            distances = [np.linalg.norm(a_pos - p) if s == a.species else 999 for s, p in zip(species, positions)]
+            distances = [
+                np.linalg.norm(a_pos - p) if s == a.species else 999
+                for s, p in zip(species, positions)
+            ]
             index = np.argmin(distances)
             b = target.atoms[index]
             a.set_name(b.name, verbosity=0)
 
-    def plot(self, ax=None, color=None, center_index=0, show=False, offset=None, padding=1, zeroaxis=None, frame=False,
-             labels=True, textdict={"horizontalalignment": "center", "verticalalignment": "center"}):
+    def plot(
+        self,
+        ax=None,
+        color=None,
+        center_index=0,
+        show=False,
+        offset=None,
+        padding=1,
+        zeroaxis=None,
+        frame=False,
+        labels=True,
+        textdict={"horizontalalignment": "center", "verticalalignment": "center"},
+    ):
         """Render the system with matplotlib"""
 
         import numpy as np
@@ -531,6 +587,7 @@ class AtomGroup():
         # create new axes if none provided
         if ax is None:
             import matplotlib.pyplot as plt
+
             fig, ax = plt.subplots()
 
         # create colours list
@@ -544,16 +601,22 @@ class AtomGroup():
         if offset is None:
             offset = [0, 0]
             if center_index is not None:
-                vec = - copy.atoms[center_index].np_pos + canvas
+                vec = -copy.atoms[center_index].np_pos + canvas
                 copy.CoM(shift=vec, verbosity=0)
 
         # use ASE to render the atoms
-        plot_atoms(copy.ase_atoms, ax, colors=color, offset=offset, bbox=[0, 0, canvas[0] * 2, canvas[1] * 2])
+        plot_atoms(
+            copy.ase_atoms,
+            ax,
+            colors=color,
+            offset=offset,
+            bbox=[0, 0, canvas[0] * 2, canvas[1] * 2],
+        )
 
         # do the labels
         if labels:
             for atom in copy.atoms:
-                if atom.species != 'H':
+                if atom.species != "H":
                     ax.text(atom.position[0], atom.position[1], atom.name, **textdict)
 
         # crop the plot
@@ -570,20 +633,36 @@ class AtomGroup():
             ax.axhline(canvas[1], color=zeroaxis)
 
         if not frame:
-            ax.axis('off')
+            ax.axis("off")
 
         if show:
             plt.show()
 
         return ax, copy
 
-    def plot3d(self, extra=[], alpha=1.0, bonds=True, atoms=True, velocity=False, features=False, v_scale=1.0, fig=None,
-               flat=False, show=True, transform=None, **kwargs):
+    def plot3d(
+        self,
+        extra=[],
+        alpha=1.0,
+        bonds=True,
+        atoms=True,
+        velocity=False,
+        features=False,
+        v_scale=1.0,
+        fig=None,
+        flat=False,
+        show=True,
+        transform=None,
+        **kwargs,
+    ):
         """Render the atoms with plotly graph objects.
         extra can contain pairs of coordinates to be shown as vectors."""
 
         if bonds:
-            bonds = [[self.atoms[a].np_pos, self.atoms[b].np_pos] for a, b in self.guess_bonds()]
+            bonds = [
+                [self.atoms[a].np_pos, self.atoms[b].np_pos]
+                for a, b in self.guess_bonds()
+            ]
         else:
             bonds = []
 
@@ -594,21 +673,39 @@ class AtomGroup():
 
         elif not isinstance(features, list) and features:
             from .rdkit import features_from_group
+
             features = features_from_group(self)
 
         from .go import plot3d
-        return plot3d(self.atoms, extra, bonds, alpha, plot_atoms=atoms, features=features, velocity=velocity,
-                      v_scale=v_scale, fig=fig, flat=flat, show=show, transform=transform, title=self.name, **kwargs)
+
+        return plot3d(
+            self.atoms,
+            extra,
+            bonds,
+            alpha,
+            plot_atoms=atoms,
+            features=features,
+            velocity=velocity,
+            v_scale=v_scale,
+            fig=fig,
+            flat=flat,
+            show=show,
+            transform=transform,
+            title=self.name,
+            **kwargs,
+        )
 
     def set_coordinates(self, reference, velocity=False):
         """Set all coordinates according to a reference ase.Atoms object"""
         if type(reference) is str:
             if velocity:
                 from .io import parse
+
                 sys = parse(reference)
                 atoms = sys.atoms
             else:
                 from ase.io import read
+
                 atoms = read(reference)
         elif isinstance(reference, list):
             if velocity:
@@ -631,17 +728,16 @@ class AtomGroup():
         self.set_coordinates(ase_atoms)
 
     def align_by_posmap(self, map):
-
         """Align the system to a target by superimposing three shared atoms:
 
-          a --> A
-          b --> B
-          c --> C
+        a --> A
+        b --> B
+        c --> C
 
-          (a,b,c) are atoms from this system
-          (A,B,C) are atoms from the target system
+        (a,b,c) are atoms from this system
+        (A,B,C) are atoms from the target system
 
-          map should contain Atoms: [[a,b,c],[A,B,C]]
+        map should contain Atoms: [[a,b,c],[A,B,C]]
 
         """
 
@@ -693,10 +789,10 @@ class AtomGroup():
 
     def copy(self):
         import copy
+
         return copy.deepcopy(self)
 
     def get_nearby(self, candidates, cutoff):
-
         """Get a subset of <candidates> that have at least one atom within <cutoff> of any atom in this AtomGroup."""
 
         import numpy as np
@@ -739,7 +835,9 @@ class AtomGroup():
             center_delta = np.linalg.norm(self_bbox_center - group_bbox_center)
             if center_delta == 0.0:
                 continue
-            min_bbox_separation = center_delta - self_bbox_halfnorm - group_bbox_halfnorm
+            min_bbox_separation = (
+                center_delta - self_bbox_halfnorm - group_bbox_halfnorm
+            )
 
             # discard any candidate where the boundingboxes are definitely more than cutoff apart
             if min_bbox_separation > cutoff:
@@ -758,6 +856,7 @@ class AtomGroup():
     # open GUI tree viewer
     def tree(self):
         from .tree import tree
+
         tree(self)
 
     # expand GUI tree view
@@ -786,27 +885,28 @@ class AtomGroup():
     def _context_info(self):
 
         com = self.CoM(verbosity=0)
-        com = f'[{com[0]:.2f} {com[1]:.2f} {com[2]:.2f}]'
+        com = f"[{com[0]:.2f} {com[1]:.2f} {com[2]:.2f}]"
 
         bbox = self.bbox
-        bbox = f'[[{bbox[0][0]:.2f} {bbox[0][1]:.2f}] [{bbox[1][0]:.2f} {bbox[1][1]:.2f}] [{bbox[2][0]:.2f} {bbox[2][1]:.2f}]]'
+        bbox = f"[[{bbox[0][0]:.2f} {bbox[0][1]:.2f}] [{bbox[1][0]:.2f} {bbox[1][1]:.2f}] [{bbox[2][0]:.2f} {bbox[2][1]:.2f}]]"
 
         bbox_sides = self.bbox_sides
-        bbox_sides = f'[{bbox_sides[0]:.2f} {bbox_sides[1]:.2f} {bbox_sides[2]:.2f}]'
+        bbox_sides = f"[{bbox_sides[0]:.2f} {bbox_sides[1]:.2f} {bbox_sides[2]:.2f}]"
 
         items = {
-            'Centre of Mass': com,
-            'Bounding Box': bbox,
-            'Bounding Box Sides': bbox_sides,
-            'Bounding Box Diagonal': f'{self.bbox_norm:.2f}',
-            'Total Charge': self.charge,
-            'Total #Atoms': self.num_atoms,
+            "Centre of Mass": com,
+            "Bounding Box": bbox,
+            "Bounding Box Sides": bbox_sides,
+            "Bounding Box Diagonal": f"{self.bbox_norm:.2f}",
+            "Total Charge": self.charge,
+            "Total #Atoms": self.num_atoms,
         }
 
         from .system import System
         from .group import AtomGroup
+
         if not isinstance(self, System) and not isinstance(self, AtomGroup):
-            file_out = f'{self.__class__.__name__}_{self.name}_{self.index}.pdb'
+            file_out = f"{self.__class__.__name__}_{self.name}_{self.index}.pdb"
 
             clickables = {
                 f'Export PDB "{file_out}"': lambda x: x.write(file_out),
@@ -816,9 +916,9 @@ class AtomGroup():
             clickables = {}
 
         if self.num_atoms == 1:
-            items.pop('Bounding Box')
-            items.pop('Bounding Box Sides')
-            items.pop('Bounding Box Diagonal')
+            items.pop("Bounding Box")
+            items.pop("Bounding Box Sides")
+            items.pop("Bounding Box Diagonal")
 
         return items, clickables
 
@@ -834,7 +934,6 @@ class AtomGroup():
         return len(self.children)
 
     def __getitem__(self, key):
-
         """Access child Atom, Residue or Chain by index or name
 
         group['a0'] : returns the first atom
@@ -851,30 +950,37 @@ class AtomGroup():
 
         if not isinstance(key, str):
             import mout
-            mout.error(f'Cannot index an AtomGroup with a non-string key. See help(molparse.AtomGroup.__getitem__)')
-            raise IndexError(f'mp.AtomGroup.__getitem__ received non-string key')
+
+            mout.error(
+                f"Cannot index an AtomGroup with a non-string key. See help(molparse.AtomGroup.__getitem__)"
+            )
+            raise IndexError(f"mp.AtomGroup.__getitem__ received non-string key")
 
         try:
 
-            if key[0] == 'a':
+            if key[0] == "a":
                 return self.atoms[key[1:]]
 
-            elif key[0] == 'r':
+            elif key[0] == "r":
                 return self.residues[key[1:]]
 
-            elif key[0] == 'c':
+            elif key[0] == "c":
                 return self.chains[key[1:]]
 
             else:
                 import mout
+
                 mout.errorOut(
-                    "key must start with 'a', 'r', or 'c' to refer to an Atom, Residue, or Chain, respectively. See help(molparse.group.__getitem__)")
+                    "key must start with 'a', 'r', or 'c' to refer to an Atom, Residue, or Chain, respectively. See help(molparse.group.__getitem__)"
+                )
 
         except AttributeError:
 
             import mout
-            lookup = {'a': 'atoms', 'c': 'chains', 'r': 'residues'}
+
+            lookup = {"a": "atoms", "c": "chains", "r": "residues"}
             mout.errorOut(f"{type(self)} does not possess {lookup[key[0]]} attribute")
+
 
 # def __del__(self):
 # 	import mout

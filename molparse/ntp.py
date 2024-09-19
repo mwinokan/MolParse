@@ -23,7 +23,14 @@ class NucleobaseTriPhosphate(Residue):
     but constructed automatically when parsing a
     coordinate file via amp.parsePDB or otherwise"""
 
-    def __init__(self, name: str, index: int = None, number: int = None, chain: str = None, atoms=None):
+    def __init__(
+        self,
+        name: str,
+        index: int = None,
+        number: int = None,
+        chain: str = None,
+        atoms=None,
+    ):
         super(NucleobaseTriPhosphate, self).__init__(name, index, number, chain, atoms)
 
         self._backbone = None
@@ -108,14 +115,18 @@ class NucleobaseTriPhosphate(Residue):
 
         import mout
         import mcol
-        mout.header(
-            f"Flipping {mcol.arg}{self.longname} {mcol.clear}{mcol.bold}({mcol.arg}{self.name_number_str}{mcol.clear}{mcol.bold})")
 
-        nucleobase_group = AtomGroup.from_any(f'{self.name}.nucleobase', self.nucleobase)
+        mout.header(
+            f"Flipping {mcol.arg}{self.longname} {mcol.clear}{mcol.bold}({mcol.arg}{self.name_number_str}{mcol.clear}{mcol.bold})"
+        )
+
+        nucleobase_group = AtomGroup.from_any(
+            f"{self.name}.nucleobase", self.nucleobase
+        )
 
         if self.is_purine:
-            source = nucleobase_group.atoms['N9'][0]
-            target = nucleobase_group.atoms['O6'][0]
+            source = nucleobase_group.atoms["N9"][0]
+            target = nucleobase_group.atoms["O6"][0]
 
         vector = target - source
 
@@ -125,12 +136,14 @@ class NucleobaseTriPhosphate(Residue):
             a1.position = a2.position
 
     def mutate(self, newname, show=False):
-        """ Mutate this nucleic triphosphate to another"""
+        """Mutate this nucleic triphosphate to another"""
 
         import mout
         import mcol
+
         mout.header(
-            f"Mutating {mcol.arg}{self.longname}{mcol.clear + mcol.bold} --> {mcol.arg}{LONGNAME[newname]}{mcol.clear + mcol.bold} ({mcol.result}{self.letter}{self.number}{ALPHABET[newname]}{mcol.clear + mcol.bold})")
+            f"Mutating {mcol.arg}{self.longname}{mcol.clear + mcol.bold} --> {mcol.arg}{LONGNAME[newname]}{mcol.clear + mcol.bold} ({mcol.result}{self.letter}{self.number}{ALPHABET[newname]}{mcol.clear + mcol.bold})"
+        )
 
         if self.name == newname:
             mout.warning("Skipping mutation with self == target!")
@@ -144,6 +157,7 @@ class NucleobaseTriPhosphate(Residue):
         }
 
         import os
+
         amp_path = os.path.dirname(__file__)
 
         from .io import parse
@@ -238,7 +252,7 @@ class NucleobaseTriPhosphate(Residue):
 
     def oxidise(self):
 
-        assert self.name == 'GTP'
+        assert self.name == "GTP"
 
         import numpy as np
         from .atom import Atom
@@ -247,15 +261,16 @@ class NucleobaseTriPhosphate(Residue):
         import mcol
 
         mout.header(
-            f"Oxidising {mcol.arg}{self.longname}{mcol.header} --> {mcol.result}{mcol.bold}8-Oxo-7,8-dihydroguanine triphosphate (OGTP)")
+            f"Oxidising {mcol.arg}{self.longname}{mcol.header} --> {mcol.result}{mcol.bold}8-Oxo-7,8-dihydroguanine triphosphate (OGTP)"
+        )
 
         # H8 --> O8
-        self.get_atom('H8').name = 'O8'
+        self.get_atom("H8").name = "O8"
 
         # +H7
-        N7 = self.get_atom('N7')
-        N9 = self.get_atom('N9')
-        C4 = self.get_atom('C4')
+        N7 = self.get_atom("N7")
+        N9 = self.get_atom("N9")
+        C4 = self.get_atom("C4")
         vec = N7 - (N9 + C4) / 2
         vec /= np.linalg.norm(vec)
         atom = Atom("H7")
@@ -263,9 +278,9 @@ class NucleobaseTriPhosphate(Residue):
         self.add_atom(atom)
 
         # +H2
-        N2 = self.get_atom('N2')
-        C2 = self.get_atom('C2')
-        N3 = self.get_atom('N3')
+        N2 = self.get_atom("N2")
+        C2 = self.get_atom("C2")
+        N3 = self.get_atom("N3")
         vec = np.cross(N2 - C2, N3 - C2)
         vec /= np.linalg.norm(vec)
         atom = Atom("H2")
@@ -273,11 +288,11 @@ class NucleobaseTriPhosphate(Residue):
         self.add_atom(atom)
 
         # +H3
-        C6 = self.get_atom('C6')
+        C6 = self.get_atom("C6")
         vec = N3 - C6
         vec /= np.linalg.norm(vec)
         atom = Atom("H3")
         atom.position = N3 + vec
         self.add_atom(atom)
 
-        self.name = 'OGTP'
+        self.name = "OGTP"

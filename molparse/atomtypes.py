@@ -1,8 +1,8 @@
-
 from ase.data import chemical_symbols
 
 chemical_symbols = chemical_symbols[1:]
 chemical_symbols = sorted(chemical_symbols, key=lambda x: len(x), reverse=True)
+
 
 def formula_to_atomtype_dict(formula):
     """
@@ -68,7 +68,7 @@ def atomtype_dict_to_formula(atomtype_dict):
 
     symbols = []
 
-    """For organic compounds, the order is carbon, hydrogen, 
+    """For organic compounds, the order is carbon, hydrogen,
 	then all other elements in alphabetical order of their chemical symbols."""
 
     key = "C"
@@ -101,9 +101,6 @@ def atomtype_dict_to_formula(atomtype_dict):
     return "".join(symbols)
 
 
-
-
-
 def subtract_atomtype_dict(d1, d2, ignore_hydrogen=False):
 
     all_keys = set(d1.keys()) | set(d2.keys())
@@ -112,7 +109,7 @@ def subtract_atomtype_dict(d1, d2, ignore_hydrogen=False):
 
     for key in all_keys:
 
-        if ignore_hydrogen and key == 'H':
+        if ignore_hydrogen and key == "H":
             continue
 
         n1 = d1[key] if key in d1 else 0

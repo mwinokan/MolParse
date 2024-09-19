@@ -1,7 +1,9 @@
 from .group import AtomGroup
 
 from mlog import setup_logger
-logger = setup_logger('MolParse')
+
+logger = setup_logger("MolParse")
+
 
 class Chain(AtomGroup):
     """Class containing covalently bonded Residue objects
@@ -15,6 +17,7 @@ class Chain(AtomGroup):
         super(Chain, self).__init__(name)
 
         from .list import NamedList
+
         self.residues = NamedList()
 
         self.index = None
@@ -49,6 +52,7 @@ class Chain(AtomGroup):
         import mcol
         import mout
         from .residue import Residue
+
         assert isinstance(residue, Residue)
         residue.set_chain_number(self.index)
         residue.set_chain_char(self.name)
@@ -63,7 +67,8 @@ class Chain(AtomGroup):
         self.residues.append(residue)
         if self.num_residues > 1 and self.residues[-1].type != self.type:
             mout.errorOut(
-                f'Differing residue types in same chain {self.residues[-1]} ({self.residues[-1].type}), {self.residues[0]} ({self.type})')
+                f"Differing residue types in same chain {self.residues[-1]} ({self.residues[-1].type}), {self.residues[0]} ({self.type})"
+            )
 
     @property
     def type(self):
@@ -110,10 +115,20 @@ class Chain(AtomGroup):
             if atom.residue == search_residue and atom.name == search_atom:
                 return index
 
-        mout.errorOut("Atom " +
-                      mcol.arg + search_atom +
-                      mcol.error + " could not be found in residue" +
-                      mcol.arg + search_residue + " of chain " + mcol.arg + self.name, fatal=True, code="Chain.1")
+        mout.errorOut(
+            "Atom "
+            + mcol.arg
+            + search_atom
+            + mcol.error
+            + " could not be found in residue"
+            + mcol.arg
+            + search_residue
+            + " of chain "
+            + mcol.arg
+            + self.name,
+            fatal=True,
+            code="Chain.1",
+        )
 
     def copy(self, fast=False):
         """return a deepcopy of the Chain"""
@@ -124,6 +139,7 @@ class Chain(AtomGroup):
             return new_chain
         else:
             import copy
+
             return copy.deepcopy(self)
 
     def add_atom(self, atom):
@@ -144,17 +160,19 @@ class Chain(AtomGroup):
     def children(self):
         return self.residues
 
-    def remove_residues(self, 
-        *, 
+    def remove_residues(
+        self,
+        *,
         names: list | None = None,
-        indices: list | None = None, 
-        numbers: list | None = None, 
+        indices: list | None = None,
+        numbers: list | None = None,
         verbosity: int = 2,
     ) -> int:
 
         assert names or indices or numbers, "must supply names, indices or numbers"
 
         import mcol
+
         mout = logger
 
         number_deleted = 0
@@ -177,7 +195,6 @@ class Chain(AtomGroup):
                     mout.warning(f"Removed residue {residue.name_number_chain_str}")
 
         if verbosity > 0:
-            mout.var('#residues deleted', number_deleted)
+            mout.var("#residues deleted", number_deleted)
 
         return number_deleted
-        

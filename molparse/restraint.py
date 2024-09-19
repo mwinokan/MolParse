@@ -1,5 +1,4 @@
 class Restraint:
-
     def __init__(self, atoms, type=None, weights=None, force_constant=None):
 
         self.atoms = atoms
@@ -16,15 +15,15 @@ class Restraint:
     def determine_type(self):
         import mout
 
-        ''' Restraint types:
+        """ Restraint types:
                 Two-Atom: Distance							Implemented
                 Three-Atom: Angle							Implemented
-                Four-Atom: Torsional / J-Coupling			
+                Four-Atom: Torsional / J-Coupling
                 Four-Atom: Generalised Distance (Transfer)	Implemented
-                Five-Atom: Plane-Point						
-                Six-Atom: Generalised Distance				
+                Five-Atom: Plane-Point
+                Six-Atom: Generalised Distance
                 Eight-Atom: Plane-Plane						Implemented
-        '''
+        """
 
         if len(self.atoms) == 2:
             return "distance"
@@ -46,10 +45,27 @@ class Restraint:
         if self.type == "distance":
             return "dist(" + self.atoms[0].name + "-" + self.atoms[1].name + ")"
         elif self.type == "transfer":
-            return "RC(" + self.atoms[0].name + "-" + self.atoms[1].name + "," + self.atoms[2].name + "-" + self.atoms[
-                3].name + ")"
+            return (
+                "RC("
+                + self.atoms[0].name
+                + "-"
+                + self.atoms[1].name
+                + ","
+                + self.atoms[2].name
+                + "-"
+                + self.atoms[3].name
+                + ")"
+            )
         elif self.type == "angle":
-            return "ang(" + self.atoms[0].name + "," + self.atoms[1].name + "," + self.atoms[2].name + ")"
+            return (
+                "ang("
+                + self.atoms[0].name
+                + ","
+                + self.atoms[1].name
+                + ","
+                + self.atoms[2].name
+                + ")"
+            )
         elif self.type == "plane-plane":
             return "plane-plane(...)"
         else:
@@ -106,6 +122,7 @@ class Restraint:
             return self._values
         else:
             from .system import System
+
             assert isinstance(system_list, list)
             values = []
             for system in system_list:
@@ -173,11 +190,26 @@ class Restraint:
                 mout.varOut("atoms", self.atoms)
                 mout.varOut("new_residues", new_residues)
                 mout.errorOut(
-                    "Could not find match for " + atom.name + " (" + atom.residue + ")" + " in residues " + str(
-                        new_residues), fatal=True, code="Restraint.fetch_atoms")
+                    "Could not find match for "
+                    + atom.name
+                    + " ("
+                    + atom.residue
+                    + ")"
+                    + " in residues "
+                    + str(new_residues),
+                    fatal=True,
+                    code="Restraint.fetch_atoms",
+                )
 
         if verbosity > 0:
-            mout.out("Retrieved " + str(count) + " atoms from " + new_system.name + "'s " + str(new_residues))
+            mout.out(
+                "Retrieved "
+                + str(count)
+                + " atoms from "
+                + new_system.name
+                + "'s "
+                + str(new_residues)
+            )
 
         self.atoms = new_atoms
 
@@ -228,6 +260,7 @@ class Restraint:
 
     def copy(self):
         import copy
+
         return copy.deepcopy(self)
 
     def __repr__(self):

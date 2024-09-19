@@ -13,6 +13,7 @@ class Network(object):
 
     def relax_pos(self, seed=None):
         import networkx as nx
+
         if seed:
             return nx.spring_layout(self._graph, seed=seed)
         else:
@@ -39,7 +40,7 @@ class Network(object):
 
         ax = plt.gca()
         ax.margins(0.2)
-        plt.axis('off')
+        plt.axis("off")
 
         if show:
             plt.show()
