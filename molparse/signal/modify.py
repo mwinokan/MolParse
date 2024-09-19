@@ -14,7 +14,12 @@ def runningAverage(xdata, ydata, averaging_window=5, cutoff_style=None, debug=Fa
         result_y = []
 
         for dataset in ydata:
-            x, y = runningAverage(xdata, dataset, averaging_window=averaging_window, cutoff_style=cutoff_style)
+            x, y = runningAverage(
+                xdata,
+                dataset,
+                averaging_window=averaging_window,
+                cutoff_style=cutoff_style,
+            )
             result_y.append(y)
 
         result_x = x
@@ -43,7 +48,7 @@ def runningAverage(xdata, ydata, averaging_window=5, cutoff_style=None, debug=Fa
 
             else:
 
-                y = sum(ydata[i - averaging_window:i]) / averaging_window
+                y = sum(ydata[i - averaging_window : i]) / averaging_window
 
             result_y.append(y)
 

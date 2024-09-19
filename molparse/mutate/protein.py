@@ -1,6 +1,7 @@
 def to_alanine(residue):
     """Remove the amino acid's sidechain and replace with a methyl group"""
     from ..amino import AminoAcid
+
     assert isinstance(residue, AminoAcid)
 
     import mout
@@ -25,18 +26,21 @@ def replace_sidechain(residue, reference):
 
     import mout
     from ..amino import AminoAcid
+
     assert isinstance(residue, AminoAcid)
     assert isinstance(reference, AminoAcid)
 
     # common sidechain atoms
     common = list(set(residue.sidechain_names).intersection(reference.sidechain_names))
     nonH_common = [n for n in common if not n.startswith("H")]
-    mout.out(f"{residue} and {reference} share {len(nonH_common)} non-hydrogen side chain atoms")
+    mout.out(
+        f"{residue} and {reference} share {len(nonH_common)} non-hydrogen side chain atoms"
+    )
 
     if len(nonH_common) > 1:
 
         # align using these atoms
-        align = ['CA'] + nonH_common[:3]
+        align = ["CA"] + nonH_common[:3]
 
         # align the reference to the target
         res_map = [residue.get_atom(n) for n in align]

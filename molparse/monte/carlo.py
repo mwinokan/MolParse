@@ -2,15 +2,23 @@ from .rand import random_point_spherical
 import numpy as np
 
 
-def mc_spherical(volume, radius: float, proximity: float, origin: np.ndarray = None, samples: int = 4000,
-                 boolean: bool = False, inverse: bool = False, points: bool = False):
+def mc_spherical(
+    volume,
+    radius: float,
+    proximity: float,
+    origin: np.ndarray = None,
+    samples: int = 4000,
+    boolean: bool = False,
+    inverse: bool = False,
+    points: bool = False,
+):
     """
-        volume: CompoundVolume object
-        radius: radius of testing sphere
-        proximity: value to pass to volume.is_within
-        samples: number of MC samples
-        boolean: return True/False if any valid point in testing sphere
-        inverse: points within the volume are invalid
+    volume: CompoundVolume object
+    radius: radius of testing sphere
+    proximity: value to pass to volume.is_within
+    samples: number of MC samples
+    boolean: return True/False if any valid point in testing sphere
+    inverse: points within the volume are invalid
     """
 
     num_in = 0

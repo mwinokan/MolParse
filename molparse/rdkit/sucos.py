@@ -1,4 +1,3 @@
-
 # implementation of SuCOS from https://github.com/susanhleung/SuCOS https://doi.org/10.26434/chemrxiv.8100203.v1
 
 import os
@@ -10,148 +9,219 @@ from rdkit.Chem.FeatMaps import FeatMaps
 from rdkit.Chem.rdmolops import CombineMols
 
 from mlog import setup_logger
-logger = setup_logger('MolParse')
+
+logger = setup_logger("MolParse")
 
 # feature setup
 
-feature_factory = AllChem.BuildFeatureFactory(os.path.join(RDConfig.RDDataDir, 'BaseFeatures.fdef'))
+feature_factory = AllChem.BuildFeatureFactory(
+    os.path.join(RDConfig.RDDataDir, "BaseFeatures.fdef")
+)
 
 feature_map_params = {}
 for k in feature_factory.GetFeatureFamilies():
     feature_params = FeatMaps.FeatMapParams()
     feature_map_params[k] = feature_params
 
-keep = ('Donor', 'Acceptor', 'NegIonizable', 'PosIonizable', 'ZnBinder',
-        'Aromatic', 'Hydrophobe', 'LumpedHydrophobe')
+keep = (
+    "Donor",
+    "Acceptor",
+    "NegIonizable",
+    "PosIonizable",
+    "ZnBinder",
+    "Aromatic",
+    "Hydrophobe",
+    "LumpedHydrophobe",
+)
 
-def feature_map_score(inspiration, derivative, score_mode=FeatMaps.FeatMapScoreMode.All, debug=False, draw=False):
 
-	inspiration_features = [f for f in feature_factory.GetFeaturesForMol(inspiration) if f.GetFamily() in keep]
-	derivative_features = [f for f in feature_factory.GetFeaturesForMol(derivative) if f.GetFamily() in keep]
+def feature_map_score(
+    inspiration,
+    derivative,
+    score_mode=FeatMaps.FeatMapScoreMode.All,
+    debug=False,
+    draw=False,
+):
 
-	if draw:
-		from .draw import draw_mol
-		draw_mol(inspiration, feats=inspiration_features)
-		draw_mol(derivative, feats=derivative_features)
-	
-	inspiration_feature_map = FeatMaps.FeatMap(feats=inspiration_features, weights=[1] * len(inspiration_features), params=feature_map_params)
-	derivative_feature_map = FeatMaps.FeatMap(feats=derivative_features, weights=[1] * len(derivative_features), params=feature_map_params)
-	
-	inspiration_feature_map.scoreMode = score_mode
+    inspiration_features = [
+        f
+        for f in feature_factory.GetFeaturesForMol(inspiration)
+        if f.GetFamily() in keep
+    ]
+    derivative_features = [
+        f
+        for f in feature_factory.GetFeaturesForMol(derivative)
+        if f.GetFamily() in keep
+    ]
 
-	feature_score = inspiration_feature_map.ScoreFeats(derivative_features)
+    if draw:
+        from .draw import draw_mol
 
-	score_vector = [0]*inspiration_feature_map.GetNumFeatures()
-	
-	inspiration_feature_map.ScoreFeats(derivative_features, mapScoreVect=score_vector)
+        draw_mol(inspiration, feats=inspiration_features)
+        draw_mol(derivative, feats=derivative_features)
 
-	if debug:
-		for feature, score in zip(inspiration_features, score_vector):
-			logger.var(feature.GetFamily(), score)
+    inspiration_feature_map = FeatMaps.FeatMap(
+        feats=inspiration_features,
+        weights=[1] * len(inspiration_features),
+        params=feature_map_params,
+    )
+    derivative_feature_map = FeatMaps.FeatMap(
+        feats=derivative_features,
+        weights=[1] * len(derivative_features),
+        params=feature_map_params,
+    )
 
-	feature_score /= min(inspiration_feature_map.GetNumFeatures(), len(derivative_features))
-	
-	return feature_score
+    inspiration_feature_map.scoreMode = score_mode
 
-def multi_feature_map_score(inspirations, derivative, draw=False, debug=False, score_mode=FeatMaps.FeatMapScoreMode.All):
+    feature_score = inspiration_feature_map.ScoreFeats(derivative_features)
 
-	inspiration_feature_lists = [[f for f in feature_factory.GetFeaturesForMol(x) if f.GetFamily() in keep] for x in inspirations]
-	derivative_features = [f for f in feature_factory.GetFeaturesForMol(derivative) if f.GetFamily() in keep]
+    score_vector = [0] * inspiration_feature_map.GetNumFeatures()
 
-	combined_inspiration_features = sum(inspiration_feature_lists, [])
+    inspiration_feature_map.ScoreFeats(derivative_features, mapScoreVect=score_vector)
 
-	if draw:
-		from .draw import draw_mol
+    if debug:
+        for feature, score in zip(inspiration_features, score_vector):
+            logger.var(feature.GetFamily(), score)
 
-		for inspiration, features in zip(inspirations, inspiration_feature_lists):
-			draw_mol(inspiration, feats=features)
-			
-		draw_mol(derivative, feats=combined_inspiration_features)
-		
-		draw_mol(derivative, feats=derivative_features)
+    feature_score /= min(
+        inspiration_feature_map.GetNumFeatures(), len(derivative_features)
+    )
 
-	derivative_feature_map = FeatMaps.FeatMap(feats=derivative_features, weights=[1] * len(derivative_features), params=feature_map_params)
+    return feature_score
 
-	# loop over inspirations
 
-	score_dict = {}
+def multi_feature_map_score(
+    inspirations,
+    derivative,
+    draw=False,
+    debug=False,
+    score_mode=FeatMaps.FeatMapScoreMode.All,
+):
 
-	for i,inspiration in enumerate(inspirations):
+    inspiration_feature_lists = [
+        [f for f in feature_factory.GetFeaturesForMol(x) if f.GetFamily() in keep]
+        for x in inspirations
+    ]
+    derivative_features = [
+        f
+        for f in feature_factory.GetFeaturesForMol(derivative)
+        if f.GetFamily() in keep
+    ]
 
-		score_dict[i] = {}
+    combined_inspiration_features = sum(inspiration_feature_lists, [])
 
-		if debug:
-			logger.title(inspiration)
+    if draw:
+        from .draw import draw_mol
 
-		inspiration_features = [f for f in feature_factory.GetFeaturesForMol(inspiration) if f.GetFamily() in keep]
-		inspiration_feature_map = FeatMaps.FeatMap(feats=inspiration_features, weights=[1] * len(inspiration_features), params=feature_map_params)
+        for inspiration, features in zip(inspirations, inspiration_feature_lists):
+            draw_mol(inspiration, feats=features)
 
-		score_vector = [0]*derivative_feature_map.GetNumFeatures()
+        draw_mol(derivative, feats=combined_inspiration_features)
 
-		feature_score = derivative_feature_map.ScoreFeats(inspiration_features, mapScoreVect=score_vector)
+        draw_mol(derivative, feats=derivative_features)
 
-		for j, (feature, score) in enumerate(zip(derivative_features, score_vector)):
-			if debug:
-				logger.var(feature.GetFamily(), score)
+    derivative_feature_map = FeatMaps.FeatMap(
+        feats=derivative_features,
+        weights=[1] * len(derivative_features),
+        params=feature_map_params,
+    )
 
-			score_dict[i][j] = score
+    # loop over inspirations
 
-	i_list = list(score_dict.keys())
+    score_dict = {}
 
-	combined_score_vector = []
+    for i, inspiration in enumerate(inspirations):
 
-	for j, feature in enumerate(derivative_features):
+        score_dict[i] = {}
 
-		scores = [score_dict[i][j] for i in i_list]
+        if debug:
+            logger.title(inspiration)
 
-		best_score = max(scores)
+        inspiration_features = [
+            f
+            for f in feature_factory.GetFeaturesForMol(inspiration)
+            if f.GetFamily() in keep
+        ]
+        inspiration_feature_map = FeatMaps.FeatMap(
+            feats=inspiration_features,
+            weights=[1] * len(inspiration_features),
+            params=feature_map_params,
+        )
 
-		combined_score_vector.append(best_score)
+        score_vector = [0] * derivative_feature_map.GetNumFeatures()
 
-		# print(feature.GetFamily(), scores, best_score)
+        feature_score = derivative_feature_map.ScoreFeats(
+            inspiration_features, mapScoreVect=score_vector
+        )
 
-	feature_score = sum(combined_score_vector)/len(derivative_features)
-	
-	return feature_score
+        for j, (feature, score) in enumerate(zip(derivative_features, score_vector)):
+            if debug:
+                logger.var(feature.GetFamily(), score)
 
-def SuCOS_score(inspiration, derivative, return_all=False, print_scores=False, **kwargs):
+            score_dict[i][j] = score
 
-	if isinstance(inspiration, list):
-		multi=True
-	else:
-		multi=False
+    i_list = list(score_dict.keys())
 
-	if multi:
-		feature_score = multi_feature_map_score(inspiration, derivative, **kwargs)
-	else:
-		feature_score = feature_map_score(inspiration, derivative, **kwargs)
+    combined_score_vector = []
 
-	feature_score = clip(feature_score, 0, 1)
-	
-	if multi:
+    for j, feature in enumerate(derivative_features):
 
-		mol = inspiration.pop()
+        scores = [score_dict[i][j] for i in i_list]
 
-		while inspiration:
-			mol = CombineMols(mol, inspiration.pop())
+        best_score = max(scores)
 
-		protrude_dist = rdShapeHelpers.ShapeProtrudeDist(derivative, mol, allowReordering=False)
+        combined_score_vector.append(best_score)
 
-	else:
-		protrude_dist = rdShapeHelpers.ShapeProtrudeDist(inspiration, derivative, allowReordering=False)
+        # print(feature.GetFamily(), scores, best_score)
 
-	protrude_dist = clip(protrude_dist, 0, 1)
-	volume_score = 1 - protrude_dist
+    feature_score = sum(combined_score_vector) / len(derivative_features)
 
-	SuCOS_score = (feature_score + volume_score)*0.5
+    return feature_score
 
-	if print_scores:
-		logger.var("feature_score", feature_score)
-		logger.var("volume_score", volume_score)
-		logger.var("average_score", SuCOS_score)
 
-	if return_all:
-		return SuCOS_score, feature_score, volume_score
-	else:
-		return SuCOS_score
+def SuCOS_score(
+    inspiration, derivative, return_all=False, print_scores=False, **kwargs
+):
 
+    if isinstance(inspiration, list):
+        multi = True
+    else:
+        multi = False
+
+    if multi:
+        feature_score = multi_feature_map_score(inspiration, derivative, **kwargs)
+    else:
+        feature_score = feature_map_score(inspiration, derivative, **kwargs)
+
+    feature_score = clip(feature_score, 0, 1)
+
+    if multi:
+
+        mol = inspiration.pop()
+
+        while inspiration:
+            mol = CombineMols(mol, inspiration.pop())
+
+        protrude_dist = rdShapeHelpers.ShapeProtrudeDist(
+            derivative, mol, allowReordering=False
+        )
+
+    else:
+        protrude_dist = rdShapeHelpers.ShapeProtrudeDist(
+            inspiration, derivative, allowReordering=False
+        )
+
+    protrude_dist = clip(protrude_dist, 0, 1)
+    volume_score = 1 - protrude_dist
+
+    SuCOS_score = (feature_score + volume_score) * 0.5
+
+    if print_scores:
+        logger.var("feature_score", feature_score)
+        logger.var("volume_score", volume_score)
+        logger.var("average_score", SuCOS_score)
+
+    if return_all:
+        return SuCOS_score, feature_score, volume_score
+    else:
+        return SuCOS_score

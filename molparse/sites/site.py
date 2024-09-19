@@ -11,8 +11,16 @@ import mgo
 class Site:
     """Protein Interaction Site"""
 
-    def __init__(self, interaction_types: list, atoms: list, position: np.ndarray, sidechain: bool, res_name: str,
-                 res_number: int, res_chain: str):
+    def __init__(
+        self,
+        interaction_types: list,
+        atoms: list,
+        position: np.ndarray,
+        sidechain: bool,
+        res_name: str,
+        res_number: int,
+        res_chain: str,
+    ):
 
         self.types = interaction_types
         self.atoms = atoms
@@ -29,7 +37,7 @@ class Site:
 
     @property
     def type_str(self):
-        return ', '.join(self.types)
+        return ", ".join(self.types)
 
     @property
     def atom_names(self):
@@ -37,11 +45,11 @@ class Site:
 
     @property
     def atom_str(self):
-        return ', '.join(self.atom_names)
+        return ", ".join(self.atom_names)
 
     @property
     def name(self):
-        return f'{self.res_name} {self.res_number} {self.res_chain} {self.type_str} {self.atom_str}'
+        return f"{self.res_name} {self.res_number} {self.res_chain} {self.type_str} {self.atom_str}"
 
     def __repr__(self):
         return self.name
@@ -49,16 +57,24 @@ class Site:
     def summary(self):
         mout.out(f"{mcol.varName}{self.name}{mcol.clear}: {self.position}")
 
-    def accessibility(self, residue: Residue, candidates: list, cutoff: float = 5.0, proximity: float = 1.5,
-                      samples: int = 4000, skip_hydrogen: bool = True, fig=None):
+    def accessibility(
+        self,
+        residue: Residue,
+        candidates: list,
+        cutoff: float = 5.0,
+        proximity: float = 1.5,
+        samples: int = 4000,
+        skip_hydrogen: bool = True,
+        fig=None,
+    ):
         """
 
-            residue: parent mp.Residue object of the Site
-            candidates: list of mp.Residue objects to consider for occlusion
-            cutoff: the radius within which to look for valid binding pocket points
-            proximity: minimum radius of binding pocket point
-            samples: number of monte carlo samples for volume calculation
-            skip_hydrogen: do not calculate occlusion by hydrogen atoms
+        residue: parent mp.Residue object of the Site
+        candidates: list of mp.Residue objects to consider for occlusion
+        cutoff: the radius within which to look for valid binding pocket points
+        proximity: minimum radius of binding pocket point
+        samples: number of monte carlo samples for volume calculation
+        skip_hydrogen: do not calculate occlusion by hydrogen atoms
 
         """
 
@@ -68,7 +84,7 @@ class Site:
 
         for res in [residue] + self.nearby:
             for atom in res.atoms:
-                if skip_hydrogen and atom.species == 'H':
+                if skip_hydrogen and atom.species == "H":
                     continue
 
                 d = np.linalg.norm(atom.np_pos - self.position)
@@ -79,8 +95,12 @@ class Site:
                 if d > atom.vdw_radius + cutoff:
                     continue
 
-                cone = CappedCone(self.position, atom.np_pos, atom.vdw_radius,
-                                  name=f'{res.name_number_str} {atom.name_number_str}')
+                cone = CappedCone(
+                    self.position,
+                    atom.np_pos,
+                    atom.vdw_radius,
+                    name=f"{res.name_number_str} {atom.name_number_str}",
+                )
 
                 self.forbidden_volume.add_volume(cone)
 
@@ -100,9 +120,10 @@ class Site:
             )
 
             import plotly.graph_objects as go
-            trace = mgo.point_trace(points_in, 'valid')
+
+            trace = mgo.point_trace(points_in, "valid")
             fig.add_trace(trace)
-            trace = mgo.point_trace(points_out, 'invalid')
+            trace = mgo.point_trace(points_out, "invalid")
             fig.add_trace(trace)
 
             self.accessible = bool(points_in)
@@ -120,6 +141,7 @@ class Site:
             )
 
         return self.accessible
+
 
 # add __eq__ to compare to PLIP interaction
 

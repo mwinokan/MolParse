@@ -1,10 +1,14 @@
 def get_hbond_pairs(residue1, residue2):
     import mout
     import mcol
+
     legal = check_legality(residue1, residue2)
 
     if not legal:
-        mout.errorOut("Incompatible DNA residues " + str(residue1) + " & " + str(residue2), fatal=True)
+        mout.errorOut(
+            "Incompatible DNA residues " + str(residue1) + " & " + str(residue2),
+            fatal=True,
+        )
 
     if residue1.name.startswith("DA") or residue1.name == "ADE":
         DA_N1 = residue1.get_atom(name="N1")
@@ -14,8 +18,7 @@ def get_hbond_pairs(residue1, residue2):
         DT_O4 = residue2.get_atom(name="O4")
         DT_N3 = residue2.get_atom(name="N3")
         DT_H3 = residue2.get_atom(name="H3")
-        return [[DA_N1, DT_N3, DT_H3],
-                [DT_O4, DA_N6, DA_H61, DA_H62]]
+        return [[DA_N1, DT_N3, DT_H3], [DT_O4, DA_N6, DA_H61, DA_H62]]
     elif residue1.name.startswith("DT") or residue1.name == "THY":
         DA_N1 = residue2.get_atom(name="N1")
         DA_N6 = residue2.get_atom(name="N6")
@@ -24,8 +27,7 @@ def get_hbond_pairs(residue1, residue2):
         DT_O4 = residue1.get_atom(name="O4")
         DT_N3 = residue1.get_atom(name="N3")
         DT_H3 = residue1.get_atom(name="H3")
-        return [[DA_N1, DT_N3, DT_H3],
-                [DT_O4, DA_N6, DA_H61, DA_H62]]
+        return [[DA_N1, DT_N3, DT_H3], [DT_O4, DA_N6, DA_H61, DA_H62]]
     elif residue1.name.startswith("DC") or residue1.name == "CYT":
         DC_O2 = residue1.get_atom(name="O2")
         DC_N3 = residue1.get_atom(name="N3")
@@ -39,9 +41,11 @@ def get_hbond_pairs(residue1, residue2):
         DG_H22 = residue2.get_atom(name="H22")
         DG_C6 = residue2.get_atom(name="C6")
         DG_O6 = residue2.get_atom(name="O6")
-        return [[DC_O2, DG_N2, DG_H21, DG_H22],
-                [DC_N3, DG_N1, DG_H1],
-                [DG_O6, DC_N4, DC_H41, DC_H42]]
+        return [
+            [DC_O2, DG_N2, DG_H21, DG_H22],
+            [DC_N3, DG_N1, DG_H1],
+            [DG_O6, DC_N4, DC_H41, DC_H42],
+        ]
     elif residue1.name.startswith("DG") or residue1.name == "GUA":
         DC_O2 = residue2.get_atom(name="O2")
         DC_N3 = residue2.get_atom(name="N3")
@@ -55,9 +59,11 @@ def get_hbond_pairs(residue1, residue2):
         DG_H22 = residue1.get_atom(name="H22")
         DG_C6 = residue1.get_atom(name="C6")
         DG_O6 = residue1.get_atom(name="O6")
-        return [[DC_O2, DG_N2, DG_H21, DG_H22],
-                [DC_N3, DG_N1, DG_H1],
-                [DG_O6, DC_N4, DC_H41, DC_H42]]
+        return [
+            [DC_O2, DG_N2, DG_H21, DG_H22],
+            [DC_N3, DG_N1, DG_H1],
+            [DG_O6, DC_N4, DC_H41, DC_H42],
+        ]
 
     return False
 
@@ -86,11 +92,15 @@ def fix_termini(chain):
 
 def make_5ter(residue):
     import mout
-    mout.warningOut("amp.dna.make_5ter is deprecated. Use NucleicAcid.make_5ter instead")
+
+    mout.warningOut(
+        "amp.dna.make_5ter is deprecated. Use NucleicAcid.make_5ter instead"
+    )
 
     from ..residue import res_type
+
     print(residue.name, res_type(residue.name))
-    assert res_type(residue.name) == 'DNA'
+    assert res_type(residue.name) == "DNA"
 
     # Append 5 to residue name
     if not residue.name.endswith("5"):
@@ -116,10 +126,14 @@ def make_5ter(residue):
 
 def make_3ter(residue):
     import mout
-    mout.warningOut("amp.dna.make_3ter is deprecated. Use NucleicAcid.make_5ter instead")
+
+    mout.warningOut(
+        "amp.dna.make_3ter is deprecated. Use NucleicAcid.make_5ter instead"
+    )
 
     from ..residue import res_type
-    assert res_type(residue.name) == 'DNA'
+
+    assert res_type(residue.name) == "DNA"
 
     # Append 3 to residue name
     if not residue.name.endswith("3"):
@@ -157,7 +171,7 @@ def prep4gmx(system, verbosity=1):
 
     # Deal with DNA termini
     for chain in system.chains:
-        if chain.type == 'DNA':
+        if chain.type == "DNA":
             fix_termini(chain)
 
 
@@ -167,5 +181,4 @@ def get_dna_basepairs(chain1, chain2):
     assert chain2.type == "DNA"
     assert len(chain1) == len(chain2)
 
-    return [[a, b] for a, b in zip(chain1.residues,
-                                   reversed(chain2.residues))]
+    return [[a, b] for a, b in zip(chain1.residues, reversed(chain2.residues))]

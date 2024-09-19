@@ -1,9 +1,9 @@
-def csv_strip(filename, output=None, overwrite=False, comment_chars='#@!'):
+def csv_strip(filename, output=None, overwrite=False, comment_chars="#@!"):
     import re
     import mout
     import mcol
 
-    with open(filename, 'r') as file:
+    with open(filename, "r") as file:
         lines = file.readlines()
     file.close()
 
@@ -14,10 +14,10 @@ def csv_strip(filename, output=None, overwrite=False, comment_chars='#@!'):
         mout.warningOut("Overwriting " + mcol.file + filename + mcol.warning + "!")
         output = filename
 
-    file = open(output, 'w')
+    file = open(output, "w")
 
-    test_line = re.sub(r'\t', ' ', lines[0])
-    test_line = re.sub(' +', ' ', test_line)
+    test_line = re.sub(r"\t", " ", lines[0])
+    test_line = re.sub(" +", " ", test_line)
     test_line = test_line.strip()
 
     if test_line != lines[0]:
@@ -26,18 +26,26 @@ def csv_strip(filename, output=None, overwrite=False, comment_chars='#@!'):
             if line[0] in comment_chars:
                 continue
 
-            line = re.sub(r'\t', ' ', line)
-            line = re.sub(' +', ' ', line)
+            line = re.sub(r"\t", " ", line)
+            line = re.sub(" +", " ", line)
             line = line.strip()
-            file.write(line + '\n')
+            file.write(line + "\n")
     else:
         mout.warningOut("Skipping already stipped file: " + filename)
 
     file.close()
 
 
-def parseDat(filename, num_columns=2, header_rows=1, delimiter=' ', debug=False, pre_strip=False, clean_nan=False,
-             comment_chars='#@!'):
+def parseDat(
+    filename,
+    num_columns=2,
+    header_rows=1,
+    delimiter=" ",
+    debug=False,
+    pre_strip=False,
+    clean_nan=False,
+    comment_chars="#@!",
+):
     import mout
     import pandas
     import os
@@ -56,29 +64,38 @@ def parseDat(filename, num_columns=2, header_rows=1, delimiter=' ', debug=False,
 
     if pre_strip:
         # csv_strip(filename,overwrite=True)
-        csv_strip(filename, output="__temp__", overwrite=False, comment_chars=comment_chars)
+        csv_strip(
+            filename, output="__temp__", overwrite=False, comment_chars=comment_chars
+        )
 
-        dataframe = pandas.read_csv("__temp__",
-                                    skiprows=header_rows,
-                                    delimiter=delimiter,
-                                    usecols=columns,
-                                    names=labels)
+        dataframe = pandas.read_csv(
+            "__temp__",
+            skiprows=header_rows,
+            delimiter=delimiter,
+            usecols=columns,
+            names=labels,
+        )
 
         os.system("rm __temp__")
 
     else:
 
-        dataframe = pandas.read_csv(filename,
-                                    skiprows=header_rows,
-                                    delimiter=delimiter,
-                                    usecols=columns,
-                                    names=labels, comment='#')
+        dataframe = pandas.read_csv(
+            filename,
+            skiprows=header_rows,
+            delimiter=delimiter,
+            usecols=columns,
+            names=labels,
+            comment="#",
+        )
 
-    if debug: print(dataframe)
+    if debug:
+        print(dataframe)
 
     if num_columns > 2:
 
-        if debug: mout.headerOut("many")
+        if debug:
+            mout.headerOut("many")
 
         big_y = []
         x = dataframe.iloc[:, 0].values
@@ -89,7 +106,8 @@ def parseDat(filename, num_columns=2, header_rows=1, delimiter=' ', debug=False,
 
             big_y.append(y)
 
-            if debug: mout.varOut("big_y len", len(big_y))
+            if debug:
+                mout.varOut("big_y len", len(big_y))
 
         if clean_nan:
             if num_columns > 2:

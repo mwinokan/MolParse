@@ -9,7 +9,13 @@ def methylate(residue, site, position=None):
     a0_HB_CB_CS = 110.10  # degrees
 
     # place CB
-    CB = Atom("CB", position=position, residue=residue.name, chain=residue.chain, res_number=residue.number)
+    CB = Atom(
+        "CB",
+        position=position,
+        residue=residue.name,
+        chain=residue.chain,
+        res_number=residue.number,
+    )
     residue.add_atom(CB)
 
     # distances
@@ -27,19 +33,37 @@ def methylate(residue, site, position=None):
     dist_X = r_XY * np.sin(0.0)
     dist_Y = r_XY * np.cos(0.0)
     pos_HB1 = CB + vec_CA_CB * dist_Z + vec_X * dist_X + dist_Y * vec_Y
-    HB1 = Atom("HB1", position=pos_HB1, residue=residue.name, chain=residue.chain, res_number=residue.number)
+    HB1 = Atom(
+        "HB1",
+        position=pos_HB1,
+        residue=residue.name,
+        chain=residue.chain,
+        res_number=residue.number,
+    )
     residue.add_atom(HB1)
 
     # place HB2
     dist_X = r_XY * np.sin(2 / 3 * np.pi)
     dist_Y = r_XY * np.cos(2 / 3 * np.pi)
     pos_HB2 = CB + vec_CA_CB * dist_Z + vec_X * dist_X + dist_Y * vec_Y
-    HB2 = Atom("HB2", position=pos_HB2, residue=residue.name, chain=residue.chain, res_number=residue.number)
+    HB2 = Atom(
+        "HB2",
+        position=pos_HB2,
+        residue=residue.name,
+        chain=residue.chain,
+        res_number=residue.number,
+    )
     residue.add_atom(HB2)
 
     # place HB3
     dist_X = r_XY * np.sin(4 / 3 * np.pi)
     dist_Y = r_XY * np.cos(4 / 3 * np.pi)
     pos_HB3 = CB + vec_CA_CB * dist_Z + vec_X * dist_X + dist_Y * vec_Y
-    HB3 = Atom("HB3", position=pos_HB3, residue=residue.name, chain=residue.chain, res_number=residue.number)
+    HB3 = Atom(
+        "HB3",
+        position=pos_HB3,
+        residue=residue.name,
+        chain=residue.chain,
+        res_number=residue.number,
+    )
     residue.add_atom(HB3)

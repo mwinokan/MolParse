@@ -5,32 +5,35 @@ import numpy as np
 from .mol import mol_to_pdb_block
 from ..group import AtomGroup
 
-FDEF = AllChem.BuildFeatureFactory(os.path.join(RDConfig.RDDataDir, 'BaseFeatures.fdef'))
+FDEF = AllChem.BuildFeatureFactory(
+    os.path.join(RDConfig.RDDataDir, "BaseFeatures.fdef")
+)
 FEATURE_FAMILIES = FDEF.GetFeatureFamilies()
 
 COMPLEMENTARY_FEATURES = {
-    "Donor": ["Acceptor"], # hydrogen bond
-    "Acceptor": ["Donor"], # hydrogen bond
-    "NegIonizable": ["PosIonizable"], # electrostatic
-    "PosIonizable": ["NegIonizable", "Aromatic"], # electrostatic, pi-cation
-    "Aromatic": ["Aromatic", "PosIonizable"], # pi-stacking, pi-cation
-    "Hydrophobe": ["Hydrophobe", "LumpedHydrophobe"], # hydrophobic
-    "LumpedHydrophobe": ["Hydrophobe", "LumpedHydrophobe"], # hydrophobic
+    "Donor": ["Acceptor"],  # hydrogen bond
+    "Acceptor": ["Donor"],  # hydrogen bond
+    "NegIonizable": ["PosIonizable"],  # electrostatic
+    "PosIonizable": ["NegIonizable", "Aromatic"],  # electrostatic, pi-cation
+    "Aromatic": ["Aromatic", "PosIonizable"],  # pi-stacking, pi-cation
+    "Hydrophobe": ["Hydrophobe", "LumpedHydrophobe"],  # hydrophobic
+    "LumpedHydrophobe": ["Hydrophobe", "LumpedHydrophobe"],  # hydrophobic
 }
 
 INTERACTION_TYPES = {
-    ('Hydrophobe', 'Hydrophobe') : 'Hydrophobic',
-    ('LumpedHydrophobe', 'Hydrophobe') : 'Hydrophobic',
-    ('Hydrophobe', 'LumpedHydrophobe') : 'Hydrophobic',
-    ('LumpedHydrophobe', 'LumpedHydrophobe') : 'Hydrophobic',
-    ('Donor', 'Acceptor') : 'Hydrogen Bond',
-    ('Acceptor', 'Donor') : 'Hydrogen Bond',
+    ("Hydrophobe", "Hydrophobe"): "Hydrophobic",
+    ("LumpedHydrophobe", "Hydrophobe"): "Hydrophobic",
+    ("Hydrophobe", "LumpedHydrophobe"): "Hydrophobic",
+    ("LumpedHydrophobe", "LumpedHydrophobe"): "Hydrophobic",
+    ("Donor", "Acceptor"): "Hydrogen Bond",
+    ("Acceptor", "Donor"): "Hydrogen Bond",
     ("NegIonizable", "PosIonizable"): "Electrostatic",
     ("PosIonizable", "NegIonizable"): "Electrostatic",
     ("Aromatic", "Aromatic"): "π-stacking",
     ("Aromatic", "PosIonizable"): "π-cation",
     ("PosIonizable", "Aromatic"): "π-cation",
 }
+
 
 def features_from_mol(mol, protonate=True):
     raw_features = raw_features_from_mol(mol, protonate=protonate)
@@ -79,7 +82,9 @@ def raw_features_from_mol(mol, protonate=True):
     AllChem.EmbedMolecule(m_pdb_prot, ps)
 
     # feature factory
-    fdef = AllChem.BuildFeatureFactory(os.path.join(RDConfig.RDDataDir, 'BaseFeatures.fdef'))
+    fdef = AllChem.BuildFeatureFactory(
+        os.path.join(RDConfig.RDDataDir, "BaseFeatures.fdef")
+    )
 
     # get the features
     raw_features = fdef.GetFeaturesForMol(m_pdb_prot)
@@ -126,7 +131,15 @@ import numpy as np
 class Feature(object):
     """Object representing an interaction feature (usually on a protein)"""
 
-    def __init__(self, family: list, atoms: list, position: np.ndarray, res_name: str, res_number: int, res_chain: str):
+    def __init__(
+        self,
+        family: list,
+        atoms: list,
+        position: np.ndarray,
+        res_name: str,
+        res_number: int,
+        res_chain: str,
+    ):
 
         self.family = family
         self.atoms = atoms
@@ -163,22 +176,22 @@ class Feature(object):
         )
 
     def __repr__(self):
-        return f'{self.family} @ {self.x:.2f} {self.y:.2f} {self.z:.2f}'
+        return f"{self.family} @ {self.x:.2f} {self.y:.2f} {self.z:.2f}"
 
     @property
     def name_number_chain_str(self):
         """String containing the residue name, residue number, and chain"""
-        return f'{self.res_name} {self.res_number} {self.res_chain}'
+        return f"{self.res_name} {self.res_number} {self.res_chain}"
 
     @property
     def family_name_number_chain_str(self):
         """String containing the feature family, residue name, residue number, and chain"""
-        return f'{self.family} {self.res_name} {self.res_number} {self.res_chain}'
+        return f"{self.family} {self.res_name} {self.res_number} {self.res_chain}"
 
     @property
     def family_name_number_chain_atoms_str(self):
         """String containing the feature family, residue name, residue number, chain, and atoms"""
-        return f'{self.family} {self.res_name} {self.res_number} {self.res_chain} {self.atoms}'
+        return f"{self.family} {self.res_name} {self.res_number} {self.res_chain} {self.atoms}"
 
     def __sub__(self, other):
         if isinstance(other, np.ndarray):

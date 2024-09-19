@@ -5,7 +5,6 @@ from .rand import random_point_spherical
 
 
 class CompoundVolume:
-
     def __init__(self, reference=None):
         self.volumes = []
         self.reference = reference
@@ -75,7 +74,6 @@ class CompoundVolume:
 
 
 class Sphere:
-
     def __init__(self, centre, radius, index=None):
         self.index = index
         self.centre = np.array(centre)
@@ -89,7 +87,6 @@ import mout
 
 
 class CappedCone:
-
     def __init__(self, origin, target, radius, name=None, index=None):
 
         # parameters
@@ -134,7 +131,9 @@ class CappedCone:
         if self.dist_origin_point < self.start:
             return False
 
-        self.origin_point_dot_origin_target = np.dot(self.unit_origin_point, self.unit_origin_target)
+        self.origin_point_dot_origin_target = np.dot(
+            self.unit_origin_point, self.unit_origin_target
+        )
 
         if self.origin_point_dot_origin_target > self.cos_theta:
             # print(f'{self.origin_point_dot_origin_target=}')
@@ -146,10 +145,16 @@ class CappedCone:
     def is_within(self, point, within):
 
         if self._expanded_volume is None or self._expanded_volume._expansion != within:
-            new_origin = self.origin - self.unit_origin_target * within / np.sin(self.theta)
+            new_origin = self.origin - self.unit_origin_target * within / np.sin(
+                self.theta
+            )
 
-            self._expanded_volume = CappedCone(origin=new_origin, target=self.target, radius=self.radius + within,
-                                               name=self.name + ' expanded')
+            self._expanded_volume = CappedCone(
+                origin=new_origin,
+                target=self.target,
+                radius=self.radius + within,
+                name=self.name + " expanded",
+            )
             self._expanded_volume._expansion = within
 
         return self._expanded_volume.is_inside(point)
@@ -171,7 +176,9 @@ class CappedCone:
             # print(f'{self._is_inside_cap=}')
 
             if self.vec_origin_point is not None:
-                trace = mgo.vector_trace(self.origin, self.vec_origin_point, name=f'{is_inside=}')
+                trace = mgo.vector_trace(
+                    self.origin, self.vec_origin_point, name=f"{is_inside=}"
+                )
                 fig.add_trace(trace)
 
         fig.show()
@@ -181,8 +188,17 @@ class CappedCone:
         if fig is None:
             fig = go.Figure()
 
-        trace = mgo.cone_trace(self.origin, self.target, self.radius, distance, samples=samples, name=self.name,
-                               start_at_target=True, plot_caps=True, verbosity=verbosity - 1)
+        trace = mgo.cone_trace(
+            self.origin,
+            self.target,
+            self.radius,
+            distance,
+            samples=samples,
+            name=self.name,
+            start_at_target=True,
+            plot_caps=True,
+            verbosity=verbosity - 1,
+        )
         fig.add_trace(trace)
 
         if show:
@@ -197,8 +213,11 @@ class CappedCone:
 
             assert np.linalg.norm(self.origin - other.origin) == 0
 
-            if other.dist_origin_target - other.cap_radius < self.dist_origin_target - self.cap_radius:
-                print('case1')
+            if (
+                other.dist_origin_target - other.cap_radius
+                < self.dist_origin_target - self.cap_radius
+            ):
+                print("case1")
                 return False
 
             # if not other.is_inside(self.target):
@@ -208,22 +227,24 @@ class CappedCone:
             # print(f'{self}.target is inside {other}')
 
             if other.theta < self.theta:
-                print('case2')
+                print("case2")
                 return False
 
             phi = np.arccos(np.dot(self.unit_origin_target, other.unit_origin_target))
 
             if other.theta < phi + self.theta:
-                print('case3')
+                print("case3")
                 return False
 
             return True
 
         else:
-            raise Exception(f'Unsupported: CappedCone.always_inside(self,type({other}))')
+            raise Exception(
+                f"Unsupported: CappedCone.always_inside(self,type({other}))"
+            )
 
     def __repr__(self):
         if self.name:
             return self.name
         else:
-            return f'CappedCone index={self.index}'
+            return f"CappedCone index={self.index}"

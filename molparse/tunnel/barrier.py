@@ -1,7 +1,9 @@
 # import math
 
 
-def find_barrier_stationary_points(xdata, ydata, yerr=None, reduction_order=2, show=False, tshicut=None, tslocut=None):
+def find_barrier_stationary_points(
+    xdata, ydata, yerr=None, reduction_order=2, show=False, tshicut=None, tslocut=None
+):
     import numpy as np
     import scipy.signal as sps
 
@@ -47,6 +49,7 @@ def find_barrier_stationary_points(xdata, ydata, yerr=None, reduction_order=2, s
 
         if not maxima_ys:
             import mout
+
             mout.warningOut("No maximas found!")
             # import matplotlib.pyplot as plt
             # print(min_coords)
@@ -72,12 +75,23 @@ def find_barrier_stationary_points(xdata, ydata, yerr=None, reduction_order=2, s
 
     if show:
         import matplotlib.pyplot as plt
+
         fig, ax = plt.subplots()
 
         plt.plot(xdata, ydata)
 
-        plt.errorbar([p[0] for p in max_coords], [p[1] for p in max_coords], yerr=[p[2] for p in max_coords], fmt="o")
-        plt.errorbar([p[0] for p in min_coords], [p[1] for p in min_coords], yerr=[p[2] for p in min_coords], fmt="o")
+        plt.errorbar(
+            [p[0] for p in max_coords],
+            [p[1] for p in max_coords],
+            yerr=[p[2] for p in max_coords],
+            fmt="o",
+        )
+        plt.errorbar(
+            [p[0] for p in min_coords],
+            [p[1] for p in min_coords],
+            yerr=[p[2] for p in min_coords],
+            fmt="o",
+        )
 
         plt.show()
 
@@ -87,8 +101,10 @@ def find_barrier_stationary_points(xdata, ydata, yerr=None, reduction_order=2, s
 # def eckartFit(xdata,ydata):
 # 	return None
 
+
 def sqrt(x):
     import numpy as np
+
     return np.power(x, 0.5)
 
 
@@ -106,8 +122,8 @@ def eckart(x, barrier, asymmetry, length, xts=0.0):
 
     B = np.power(sqrt(reverse_barrier) + sqrt(barrier), 2)
 
-    y = - np.exp(2.0 * np.pi * (x - xts) / length)
+    y = -np.exp(2.0 * np.pi * (x - xts) / length)
 
-    V = - A * y * np.power(1.0 - y, -1) - B * y * np.power(1.0 - y, -2)
+    V = -A * y * np.power(1.0 - y, -1) - B * y * np.power(1.0 - y, -2)
 
     return V

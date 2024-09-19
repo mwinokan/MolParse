@@ -1,4 +1,12 @@
-def peakFinder(xdata, ydata, min_width, min_height, baseline=None, threshold=1.0e-2, search_coeff=0.1):
+def peakFinder(
+    xdata,
+    ydata,
+    min_width,
+    min_height,
+    baseline=None,
+    threshold=1.0e-2,
+    search_coeff=0.1,
+):
     import statistics
     import mout
     from .modify import differentiate
@@ -12,11 +20,17 @@ def peakFinder(xdata, ydata, min_width, min_height, baseline=None, threshold=1.0
         peaklist = []
 
         for data in ydata:
-            peaklist.append(peakFinder(xdata, data,
-                                       min_width, min_height,
-                                       baseline=baseline,
-                                       threshold=threshold,
-                                       search_coeff=search_coeff))
+            peaklist.append(
+                peakFinder(
+                    xdata,
+                    data,
+                    min_width,
+                    min_height,
+                    baseline=baseline,
+                    threshold=threshold,
+                    search_coeff=search_coeff,
+                )
+            )
 
         all_peaks = peaklist
 
@@ -47,7 +61,8 @@ def peakFinder(xdata, ydata, min_width, min_height, baseline=None, threshold=1.0
                         skip = True
                         break
 
-                if skip: continue
+                if skip:
+                    continue
 
                 # backwards search for the start of the peak
                 backsearch_i = i
@@ -82,7 +97,6 @@ def peakFinder(xdata, ydata, min_width, min_height, baseline=None, threshold=1.0
 
 
 class Peak:
-
     def __init__(self, start_x, end_x):
 
         self.start_x = start_x
@@ -101,11 +115,25 @@ class Peak:
             return False
 
     def gauss_fit(self, xdata, ydata, return_data=False, baseline=0.0, filename=None):
-        return gaussian_fit(xdata, ydata, [self.start_x, self.end_x], return_data=return_data, baseline=baseline,
-                            filename=filename)
+        return gaussian_fit(
+            xdata,
+            ydata,
+            [self.start_x, self.end_x],
+            return_data=return_data,
+            baseline=baseline,
+            filename=filename,
+        )
 
 
-def gaussian_fit(xdata, ydata, window, return_data=False, index_window=False, baseline=0.0, filename=None):
+def gaussian_fit(
+    xdata,
+    ydata,
+    window,
+    return_data=False,
+    index_window=False,
+    baseline=0.0,
+    filename=None,
+):
     import mout
     from scipy.optimize import curve_fit
     from scipy import asarray as ar
@@ -116,8 +144,8 @@ def gaussian_fit(xdata, ydata, window, return_data=False, index_window=False, ba
         mout.errorOut("gaussian_fit. Unsupported.", fatal=True)
 
     if index_window:
-        x = ar(xdata[window[0]:window[1]])
-        y = ar(ydata[window[0]:window[1]])
+        x = ar(xdata[window[0] : window[1]])
+        y = ar(ydata[window[0] : window[1]])
     else:
         index1 = closest_index(window[0], xdata)
         index2 = closest_index(window[1], xdata)
@@ -161,7 +189,8 @@ def gaussian_fit(xdata, ydata, window, return_data=False, index_window=False, ba
 
 def gaus(x, a, x0, sigma):
     from scipy import asarray as exp
-    return a * exp(-(x - x0) ** 2 / (2 * sigma ** 2)) + ___BASELINE
+
+    return a * exp(-((x - x0) ** 2) / (2 * sigma**2)) + ___BASELINE
 
 
 # def closest_index(value,xdata):
@@ -179,13 +208,19 @@ def gaus(x, a, x0, sigma):
 # 				else:
 # 					return i-1
 
+
 def closest_index(value, xdata, comparison=None, numpy=False):
     """Return the index of the nearest data point in the array"""
     if numpy:
         if comparison:
             import mout
-            mout.warningOut("numpy argument overrides comparison", code='amp.signal.peaks.closest_index[1]')
+
+            mout.warningOut(
+                "numpy argument overrides comparison",
+                code="amp.signal.peaks.closest_index[1]",
+            )
         import numpy as np
+
         array = np.asarray(xdata)
         return (np.abs(array - value)).argmin()
     elif isinstance(value, list):
@@ -197,6 +232,7 @@ def closest_index(value, xdata, comparison=None, numpy=False):
         for i, x in enumerate(xdata):
             if (i > 0 and x < xdata[i - 1]) or (i == 0 and x > xdata[i + 1]):
                 import mout
+
                 mout.errorOut("Array does not appear to be sorted!")
                 return -1
             elif x > value:
@@ -213,7 +249,9 @@ def closest_index(value, xdata, comparison=None, numpy=False):
         return i
 
 
-def closest_value(xvalue, xdata, ydata=None, comparison=None, numpy=False, return_x=False):
+def closest_value(
+    xvalue, xdata, ydata=None, comparison=None, numpy=False, return_x=False
+):
     """Return the yvalue of the data point nearest the given xvalue"""
     if ydata is None:
         ydata = xdata
@@ -221,7 +259,9 @@ def closest_value(xvalue, xdata, ydata=None, comparison=None, numpy=False, retur
         x_result = []
         y_result = []
         for x in xvalue:
-            xres, yres = closest_value(x, xdata, ydata, comparison=comparison, numpy=numpy, return_x=return_x)
+            xres, yres = closest_value(
+                x, xdata, ydata, comparison=comparison, numpy=numpy, return_x=return_x
+            )
             x_result = []
             y_result = []
         if return_x:

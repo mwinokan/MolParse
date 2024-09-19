@@ -28,7 +28,7 @@ class FakeAtoms(Atoms):
 
         if rcs is not None:
 
-            symbols = len(rcs) * 'H'
+            symbols = len(rcs) * "H"
 
             positions = []
 
@@ -73,46 +73,48 @@ class FakeAtoms(Atoms):
 
     def set_positions(self, newpositions, apply_constraint=False):
         newpositions = np.array([np.array([p[0], 0.0, 0.0]) for p in newpositions])
-        self.set_array('positions', newpositions, shape=(3,))
+        self.set_array("positions", newpositions, shape=(3,))
 
 
 class FakeSurfaceCalculator(Calculator):
     """
 
-        Calculator to hijack ASE optimisation algorithms.
+    Calculator to hijack ASE optimisation algorithms.
 
-        Initialise as:
+    Initialise as:
 
-        FakeSurfaceCalculator(pmf=function())
+    FakeSurfaceCalculator(pmf=function())
 
-        pmf is a N-dimensional free energy surface. Should be callable with the same number of arguments as reaction coordinates described in the FakeAtoms object.
+    pmf is a N-dimensional free energy surface. Should be callable with the same number of arguments as reaction coordinates described in the FakeAtoms object.
 
-        Optimisation example:
+    Optimisation example:
 
-        atoms = FakeAtoms(rcs=[1.0,1.0])
+    atoms = FakeAtoms(rcs=[1.0,1.0])
 
-        def pmf(x,y):
-            ...
+    def pmf(x,y):
+        ...
 
-        calc = FakeSurfaceCalculator(pmf=pmf)
+    calc = FakeSurfaceCalculator(pmf=pmf)
 
-        atoms.set_calculator(calc)
+    atoms.set_calculator(calc)
 
-        from ase.optimize import BFGS
+    from ase.optimize import BFGS
 
-        dyn = BFGS(atoms=atoms)
+    dyn = BFGS(atoms=atoms)
 
-        dyn.run()
+    dyn.run()
 
     """
 
-    implemented_properties = ['energy', 'forces']
+    implemented_properties = ["energy", "forces"]
 
     # default_parameters = {'delta': 0.01}
 
     nolabel = True
 
-    def __init__(self, pmf, delta=0.001, suppress_warnings=False, restoring_force=10, **kwargs):
+    def __init__(
+        self, pmf, delta=0.001, suppress_warnings=False, restoring_force=10, **kwargs
+    ):
         mout.debugOut(f"FakeSurfaceCalculator.__init__(delta={delta})")
         self._pmf = pmf
         self.delta = delta
@@ -124,6 +126,7 @@ class FakeSurfaceCalculator(Calculator):
 
     def pmf(self, arg):
         from ase.units import kcal, mol
+
         e = self._pmf(arg)
 
         if np.isnan(e):
@@ -140,8 +143,12 @@ class FakeSurfaceCalculator(Calculator):
     def history(self, arg):
         self._history = arg
 
-    def calculate(self, atoms=None, properties=['energy', 'forces'],
-                  system_changes=['positions', 'numbers', 'cell', 'pbc']):
+    def calculate(
+        self,
+        atoms=None,
+        properties=["energy", "forces"],
+        system_changes=["positions", "numbers", "cell", "pbc"],
+    ):
         Calculator.calculate(self, atoms, properties, system_changes)
 
         self.energy = 0.0
@@ -174,5 +181,5 @@ class FakeSurfaceCalculator(Calculator):
 
         ### convert forces to correct units
 
-        self.results['energy'] = energy
-        self.results['forces'] = forces
+        self.results["energy"] = energy
+        self.results["forces"] = forces
