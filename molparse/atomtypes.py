@@ -13,7 +13,7 @@ def formula_to_atomtype_dict(formula):
 
     import re
 
-    remaining = formula.replace("+", "")
+    remaining = formula.replace("+", "").replace("-", "")
 
     atomtype_dict = {}
 
