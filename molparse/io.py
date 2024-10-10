@@ -76,7 +76,7 @@ def write(filename, payload, verbosity=1, **parameters):
 
         elif isinstance(payload, go.Figure):
             if filename.endswith(".html"):
-                payload.write_html(filename)
+                payload.write_html(filename, **parameters)
             else:
                 if filename.endswith(".pdf"):
                     import plotly.io as pio
