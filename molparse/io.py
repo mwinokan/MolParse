@@ -1654,7 +1654,7 @@ def modifyCIF(
     doc.write_file(out_file)
 
 
-def parseCIF(cif_file):
+def parseCIF(cif_file, **kwargs):
     """Parse a PDBx/mmCIF structure"""
 
     from gemmi import cif
@@ -1663,6 +1663,9 @@ def parseCIF(cif_file):
     from pandas import DataFrame
     from .system import System
     from .atom import Atom
+
+    if kwargs:
+        mrich.warning("Unused keyword arguments", kwargs)
 
     doc = cif.read(str(cif_file))
 
