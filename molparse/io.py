@@ -1736,4 +1736,6 @@ def parseCIF(cif_file, **kwargs):
 
         sys.add_atom(atom)
 
+    sys.fix_indices()
+
     return sys
