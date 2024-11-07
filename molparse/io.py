@@ -1706,6 +1706,8 @@ def parseCIF(cif_file, **kwargs):
         alternative_site = row.label_alt_id
         if alternative_site:
             alternative_site = str(alternative_site)
+        else:
+            alternative_site = None
 
         # some minor validation
         model_num = int(row.pdbx_PDB_model_num)
