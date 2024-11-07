@@ -57,4 +57,9 @@ def replace_sidechain(residue, reference):
 
     else:
 
+        mout.var("nonH_common", nonH_common)
+
         mout.errorOut("Unsupported (residues do not share enough sidechain atoms)")
+        raise NotImplementedError(
+            "Unsupported (residues do not share enough sidechain atoms)"
+        )
