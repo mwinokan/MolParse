@@ -208,7 +208,7 @@ def parse(file, verbosity=1, **kwargs):
     elif extension == "ndx":
         return parseNDX(file, verbosity=verbosity, **kwargs)
     elif extension == "cif":
-        return parseCIF(file, **kwargs)
+        return parseCIF(file, verbosity=verbosity, **kwargs)
     elif extension == "json":
         from json import load
 
@@ -1654,7 +1654,7 @@ def modifyCIF(
     doc.write_file(out_file)
 
 
-def parseCIF(cif_file, **kwargs):
+def parseCIF(cif_file, verbosity=1, **kwargs):
     """Parse a PDBx/mmCIF structure"""
 
     from gemmi import cif
@@ -1664,7 +1664,7 @@ def parseCIF(cif_file, **kwargs):
     from .system import System
     from .atom import Atom
 
-    if kwargs:
+    if kwargs and verbosity > 0:
         mrich.warning("Unused keyword arguments", kwargs)
 
     doc = cif.read(str(cif_file))
@@ -1672,7 +1672,6 @@ def parseCIF(cif_file, **kwargs):
     greeted = set()
 
     block = doc.sole_block()  # mmCIF has exactly one block
-    mrich.var("block.name", block.name)
 
     cat_names = block.get_mmcif_category_names()
 
@@ -1684,9 +1683,14 @@ def parseCIF(cif_file, **kwargs):
 
     sys = System(block.name)
 
-    for i, row in mrich.track(
-        atom_df.iterrows(), prefix="Parsing atom entries", total=len(atom_df)
-    ):
+    if verbosity > 0:
+        gen = mrich.track(
+            atom_df.iterrows(), prefix="Parsing atom entries", total=len(atom_df)
+        )
+    else:
+        gen = atom_df.iterrows()
+
+    for i, row in gen:
 
         atom_name = str(row.label_atom_id)
         atom_number = int(row.id)
