@@ -207,6 +207,8 @@ def parse(file, verbosity=1, **kwargs):
         return parseMol(file, verbosity=verbosity, **kwargs)
     elif extension == "ndx":
         return parseNDX(file, verbosity=verbosity, **kwargs)
+    elif extension == "cif":
+        return parseCIF(file, **kwargs)
     elif extension == "json":
         from json import load
 
@@ -1650,3 +1652,85 @@ def modifyCIF(
 
     # write the modified file
     doc.write_file(out_file)
+
+
+def parseCIF(cif_file):
+    """Parse a PDBx/mmCIF structure"""
+
+    from gemmi import cif
+    from rich import print
+    import mrich
+    from pandas import DataFrame
+    from .system import System
+    from .atom import Atom
+
+    doc = cif.read(str(cif_file))
+
+    greeted = set()
+
+    block = doc.sole_block()  # mmCIF has exactly one block
+    mrich.var("block.name", block.name)
+
+    cat_names = block.get_mmcif_category_names()
+
+    ### ATOM records
+
+    atom_dict = block.get_mmcif_category("_atom_site.")
+
+    atom_df = DataFrame(atom_dict)
+
+    sys = System(block.name)
+
+    for i, row in mrich.track(
+        atom_df.iterrows(), prefix="Parsing atom entries", total=len(atom_df)
+    ):
+
+        atom_name = str(row.label_atom_id)
+        atom_number = int(row.id)
+        atom_element = str(row.type_symbol)
+        atom_charge = row.pdbx_formal_charge
+        if atom_charge:
+            atom_charge = int(atom_charge)
+        atom_position = [float(row.Cartn_x), float(row.Cartn_y), float(row.Cartn_z)]
+        atom_occupancy = float(row.occupancy)
+        atom_heterogen = row.group_PDB == "HETATM"
+
+        residue_name = str(row.label_comp_id)
+        residue_number = int(row.label_seq_id)
+
+        chain_name = str(row.auth_asym_id)
+
+        alternative_site = row.label_alt_id
+        if alternative_site:
+            alternative_site = str(alternative_site)
+
+        # some minor validation
+        model_num = int(row.pdbx_PDB_model_num)
+        assert model_num == 1
+
+        atom = Atom(
+            name=atom_name,
+            index=i,
+            pdb_index=atom_number,
+            position=atom_position,
+            residue=residue_name,
+            chain=chain_name,
+            res_number=residue_number,
+            charge=atom_charge,
+            # FF_atomtype=None,
+            # mass=None,
+            # LJ_sigma=None,
+            # LJ_epsilon=None,
+            occupancy=atom_occupancy,
+            # temp_factor=None,
+            heterogen=atom_heterogen,
+            # charge_str=None,
+            # velocity=None,
+            alternative_site=alternative_site,
+            res_index=None,  ### DOES THIS NEED TO BE SET?
+            element=atom_element,
+        )
+
+        sys.add_atom(atom)
+
+    return sys
