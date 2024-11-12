@@ -7,11 +7,22 @@ def sdf_align(
     sdf_path: str,
     source_protein_path: str,
     target_protein_path: str,
-    mol_col="ROMol",
-    name_col="ID",
-    backbone_only=True,
-    heavy_atoms_only=True,
+    mol_col: str = "ROMol",
+    name_col: str = "ID",
+    backbone_only: bool = True,
+    heavy_atoms_only: bool = True,
 ):
+    """Align molecules in an SDF
+
+    :param sdf_path: input file
+    :param source_protein_path: source protein conformation
+    :param target_protein_path: target protein conformation
+    :param mol_col: name of molecule object column
+    :param name_col: name of molecule ID column
+    :param backbone_only: align using protein backbone atoms only
+    :param heavy_atoms_only: align using protein heavy atoms only
+
+    """
 
     from ..io import parse
     from numpy import array, double
@@ -85,3 +96,36 @@ def sdf_align(
 
     logger.writing(out_path)
     PandasTools.WriteSDF(df, out_path, mol_col, name_col, list(df.columns))
+
+
+def sdf_combine(files: list, output: str, mol_col: str = "ROMol", name_col: str = "ID"):
+    """Concatenate SDF files
+
+    :param files: generator or iterable of file names/paths
+    :param output: file name/path of output SDF
+    :param mol_col: name of molecule object column
+    :param name_col: name of molecule ID column
+
+    """
+
+    from rdkit.Chem import PandasTools
+    from pathlib import Path
+    from pandas import concat
+    import mrich
+
+    out_path = Path(output)
+
+    dfs = []
+    for file in mrich.track(files, prefix="parsing SDFs"):
+        in_path = Path(file)
+
+        df = PandasTools.LoadSDF(in_path)
+
+        dfs.append(df)
+
+    df = concat(dfs, ignore_index=True)
+
+    mrich.writing(out_path)
+    PandasTools.WriteSDF(
+        df, out_path, molColName=mol_col, idName=name_col, properties=df.columns
+    )
