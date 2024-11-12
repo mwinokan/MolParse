@@ -4,3 +4,4 @@ __pycache__/
 *.pyc
 docs/build/
 dist/
+.ipynb_checkpoints/
