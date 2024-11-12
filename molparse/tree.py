@@ -408,7 +408,12 @@ class TreeViewer(CursesApp):
                 self.type_str(obj) in ["Residue", "AminoAcid", "NucleicAcid"]
                 and obj.contains_alternative_sites
             ):
-                s = ",".join(sorted(obj.alternative_sites))
+                try:
+                    s = ",".join(sorted(obj.alternative_sites))
+                except TypeError:
+                    raise TypeError(
+                        f"Problem with alternative_sites {obj=} {type(obj)=} {obj.alternative_sites=} "
+                    )
                 s = f"{s:5}"
                 text = Text(f"alt=", line, col, bold=True, color_pair=self.YELLOW)
                 self.add_text(text)
