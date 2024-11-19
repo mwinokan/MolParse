@@ -409,6 +409,8 @@ def parsePDB(
                                 header_data.append(line)
                             elif line.startswith("HETNAM"):
                                 header_data.append(line)
+                            elif line.startswith("SSBOND"):
+                                header_data.append(line)
 
                         else:
 
