@@ -410,7 +410,7 @@ def parsePDB(
                             elif line.startswith("HETNAM"):
                                 header_data.append(line)
                             elif line.startswith("SSBOND"):
-                                header_data.append(line)
+                                parseSSBOND(system, line)
 
                         else:
 
@@ -808,6 +808,12 @@ def parsePDBAtomLine(
         mout.error(line)
         raise Exception("Unsupported PDB line shown above")
 
+
+def parseSSBOND(system, line):
+    bond=[{'chain': line[15].strip(), 'resname': line[11:14].strip(), 'resid': line[17:21].strip()},
+          {'chain': line[29].strip(), 'resname': line[25:28].strip(), 'resid': line[17:21].strip()},
+          {'sym1': line[59:65].strip(), 'sym2': line[66:72].strip(), 'distance': line[73:78].strip()}]
+    system.ssbonds.append(bond)
 
 # def parseGRO(gro,systemName=None,fix_indices=True,fix_atomnames=True,verbosity=1,auto_ter=None):
 def parseGRO(
