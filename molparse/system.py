@@ -19,7 +19,7 @@ class System(AtomGroup):
         self.description = None
         self.remarks = []
         self._header_data = []
-        self._ssbonds=[]
+        self._ssbonds = []
 
         from .list import NamedList
 
@@ -70,12 +70,17 @@ class System(AtomGroup):
                     f"Ambiguous naming! Multiple chains named {chain.name}!"
                 )
 
-    def ssbond_guesser(self, distance=2.15):
-        """Generate SS bond between SG of CYS according to distances"""
+    def ssbond_guesser(self, distance: float = 2.15) -> None:
+        """Generate SS bonds between SG of CYS according when distance below threshold
+
+        :param distance: minimum distance threshold
+
+        """
+
         from itertools import combinations
         import numpy as np
 
-        cysteines=[res for res in self.residues if res.name == "CYS"]
+        cysteines = [res for res in self.residues if res.name == "CYS"]
         for cys1, cys2 in combinations(cysteines, 2):
             # Get the position of the SG for cysteine 1 and cysteine 2
             sg1 = cys1.get_atom("SG")
@@ -84,9 +89,11 @@ class System(AtomGroup):
             dist = np.linalg.norm(sg1 - sg2)
             # If distance is lower than threshold, append to ssbond
             if dist < distance:
-                bond=[{'chain': cys1.chain, 'resname': cys1.name, 'resid': cys1.number},
-                      {'chain': cys2.chain, 'resname': cys2.name, 'resid': cys2.number},
-                      {'sym1':'','sym2':'','distance': dist}]
+                bond = [
+                    {"chain": cys1.chain, "resname": cys1.name, "resid": cys1.number},
+                    {"chain": cys2.chain, "resname": cys2.name, "resid": cys2.number},
+                    {"sym1": "", "sym2": "", "distance": dist},
+                ]
                 if any(bond[:2] == check[:2] for check in self._ssbonds):
                     continue
                 else:
@@ -1066,9 +1073,32 @@ class System(AtomGroup):
         return [r for r in self.residues if r.type == "LIG"]
 
     @property
-    def ssbonds(self):
-        sys = self.copy()
-        return [bond for bond in sys._ssbonds]
+    def ssbonds(self) -> list[list[dict]]:
+        """Disulfide bond definition"""
+        return self._ssbonds
+
+    def add_ssbond(self, *, cys1: "AminoAcid", cys2: "AminoAcid", sym1, sym2) -> None:
+        """Add a disulfide bond definition"""
+
+        from .amino import AminoAcid
+
+        assert isinstance(cys1, Residue)
+        assert isinstance(cys2, Residue)
+        assert cys1.name == "CYS"
+        assert cys2.name == "CYS"
+
+        sg1 = cys1.get_atom("SG")
+        sg2 = cys2.get_atom("SG")
+
+        distance = np.linalg.norm(sg1 - sg2)
+
+        self._ssbonds.append(
+            [
+                {"chain": sg1.chain, "resname": sg1.residue, "resid": sg1.res_number},
+                {"chain": sg2.chain, "resname": sg2.residue, "resid": sg2.res_number},
+                {"sym1": sym1, "sym2": sym2, "distance": distance},
+            ]
+        )
 
     def add_hydrogens(self, pH: float = 7.0, **kwargs) -> "System":
         """Create a protonated copy"""
