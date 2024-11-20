@@ -409,6 +409,8 @@ def parsePDB(
                                 header_data.append(line)
                             elif line.startswith("HETNAM"):
                                 header_data.append(line)
+                            elif line.startswith("SSBOND"):
+                                parsePDBSSBOND(system, line)
 
                         else:
 
@@ -807,6 +809,13 @@ def parsePDBAtomLine(
         raise Exception("Unsupported PDB line shown above")
 
 
+def parsePDBSSBOND(system, line):
+    bond=[{'chain': line[15].strip(), 'resname': line[11:14].strip(), 'resid': int(line[17:21].strip())},
+          {'chain': line[29].strip(), 'resname': line[25:28].strip(), 'resid': int(line[31:35].strip())},
+          {'sym1': line[59:65].strip(), 'sym2': line[66:72].strip(), 'distance': float(line[73:78].strip())}]
+    system._ssbonds.append(bond)
+
+
 # def parseGRO(gro,systemName=None,fix_indices=True,fix_atomnames=True,verbosity=1,auto_ter=None):
 def parseGRO(
     gro,
@@ -1098,6 +1107,7 @@ def writePDB(
     append=False,
     model=1,
     header=None,
+    ssbonds=None,
     title=None,
     compound=None,
     write_model=True,
@@ -1151,6 +1161,15 @@ def writePDB(
                         strbuff += f"REMARK {line}" + end
 
             strbuff += "REMARK " + "# Atoms:    " + str(system.num_atoms) + end
+
+        if ssbonds:
+            if not system.ssbonds:
+                mout.warningOut(f"No SS bonds information available. Please run 'system.ssbond_guesser() first'.")
+            else:
+                for i, bond in enumerate(system.ssbonds):
+                    line = constructPDBSSBONDLine(i, bond)
+                    strbuff += line
+
 
     else:
         strbuff = ""
@@ -1340,6 +1359,24 @@ def constructPDBAtomLine(atom, index, charges=True, shift_name=False, alt_sites=
         atom.ter_line += end
 
     return "".join(strlist)
+
+
+def constructPDBSSBONDLine(n, bond):
+    line = "SSBOND".rjust(6)
+    line += str(n+1).rjust(4)
+    line += str(bond[0]['resname']).rjust(4)
+    line += str(bond[0]['chain']).rjust(2)
+    line += str(bond[0]['resid']).rjust(5)
+    line += str(bond[1]['resname']).rjust(7)
+    line += str(bond[1]['chain']).rjust(2)
+    line += str(bond[1]['resid']).rjust(5)
+    line += "                       ".rjust(23)
+    line += str(bond[2]['sym1']).rjust(7)
+    line += str(bond[2]['sym2']).rjust(7)
+    line += "{:.2f}".format(bond[2]['distance']).rjust(6)
+    line += "  \n".rjust(2)
+
+    return line
 
 
 def writeGRO(filename, system, verbosity=1):
