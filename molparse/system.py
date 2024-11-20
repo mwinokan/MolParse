@@ -19,6 +19,7 @@ class System(AtomGroup):
         self.description = None
         self.remarks = []
         self._header_data = []
+        self.ssbonds=[]
 
         from .list import NamedList
 
@@ -68,6 +69,32 @@ class System(AtomGroup):
                 mout.warningOut(
                     f"Ambiguous naming! Multiple chains named {chain.name}!"
                 )
+
+    def ssbond_guesser(self, distance=2.15):
+        """Generate SS bond between SG of CYS according to distances"""
+        import numpy as np
+
+        cysteines=[res for res in self.residues if res.name == "CYS"]
+        start=0
+        end=len(cysteines)
+        for i in range(start, end-1):
+            # Look for x, y, z coordinates of SG for cysteine 1
+            for atom in cysteines[i].atoms:
+                if atom.name == "SG":
+                    sg1_pos = np.asarray(atom.position)
+            for j in range(start+1,end):
+                # Look for x, y, z coordinates of SG for cysteine 2
+                for atom in cysteines[j].atoms:
+                    if atom.name == "SG":
+                        sg2_pos = np.asarray(atom.position)
+                # Calculate distance between both SGs
+                dist = np.linalg.norm(sg1_pos - sg2_pos)
+                # If distance is lower than threshold, append to ssbond
+                if dist < distance:
+                    bond=[{'chain': cysteines[i].chain, 'resname': cysteines[i].name, 'resid': cysteines[i].number},
+                          {'chain': cysteines[j].chain, 'resname': cysteines[j].name, 'resid': cysteines[j].number}, {'sym1':'','sym2':'','distance': dist}]
+                    self.ssbonds.append(bond)
+            start+=1
 
     def check_indices(self):
         """Print all child Atoms who's indices are incorrect"""
