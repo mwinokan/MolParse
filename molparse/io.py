@@ -810,8 +810,8 @@ def parsePDBAtomLine(
 
 
 def parsePDBSSBOND(system, line):
-    bond=[{'chain': line[15].strip(), 'resname': line[11:14].strip(), 'resid': line[17:21].strip()},
-          {'chain': line[29].strip(), 'resname': line[25:28].strip(), 'resid': line[17:21].strip()},
+    bond=[{'chain': line[15].strip(), 'resname': line[11:14].strip(), 'resid': int(line[17:21].strip())},
+          {'chain': line[29].strip(), 'resname': line[25:28].strip(), 'resid': int(line[31:35].strip())},
           {'sym1': line[59:65].strip(), 'sym2': line[66:72].strip(), 'distance': float(line[73:78].strip())}]
     system.ssbonds.append(bond)
 
@@ -1164,10 +1164,10 @@ def writePDB(
 
         if ssbonds:
             if not system.ssbonds:
-                mout.warningOut(f"No SS bonds information available. Please run 'system.ssbon_guesser() first'.")
+                mout.warningOut(f"No SS bonds information available. Please run 'system.ssbond_guesser() first'.")
             else:
                 for i, bond in enumerate(system.ssbonds):
-                    line = constructSSBONDLine(i, bond)
+                    line = constructPDBSSBONDLine(i, bond)
                     strbuff += line
 
 
@@ -1361,7 +1361,7 @@ def constructPDBAtomLine(atom, index, charges=True, shift_name=False, alt_sites=
     return "".join(strlist)
 
 
-def constructSSBONDLine(n, bond):
+def constructPDBSSBONDLine(n, bond):
     line = "SSBOND".rjust(6)
     line += str(n+1).rjust(4)
     line += str(bond[0]['resname']).rjust(4)
