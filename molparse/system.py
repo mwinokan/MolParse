@@ -72,34 +72,25 @@ class System(AtomGroup):
 
     def ssbond_guesser(self, distance=2.15):
         """Generate SS bond between SG of CYS according to distances"""
+        from itertools import combinations
         import numpy as np
 
         cysteines=[res for res in self.residues if res.name == "CYS"]
-        start=0
-        end=len(cysteines)
-        for i in range(start, end-1):
-            # Look for x, y, z coordinates of SG for cysteine 1
-            for atom in cysteines[i].atoms:
-                if atom.name == "SG":
-                    sg1_pos = np.asarray(atom.position)
-                    break
-            for j in range(start+1,end):
-                # Look for x, y, z coordinates of SG for cysteine 2
-                for atom in cysteines[j].atoms:
-                    if atom.name == "SG":
-                        sg2_pos = np.asarray(atom.position)
-                        break
-                # Calculate distance between both SGs
-                dist = np.linalg.norm(sg1_pos - sg2_pos)
-                # If distance is lower than threshold, append to ssbond
-                if dist < distance:
-                    bond=[{'chain': cysteines[i].chain, 'resname': cysteines[i].name, 'resid': cysteines[i].number},
-                          {'chain': cysteines[j].chain, 'resname': cysteines[j].name, 'resid': cysteines[j].number}, {'sym1':'','sym2':'','distance': dist}]
-                    if any(bond[:2] == check[:2] for check in self._ssbonds):
-                        continue
-                    else:
-                        self._ssbonds.append(bond)
-            start+=1
+        for cys1, cys2 in combinations(cysteines, 2):
+            # Get the position of the SG for cysteine 1 and cysteine 2
+            sg1 = cys1.get_atom("SG")
+            sg2 = cys2.get_atom("SG")
+            # Calculate distance between both SGs
+            dist = np.linalg.norm(sg1 - sg2)
+            # If distance is lower than threshold, append to ssbond
+            if dist < distance:
+                bond=[{'chain': cys1.chain, 'resname': cys1.name, 'resid': cys1.number},
+                      {'chain': cys2.chain, 'resname': cys2.name, 'resid': cys2.number},
+                      {'sym1':'','sym2':'','distance': dist}]
+                if any(bond[:2] == check[:2] for check in self._ssbonds):
+                    continue
+                else:
+                    self._ssbonds.append(bond)
 
     def check_indices(self):
         """Print all child Atoms who's indices are incorrect"""
