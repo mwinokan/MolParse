@@ -19,7 +19,7 @@ class System(AtomGroup):
         self.description = None
         self.remarks = []
         self._header_data = []
-        self.ssbonds=[]
+        self._ssbonds=[]
 
         from .list import NamedList
 
@@ -82,18 +82,23 @@ class System(AtomGroup):
             for atom in cysteines[i].atoms:
                 if atom.name == "SG":
                     sg1_pos = np.asarray(atom.position)
+                    break
             for j in range(start+1,end):
                 # Look for x, y, z coordinates of SG for cysteine 2
                 for atom in cysteines[j].atoms:
                     if atom.name == "SG":
                         sg2_pos = np.asarray(atom.position)
+                        break
                 # Calculate distance between both SGs
                 dist = np.linalg.norm(sg1_pos - sg2_pos)
                 # If distance is lower than threshold, append to ssbond
                 if dist < distance:
                     bond=[{'chain': cysteines[i].chain, 'resname': cysteines[i].name, 'resid': cysteines[i].number},
                           {'chain': cysteines[j].chain, 'resname': cysteines[j].name, 'resid': cysteines[j].number}, {'sym1':'','sym2':'','distance': dist}]
-                    self.ssbonds.append(bond)
+                    if any(bond[:2] == check[:2] for check in self._ssbonds):
+                        continue
+                    else:
+                        self._ssbonds.append(bond)
             start+=1
 
     def check_indices(self):
@@ -1068,6 +1073,11 @@ class System(AtomGroup):
     @property
     def ligand_residues(self):
         return [r for r in self.residues if r.type == "LIG"]
+
+    @property
+    def ssbonds(self):
+        sys = self.copy()
+        return [bond for bond in sys._ssbonds]
 
     def add_hydrogens(self, pH: float = 7.0, **kwargs) -> "System":
         """Create a protonated copy"""
