@@ -9,6 +9,9 @@ from IPython.display import SVG
 
 
 def draw_mol(m, feats=None, p=None, confId=-1, hydrogen=True):
+
+    m = Chem.Mol(m)
+
     if p is None:
         p = py3Dmol.view(width=400, height=400)
     p.removeAllModels()
@@ -218,15 +221,28 @@ def draw_highlighted_mol(mol, index_color_pairs, legend=None, size=(600, 300)):
     return SVG(svg)
 
 
-def draw_flat(mol, indices=False, legend=None, size=(600, 300)):
-    mol = Chem.MolFromSmiles(Chem.MolToSmiles(mol))
+def draw_flat(mol, indices=False, map_nums: bool = False, legend=None, size=(600, 300)):
+
+    # remove conformers
+    mol = Chem.Mol(mol)
+    conformer_ids = [c.GetId() for c in mol.GetConformers()]
+    for c_id in conformer_ids:
+        mol.RemoveConformer(c_id)
+
+    # orient to flat
+    flat_mol = Chem.MolFromSmiles(Chem.MolToSmiles(mol))
+    AllChem.Compute2DCoords(mol)
+    AllChem.Compute2DCoords(flat_mol)
+    AllChem.GenerateDepictionMatching2DStructure(mol, flat_mol)
 
     drawer = rdMolDraw2D.MolDraw2DSVG(*size)
 
     if indices:
         for i, atom in enumerate(mol.GetAtoms()):
-            # atom.SetAtomMapNum(atom.GetIdx())
             atom.SetProp("atomNote", f"{i}")
+    if map_nums:
+        for i, atom in enumerate(mol.GetAtoms()):
+            atom.SetAtomMapNum(atom.GetIdx())
 
     drawer.DrawMolecule(mol)
 
