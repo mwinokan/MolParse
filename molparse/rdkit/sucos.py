@@ -7,10 +7,8 @@ from rdkit import RDConfig
 from rdkit.Chem import AllChem, rdShapeHelpers
 from rdkit.Chem.FeatMaps import FeatMaps
 from rdkit.Chem.rdmolops import CombineMols
-
-from mlog import setup_logger
-
-logger = setup_logger("MolParse")
+import mrich
+from pandas import DataFrame
 
 # feature setup
 
@@ -41,6 +39,7 @@ def feature_map_score(
     score_mode=FeatMaps.FeatMapScoreMode.All,
     debug=False,
     draw=False,
+    return_data: bool = False,
 ):
 
     inspiration_features = [
@@ -57,7 +56,9 @@ def feature_map_score(
     if draw:
         from .draw import draw_mol
 
+        mrich.h3("inspiration")
         draw_mol(inspiration, feats=inspiration_features)
+        mrich.h3("derivative")
         draw_mol(derivative, feats=derivative_features)
 
     inspiration_feature_map = FeatMaps.FeatMap(
@@ -79,13 +80,63 @@ def feature_map_score(
 
     inspiration_feature_map.ScoreFeats(derivative_features, mapScoreVect=score_vector)
 
-    if debug:
+    if return_data or debug:
+        inspiration_data = []
         for feature, score in zip(inspiration_features, score_vector):
-            logger.var(feature.GetFamily(), score)
+            inspiration_data.append(
+                dict(
+                    family=feature.GetFamily(),
+                    type=feature.GetType(),
+                    atom_ids=str(feature.GetAtomIds()),
+                    score=score,
+                )
+            )
+
+    if debug:
+
+        from rich.table import Table
+
+        mrich.h3("Debug")
+
+        if draw:
+            from .draw import draw_flat
+
+            display(draw_flat(inspiration, indices=True))
+            display(draw_flat(derivative, indices=True))
+
+        table = Table(title="inspiration features")
+        table.add_column("family")
+        table.add_column("type")
+        table.add_column("atom_ids")
+        table.add_column("recapitulation score")
+
+        for d in inspiration_data:
+            table.add_row(
+                d["family"], d["type"], str(d["atom_ids"]), f"{d['score']:.3f}"
+            )
+        mrich.print(table)
+
+        table = Table(title="derivative features")
+        table.add_column("family")
+        table.add_column("type")
+        table.add_column("atom_ids")
+        # table.add_column("recapitulation score")
+
+        for feature in derivative_features:
+            # mrich.debug(feature.GetFamily(), feature.GetType(), feature.GetAtomIds(), score)
+            table.add_row(
+                feature.GetFamily(), feature.GetType(), str(feature.GetAtomIds())
+            )
+        mrich.print(table)
+
+        # mrich.print(dir(feature.GetPos()))
 
     feature_score /= min(
         inspiration_feature_map.GetNumFeatures(), len(derivative_features)
     )
+
+    if return_data:
+        return feature_score, inspiration_data
 
     return feature_score
 
@@ -135,7 +186,7 @@ def multi_feature_map_score(
         score_dict[i] = {}
 
         if debug:
-            logger.title(inspiration)
+            mrich.title(inspiration)
 
         inspiration_features = [
             f
@@ -156,7 +207,7 @@ def multi_feature_map_score(
 
         for j, (feature, score) in enumerate(zip(derivative_features, score_vector)):
             if debug:
-                logger.var(feature.GetFamily(), score)
+                mrich.var(feature.GetFamily(), score)
 
             score_dict[i][j] = score
 
@@ -180,7 +231,14 @@ def multi_feature_map_score(
 
 
 def SuCOS_score(
-    inspiration, derivative, return_all=False, print_scores=False, **kwargs
+    inspiration,
+    derivative,
+    recapitulation_threshold: float = 0.6,
+    return_all=False,
+    print_scores=False,
+    debug: bool = False,
+    draw: bool = False,
+    **kwargs,
 ):
 
     if isinstance(inspiration, list):
@@ -189,9 +247,20 @@ def SuCOS_score(
         multi = False
 
     if multi:
-        feature_score = multi_feature_map_score(inspiration, derivative, **kwargs)
+        feature_score = multi_feature_map_score(
+            inspiration, derivative, debug=debug, draw=draw, **kwargs
+        )
+        inspiration_data = []
     else:
-        feature_score = feature_map_score(inspiration, derivative, **kwargs)
+        feature_score, inspiration_data = feature_map_score(
+            inspiration, derivative, debug=debug, draw=draw, return_data=True, **kwargs
+        )
+
+    if debug or print_scores or return_all:
+        df = DataFrame(inspiration_data)
+        df = df.groupby("atom_ids").max("score")
+        recapitulation_count = len(df[df["score"] > recapitulation_threshold])
+        recapitulation_fraction = recapitulation_count / len(df)
 
     feature_score = clip(feature_score, 0, 1)
 
@@ -216,12 +285,21 @@ def SuCOS_score(
 
     SuCOS_score = (feature_score + volume_score) * 0.5
 
-    if print_scores:
-        logger.var("feature_score", feature_score)
-        logger.var("volume_score", volume_score)
-        logger.var("average_score", SuCOS_score)
+    if debug or print_scores:
+        if debug:
+            mrich.h3("scores")
+        mrich.var("feature_score", feature_score)
+        mrich.var("volume_score", volume_score)
+        mrich.var("average_score", SuCOS_score)
+        mrich.var("recapitulation_count", recapitulation_count)
 
     if return_all:
-        return SuCOS_score, feature_score, volume_score
+        return dict(
+            average_score=SuCOS_score,
+            feature_score=feature_score,
+            volume_score=volume_score,
+            recapitulation_count=recapitulation_count,
+            recapitulation_fraction=recapitulation_fraction,
+        )
     else:
         return SuCOS_score
