@@ -242,7 +242,11 @@ def SuCOS_score(
 ):
 
     if isinstance(inspiration, list):
-        multi = True
+        if len(inspiration) == 1:
+            multi = False
+            inspiration = inspiration[0]
+        else:
+            multi = True
     else:
         multi = False
 
