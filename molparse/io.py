@@ -1706,7 +1706,13 @@ def modifyCIF(
     doc.write_file(out_file)
 
 
-def parseCIF(cif_file, verbosity=1, **kwargs):
+def parseCIF(
+    cif_file,
+    verbosity=1,
+    split_chains_by_type: bool = True,
+    debug: bool = False,
+    **kwargs,
+):
     """Parse a PDBx/mmCIF structure"""
 
     from gemmi import cif
@@ -1715,6 +1721,7 @@ def parseCIF(cif_file, verbosity=1, **kwargs):
     from pandas import DataFrame
     from .system import System
     from .atom import Atom
+    from .chain import Chain
 
     if kwargs and verbosity > 0:
         mrich.warning("Unused keyword arguments", kwargs)
@@ -1725,7 +1732,30 @@ def parseCIF(cif_file, verbosity=1, **kwargs):
 
     block = doc.sole_block()  # mmCIF has exactly one block
 
-    cat_names = block.get_mmcif_category_names()
+    ### initialise the system
+
+    sys = System(block.name)
+
+    ### CRYST1 INFO
+
+    cell_dict = block.get_mmcif_category("_cell.")
+    symmetry_dict = block.get_mmcif_category("_symmetry.")
+
+    if debug:
+        mrich.print("cell_dict:", cell_dict)
+        mrich.print("symmetry_dict:", symmetry_dict)
+
+    sys.add_CRYST1(
+        a=cell_dict["length_a"][0],
+        b=cell_dict["length_b"][0],
+        c=cell_dict["length_c"][0],
+        alpha=cell_dict["angle_alpha"][0],
+        beta=cell_dict["angle_beta"][0],
+        gamma=cell_dict["angle_gamma"][0],
+        space_group=symmetry_dict["space_group_name_H-M"][0],
+        z=cell_dict["Z_PDB"][0],
+        debug=debug,
+    )
 
     ### ATOM records
 
@@ -1733,14 +1763,18 @@ def parseCIF(cif_file, verbosity=1, **kwargs):
 
     atom_df = DataFrame(atom_dict)
 
-    sys = System(block.name)
-
     if verbosity > 0:
         gen = mrich.track(
             atom_df.iterrows(), prefix="Parsing atom entries", total=len(atom_df)
         )
     else:
         gen = atom_df.iterrows()
+
+    chain = None
+    residue = None
+    make_new_chain = True
+    make_new_residue = True
+    res_counter = 0
 
     for i, row in gen:
 
@@ -1792,7 +1826,39 @@ def parseCIF(cif_file, verbosity=1, **kwargs):
             element=atom_element,
         )
 
-        sys.add_atom(atom)
+        if chain:
+            make_new_chain = chain.name != chain_name
+            if split_chains_by_type and residue:
+                make_new_chain = make_new_chain or chain.type != residue.type
+
+        if residue:
+            make_new_residue = (
+                residue.name != residue_name or residue.number != residue_number
+            )
+
+        if not chain or make_new_chain:
+
+            if chain:
+                sys.add_chain(chain)
+
+            chain = Chain(chain_name)
+
+        if not residue or make_new_residue:
+
+            if residue:
+                chain.add_residue(residue)
+                res_counter += 1
+
+            residue = new_residue(
+                residue_name,
+                res_counter,
+                residue_number,
+                chain_name,
+            )
+
+        residue.addAtom(atom)
+
+        # sys.add_atom(atom)
 
     sys.fix_indices()
 

@@ -213,6 +213,10 @@ class Residue(AtomGroup):
         """Guess type from residue name"""
         return res_type(self.name)
 
+    @property
+    def letter(self):
+        return "?"
+
     def add_atom(self, atom):
         """add an Atom"""
         self.addAtom(atom)

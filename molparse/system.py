@@ -99,6 +99,38 @@ class System(AtomGroup):
                 else:
                     self._ssbonds.append(bond)
 
+    def add_CRYST1(
+        self, *, a, b, c, alpha, beta, gamma, space_group, z, debug: bool = False
+    ) -> None:
+        """Add CRYST1 header record"""
+
+        import mrich
+
+        if debug:
+            mrich.var("a", a)
+            mrich.var("b", b)
+            mrich.var("c", c)
+            mrich.var("alpha", alpha)
+            mrich.var("beta", beta)
+            mrich.var("gamma", gamma)
+            mrich.var("space_group", space_group)
+            mrich.var("z", z)
+
+        a = float(a)
+        b = float(b)
+        c = float(c)
+        alpha = float(alpha)
+        beta = float(beta)
+        gamma = float(gamma)
+        z = int(z)
+
+        CRYST1 = f"CRYST1{a:9.3f}{b:9.3f}{c:9.3f}{alpha:7.2f}{beta:7.2f}{gamma:7.2f} {space_group:<10} {z:>4}\n"
+
+        if debug:
+            mrich.print(CRYST1)
+
+        self._header_data.append(CRYST1)
+
     def check_indices(self):
         """Print all child Atoms who's indices are incorrect"""
 
