@@ -1803,6 +1803,18 @@ def parseCIF(
         model_num = int(row.pdbx_PDB_model_num)
         assert model_num == 1
 
+        if debug:
+            mrich.debug(
+                row.group_PDB,
+                atom_name,
+                i,
+                atom_number,
+                atom_position,
+                residue_name,
+                chain_name,
+                residue_number,
+            )
+
         atom = Atom(
             name=atom_name,
             index=i,
@@ -1858,7 +1870,8 @@ def parseCIF(
 
         residue.addAtom(atom)
 
-        # sys.add_atom(atom)
+    chain.add_residue(residue)
+    sys.add_chain(chain)
 
     sys.fix_indices()
 
