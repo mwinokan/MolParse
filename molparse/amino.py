@@ -45,6 +45,8 @@ _letter_from_resname = {
     "TRP": "W",
     "TYR": "Y",
     "VAL": "V",
+    "SEC": "U",
+    "PYL": "O",
 }
 
 _resname_from_letter = {
@@ -71,6 +73,8 @@ _resname_from_letter = {
     "W": "TRP",
     "Y": "TYR",
     "V": "VAL",
+    "U": "SEC",
+    "O": "PYL",
 }
 
 _longname_from_resname = {
@@ -97,6 +101,8 @@ _longname_from_resname = {
     "TRP": "Tryptophan",
     "TYR": "Tyrosine",
     "VAL": "Valine",
+    "SEC": "Selenocysteine",
+    "PYL": "Pyrrolysine",
 }
 
 
