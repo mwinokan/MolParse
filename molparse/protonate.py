@@ -9,7 +9,8 @@ def protonate(
     pH: float = 7.8,
     remove_residues: list[str] | None = ["DMS", "TRS", "LIG", "CL"],
     trim_terminal_residues: int = 0,
-) -> "System":
+    return_file: bool = False,
+) -> "System | str":
     """Protonate a system using pdbfixer and openmm
 
     :param sys: Input :class:`.System`
@@ -26,13 +27,13 @@ def protonate(
     from tempfile import NamedTemporaryFile
     from pdbfixer import PDBFixer
 
-    sys = sys.copy()
+    orig_sys = sys.copy()
 
     if remove_residues:
-        sys.remove_residues(names=remove_residues)
+        orig_sys.remove_residues(names=remove_residues)
 
     if trim_terminal_residues:
-        for chain in sys.chains:
+        for chain in orig_sys.chains:
             if chain.type != "PRO":
                 continue
             residues = [r for r in chain.residues[:trim_terminal_residues]] + [
@@ -47,7 +48,7 @@ def protonate(
     pdb_mini = NamedTemporaryFile(mode="w+t", suffix=".pdb")
 
     # write the original
-    sys.write(pdb_orig.name, verbosity=0)
+    orig_sys.write(pdb_orig.name, verbosity=0)
 
     # fix the PDB termini and hydrogens
     fixer = PDBFixer(pdb_orig.name)
@@ -66,7 +67,7 @@ def protonate(
 
     fixer.addMissingHydrogens(pH)
     PDBFile.writeFile(fixer.topology, fixer.positions, pdb_prot)
-    PDBFile.writeFile(fixer.topology, fixer.positions, "pdb_prot.pdb")
+    # PDBFile.writeFile(fixer.topology, fixer.positions, "pdb_prot.pdb")
 
     if minimise:
 
@@ -97,8 +98,39 @@ def protonate(
         # read in mp.System
         sys = parsePDB(pdb_prot.name)
 
+    # fix residue numbering and chain naming
+    for orig_chain, new_chain in zip(orig_sys.chains, sys.chains):
+
+        if orig_chain.sequence != new_chain.sequence:
+
+            assert len(orig_chain.sequence) > len(
+                new_chain.sequence
+            ), f"Sequences don't match: {orig_chain.sequence} {new_chain.sequence}"
+
+            offset = orig_chain.sequence.find(new_chain.sequence)
+            assert offset >= 0
+
+        else:
+            offset = 0
+
+        new_chain.name = orig_chain.name
+
+        for i, new_residue in enumerate(new_chain.residues):
+            orig_residue = orig_chain.residues[i + offset]
+            assert orig_residue.name == new_residue.name
+            new_residue.number = orig_residue.number
+
     # close files
     pdb_orig.close()
+
+    if return_file:
+        if minimise:
+            pdb_prot.close()
+            return pdb_mini
+        else:
+            pdb_mini.close()
+            return pdb_prot
+
     pdb_prot.close()
     pdb_mini.close()
 
