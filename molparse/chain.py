@@ -198,3 +198,9 @@ class Chain(AtomGroup):
             mout.var("#residues deleted", number_deleted)
 
         return number_deleted
+
+    @property
+    def sequence(self) -> str:
+        """Amino acid sequence"""
+        assert self.type == "PRO"
+        return "".join([r.letter for r in self.residues])
