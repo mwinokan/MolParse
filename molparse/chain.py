@@ -204,3 +204,18 @@ class Chain(AtomGroup):
         """Amino acid sequence"""
         assert self.type == "PRO"
         return "".join([r.letter for r in self.residues])
+
+    @property
+    def name(self):
+        return self._name
+
+    @name.setter
+    def name(self, name: str):
+
+        assert isinstance(name, str)
+
+        self._name = name
+        for residue in self.residues:
+            residue.chain = name
+            for atom in residue.atoms:
+                atom.chain = name
