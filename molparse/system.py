@@ -566,6 +566,7 @@ class System(AtomGroup):
         indices: list | None = None,
         numbers: list | None = None,
         verbosity: int = 2,
+        no_summary: bool = False,
     ) -> int:
 
         assert names or indices or numbers, "must supply indices or numbers"
@@ -594,7 +595,7 @@ class System(AtomGroup):
                     if verbosity > 1:
                         mout.warning(f"Removed residue {residue.name_number_chain_str}")
 
-        if verbosity > 0:
+        if verbosity > 0 and not no_summary:
             mout.var("#residues deleted", number_deleted)
 
         return number_deleted
