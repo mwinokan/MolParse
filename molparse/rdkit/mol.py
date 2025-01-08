@@ -8,7 +8,7 @@ from rdkit import Chem, Geometry
 
 
 def mol_from_pdb_block(pdb_block):
-    return Chem.rdmolfiles.MolFromPDBBlock(pdb_block)
+    return Chem.rdmolfiles.MolFromPDBBlock(pdb_block, removeHs=False)
 
 
 def mol_to_smiles(mol):
