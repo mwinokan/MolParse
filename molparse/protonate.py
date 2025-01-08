@@ -30,7 +30,7 @@ def protonate(
     orig_sys = sys.copy()
 
     if remove_residues:
-        orig_sys.remove_residues(names=remove_residues)
+        orig_sys.remove_residues(names=remove_residues, no_summary=True)
 
     if trim_terminal_residues:
         for chain in orig_sys.chains:
@@ -45,7 +45,6 @@ def protonate(
     # prepare IO files
     pdb_orig = NamedTemporaryFile(mode="w+t", suffix=".pdb")
     pdb_prot = NamedTemporaryFile(mode="w+t", suffix=".pdb")
-    pdb_mini = NamedTemporaryFile(mode="w+t", suffix=".pdb")
 
     # write the original
     orig_sys.write(pdb_orig.name, verbosity=0)
@@ -71,6 +70,8 @@ def protonate(
 
     if minimise:
 
+        pdb_mini = NamedTemporaryFile(mode="w+t", suffix=".pdb")
+
         # openmm objects
         pdb = PDBFile(pdb_prot.name)
         forcefield = ForceField("amber99sb.xml", "tip3p.xml")
@@ -92,11 +93,13 @@ def protonate(
         PDBFile.writeFile(simulation.topology, positions, pdb_mini)
 
         # read in mp.System
-        sys = parsePDB(pdb_mini.name)
+        sys = parsePDB(pdb_mini.name, verbosity=0)
+        pdb_mini.close()
 
     else:
         # read in mp.System
-        sys = parsePDB(pdb_prot.name)
+        sys = parsePDB(pdb_prot.name, verbosity=0)
+        pdb_prot.close()
 
     # fix residue numbering and chain naming
     for orig_chain, new_chain in zip(orig_sys.chains, sys.chains):
@@ -124,14 +127,8 @@ def protonate(
     pdb_orig.close()
 
     if return_file:
-        if minimise:
-            pdb_prot.close()
-            return pdb_mini
-        else:
-            pdb_mini.close()
-            return pdb_prot
-
-    pdb_prot.close()
-    pdb_mini.close()
+        pdb_out = NamedTemporaryFile(mode="w+t", suffix=".pdb")
+        sys.write(pdb_out.name, verbosity=0)
+        return sys, pdb_out
 
     return sys
