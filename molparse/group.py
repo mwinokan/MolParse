@@ -952,7 +952,7 @@ class AtomGroup:
             import mout
 
             mout.error(
-                f"Cannot index an AtomGroup with a non-string key. See help(molparse.AtomGroup.__getitem__)"
+                f"Cannot index an AtomGroup with a non-string {key=}. {self=}. See help(molparse.AtomGroup.__getitem__)"
             )
             raise IndexError(f"mp.AtomGroup.__getitem__ received non-string key")
 
