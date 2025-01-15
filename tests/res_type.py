@@ -8,30 +8,33 @@ import mrich as logger
 
 from molparse.residue import add_res_type, res_type
 
+
 @debug_log
 def check_res_type(res_name):
-	test_status = TestStatus()
+    test_status = TestStatus()
 
-	logger.info(f"{res_type(res_name)=}")
+    logger.print(f"{res_type(res_name)=}")
 
-	return test_status
+    return test_status
+
 
 def main():
 
-	check_res_type('DG')
-	check_res_type('TYR')
-	check_res_type('CRO')
-	check_res_type('CROW')
-	check_res_type('COW')
-	check_res_type('DOG')
+    check_res_type("DG")
+    check_res_type("TYR")
+    check_res_type("CRO")
+    check_res_type("CROW")
+    check_res_type("COW")
+    check_res_type("DOG")
 
-	add_res_type('COW','PRO')
-	add_res_type('CROW','LIP')
-	add_res_type('DOG','LIG')
-	
-	check_res_type('CROW')
-	check_res_type('COW')
-	check_res_type('DOG')
-	
-if __name__ == '__main__':
-	main()
+    add_res_type("COW", "PRO")
+    add_res_type("CROW", "LIP")
+    add_res_type("DOG", "LIG")
+
+    check_res_type("CROW")
+    check_res_type("COW")
+    check_res_type("DOG")
+
+
+if __name__ == "__main__":
+    main()
