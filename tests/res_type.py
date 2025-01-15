@@ -3,8 +3,8 @@
 from mout import debug_log
 from mout.testing import TestStatus
 
-from mlog import setup_logger
-logger = setup_logger('res_type')
+import mrich as logger
+
 
 from molparse.residue import add_res_type, res_type
 

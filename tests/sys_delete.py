@@ -3,8 +3,8 @@
 import mout
 from molparse.io import parse
 
-from mlog import setup_logger
-logger = setup_logger('del_res')
+import mrich as logger
+
 
 from mout.testing import TestStatus
 

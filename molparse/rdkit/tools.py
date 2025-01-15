@@ -1,6 +1,4 @@
-from mlog import setup_logger
-
-logger = setup_logger("MolParse")
+import mrich as logger
 
 
 def sdf_align(

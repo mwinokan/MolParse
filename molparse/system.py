@@ -1,8 +1,6 @@
 from .group import AtomGroup
 
-from mlog import setup_logger
-
-logger = setup_logger("MolParse")
+import mrich as logger
 
 
 class System(AtomGroup):

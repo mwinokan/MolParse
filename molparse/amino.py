@@ -1,8 +1,6 @@
 from .residue import Residue, res_type
 
-from mlog import setup_logger
-
-logger = setup_logger("MolParse")
+import mrich as logger
 
 
 def alphabet(name):

@@ -1,6 +1,4 @@
-from mlog import setup_logger
-
-logger = setup_logger("MolParse")
+import mrich as logger
 
 
 def protonate(
@@ -61,7 +59,7 @@ def protonate(
     if fixer.missingAtoms:
         logger.warning(f"{fixer.missingAtoms=}")
     if fixer.missingTerminals:
-        logger.info(f"{fixer.missingTerminals=}")
+        logger.print(f"{fixer.missingTerminals=}")
     fixer.addMissingAtoms()
 
     fixer.addMissingHydrogens(pH)
