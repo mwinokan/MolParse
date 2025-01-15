@@ -83,7 +83,7 @@ def write(filename, payload, verbosity=1, **parameters):
 
                     if pio.kaleido.scope is not None:
                         pio.kaleido.scope.mathjax = None
-                payload.write_image(filename)
+                payload.write_image(filename, **parameters)
 
         # Others:
         else:
