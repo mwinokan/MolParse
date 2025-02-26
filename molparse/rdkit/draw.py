@@ -20,8 +20,8 @@ def draw_mol(m, feats=None, p=None, confId=-1, hydrogen=True):
     IPythonConsole.addMolToView(m, p, confId=confId)
 
     def colorToHex(rgb):
-        rgb = [f"{int(255*x):x}" for x in rgb]
-        return "0x" + "".join(rgb)
+        """Convert an RGB tuple with values in the range [0, 1] to a hex code."""
+        return "0x" + "".join(f"{int(round(x * 255)):02X}" for x in rgb)
 
     feats = feats or []
     for feat in feats:
@@ -202,11 +202,30 @@ def view_difference(mol1, mol2):
     )
 
 
-def draw_highlighted_mol(mol, index_color_pairs, legend=None, size=(600, 300)):
+def draw_highlighted_mol(
+    mol,
+    index_color_pairs,
+    flat: bool = False,
+    indices: bool = False,
+    legend=None,
+    size=(600, 300),
+):
     drawer = rdMolDraw2D.MolDraw2DSVG(*size)
+
+    if flat:
+        mol = Chem.Mol(mol)
+        conformer_ids = [c.GetId() for c in mol.GetConformers()]
+        for c_id in conformer_ids:
+            mol.RemoveConformer(c_id)
 
     if legend is None:
         legend = ""
+
+    if indices:
+        for i, atom in enumerate(mol.GetAtoms()):
+            atom.SetProp("atomNote", f"{i}")
+        # for i, atom in enumerate(mol.GetAtoms()):
+        # atom.SetAtomMapNum(atom.GetIdx())
 
     drawer.DrawMolecule(
         mol,

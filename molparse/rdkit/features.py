@@ -35,10 +35,11 @@ INTERACTION_TYPES = {
 }
 
 
-def features_from_mol(mol, protonate=True):
+def features_from_mol(mol, protonate=True, group=None):
     raw_features = raw_features_from_mol(mol, protonate=protonate)
 
-    group = AtomGroup.from_pdb_block(mol_to_pdb_block(mol))
+    if not group:
+        group = AtomGroup.from_pdb_block(mol_to_pdb_block(mol))
 
     feature_list = []
     for feat in raw_features:
