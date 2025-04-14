@@ -925,9 +925,13 @@ class AtomGroup:
     ### DUNDERS
 
     def __repr__(self):
+        if not self.name:
+            return "AtomGroup"
         return self.name
 
     def __str__(self):
+        if not self.name:
+            return "AtomGroup"
         return self.name
 
     def __len__(self):
