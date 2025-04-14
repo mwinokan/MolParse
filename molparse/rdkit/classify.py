@@ -12,8 +12,7 @@ def classify_mol(mol, draw=True):
     """Find RDKit Fragments within the molecule and draw them (or just return a list of (descriptor, count) tuples)"""
 
     mols = []
-    highlights = []
-    counts = []
+    data = []
 
     for name, descriptor in FRAGMENT_DESCRIPTORS.items():
 
@@ -31,7 +30,6 @@ def classify_mol(mol, draw=True):
         matches = mol.GetSubstructMatches(pattern, uniquify=True)
 
         mols.append(mol)
-        counts.append((descriptor, n))
 
         highlight = []
 
@@ -39,12 +37,16 @@ def classify_mol(mol, draw=True):
             for index in match:
                 highlight.append(index)
 
-        highlights.append(highlight)
+        data.append((descriptor, n, highlight))
+
+    data = sorted(data, key=lambda x: (-len(x[2]), -x[1]))
 
     if draw:
-        legends = [f"{n} x {descriptor}" for descriptor, n in counts]
+        legends = [f"{n} x {descriptor}" for descriptor, n, _ in data]
         drawing = Draw.MolsToGridImage(
-            mols, highlightAtomLists=highlights, legends=legends
+            mols,
+            highlightAtomLists=[highlights for _, _, highlights in data],
+            legends=legends,
         )
         display(drawing)
     else:
