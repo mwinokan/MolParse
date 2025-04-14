@@ -1,4 +1,4 @@
-from rdkit.Chem import Fragments, MolFromSmarts, Draw
+from rdkit.Chem import Fragments, MolFromSmarts, Draw, FragmentMatcher
 
 import os
 from rdkit import RDConfig
@@ -14,20 +14,28 @@ def classify_mol(mol, draw=True):
     mols = []
     data = []
 
-    for name, descriptor in FRAGMENT_DESCRIPTORS.items():
+    for name, d in FRAGMENT_LOOKUP.items():
 
-        f = getattr(Fragments, name)
+        smarts = d["smarts"]
+        descriptor = d["descriptor"]
 
-        n = f(mol)
+        if "fragment" in d:
+            matcher = d["fragment"]
+            n = matcher(mol)
+            if not n:
+                continue
+            pattern = MolFromSmarts(smarts)
+            matches = mol.GetSubstructMatches(pattern, uniquify=True)
 
-        if not n:
-            continue
+        elif "matcher" in d:
+            matcher = d["matcher"]
+            matches = matcher.GetMatches(mol)
+            if not matches:
+                continue
+            n = len(matches)
 
-        smarts = FRAGMENT_SMARTS[name]
-
-        pattern = MolFromSmarts(smarts)
-
-        matches = mol.GetSubstructMatches(pattern, uniquify=True)
+        else:
+            raise NotImplementedError(f"{name=} {d=}")
 
         mols.append(mol)
 
@@ -53,9 +61,11 @@ def classify_mol(mol, draw=True):
         return counts
 
 
+### GET RDKit Fragment smarts
+
 defaultPatternFileName = os.path.join(RDConfig.RDDataDir, "FragmentDescriptors.csv")
 
-FRAGMENT_SMARTS = {}
+RDKIT_SMARTS = {}
 
 for line in open(defaultPatternFileName).readlines():
 
@@ -70,9 +80,11 @@ for line in open(defaultPatternFileName).readlines():
     key = split[0].replace("=", "_").replace("-", "_")
     smarts = split[2]
 
-    FRAGMENT_SMARTS[key] = smarts
+    RDKIT_SMARTS[key] = smarts
 
-FRAGMENT_DESCRIPTORS = {
+### DESCRIPTIONS FOR RDKit fragments
+
+RDKIT_DESCRIPTORS = {
     "fr_Al_COO": "aliphatic carboxylic acid",
     "fr_Al_OH": "aliphatic hydroxyl",
     "fr_Al_OH_noTert": "aliphatic hydroxyl (not tertiary)",
@@ -159,3 +171,33 @@ FRAGMENT_DESCRIPTORS = {
     "fr_unbrch_alkane": "unbranched alkane of at least 4 members (excludes halogenated alkanes)",
     "fr_urea": "urea",
 }
+
+### CUSTOM SMARTS
+
+CUSTOM_LOOKUP = {
+    "benzothiazole": dict(descriptor="benzothiazole", smarts="n1c2ccccc2sc1"),
+}
+
+### BUILD LOOKUP DICTIONARY
+
+FRAGMENT_LOOKUP = {}
+
+for name, descriptor in RDKIT_DESCRIPTORS.items():
+
+    smarts = RDKIT_SMARTS[name]
+
+    d = dict(descriptor=descriptor, smarts=smarts)
+
+    if hasattr(Fragments, name):
+        fragment = getattr(Fragments, name)
+        d["fragment"] = fragment
+    else:
+        mrich.error("No Fragment for", name)
+        continue
+
+    FRAGMENT_LOOKUP[name] = d
+
+for name, d in CUSTOM_LOOKUP.items():
+    d["matcher"] = FragmentMatcher.FragmentMatcher()
+    d["matcher"].Init(d["smarts"])
+    FRAGMENT_LOOKUP[name] = d
