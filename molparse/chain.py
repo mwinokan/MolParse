@@ -161,9 +161,9 @@ class Chain(AtomGroup):
     def remove_residues(
         self,
         *,
-        names: list | None = None,
-        indices: list | None = None,
-        numbers: list | None = None,
+        names: "list | None" = None,
+        indices: "list | None" = None,
+        numbers: "list | None" = None,
         verbosity: int = 2,
     ) -> int:
 
