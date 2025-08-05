@@ -1,10 +1,10 @@
 """
 
-  To-Do's
-    * If show = True close all other figures?
-    * graphVelocity
-    * graphTemperature
-    * graphGyration
+To-Do's
+  * If show = True close all other figures?
+  * graphVelocity
+  * graphTemperature
+  * graphGyration
 
 """
 

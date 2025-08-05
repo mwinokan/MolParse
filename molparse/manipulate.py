@@ -2,7 +2,7 @@
 
 """
 
-	improve performance by creating a smaller subsystem just of varying atoms, interpolating those and writing them to disk. Then use SED or other bash tools to insert the modifications into the original pdb
+improve performance by creating a smaller subsystem just of varying atoms, interpolating those and writing them to disk. Then use SED or other bash tools to insert the modifications into the original pdb
 
 """
 
