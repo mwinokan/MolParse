@@ -177,7 +177,7 @@ def plot3d(
                     name=s,
                     marker=dict(
                         size=size,
-                        color=f"rgba{color}",
+                        color=f"rgba({color[0]}, {color[1]}, {color[2]})",
                         line=dict(color="black", width=2),
                     ),
                     customdata=customdata,
