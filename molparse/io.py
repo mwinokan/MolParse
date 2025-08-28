@@ -1605,7 +1605,7 @@ def parseXYZAtomLine(line, atom_index):
 def modifyCIF(
     cif_file,
     out_file,
-    remove_atomtypes: list[str] | None = None,
+    remove_atomtypes: "list[str] | None" = None,
 ):
 
     from gemmi import cif

@@ -510,11 +510,11 @@ class System(AtomGroup):
     def remove_atoms(
         self,
         *,
-        names: list | None = None,
-        indices: list | None = None,
-        numbers: list | None = None,
-        symbols: str | None = None,
-        res_filter: str | None = None,
+        names: "list | None" = None,
+        indices: "list | None" = None,
+        numbers: "list | None" = None,
+        symbols: "str | None" = None,
+        res_filter: "str | None" = None,
         verbosity: int = 2,
     ) -> int:
 
@@ -560,9 +560,9 @@ class System(AtomGroup):
     def remove_residues(
         self,
         *,
-        names: list | None = None,
-        indices: list | None = None,
-        numbers: list | None = None,
+        names: "list | None" = None,
+        indices: "list | None" = None,
+        numbers: "list | None" = None,
         verbosity: int = 2,
         no_summary: bool = False,
     ) -> int:
@@ -1043,6 +1043,10 @@ class System(AtomGroup):
             if chain.type != "PRO":
                 continue
             for residue in chain.residues:
+                features = residue.features
+                if not features:
+                    mrich.warning("No features", residue.name_number_chain_str)
+                    continue
                 all_features += residue.features
         return all_features
 

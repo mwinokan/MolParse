@@ -1,3 +1,6 @@
+import mrich
+
+
 class AtomGroup:
     """General class for a group of atoms. Do not construct this object! Let Molparse handle it"""
 
@@ -387,6 +390,33 @@ class AtomGroup:
 
             self._smiles = mol_to_smiles(self.rdkit_mol)
         return self._smiles
+
+    @property
+    def vdw_mesh(self):
+
+        import open3d as o3d
+
+        meshes = []
+
+        resolution = 20
+
+        for atom in self.atoms:
+            mrich.debug(atom, atom.vdw_radius)
+
+            sphere = o3d.geometry.TriangleMesh.create_sphere(
+                radius=atom.vdw_radius, resolution=resolution
+            )
+            sphere.translate(atom.np_pos)
+
+            meshes.append(sphere)
+
+        merged_mesh = o3d.geometry.TriangleMesh()
+
+        for mesh in meshes:
+            merged_mesh += mesh
+
+        merged_mesh.compute_vertex_normals()
+        return merged_mesh
 
     ### INTERNAL METHODS
 
@@ -925,9 +955,13 @@ class AtomGroup:
     ### DUNDERS
 
     def __repr__(self):
+        if not self.name:
+            return "AtomGroup"
         return self.name
 
     def __str__(self):
+        if not self.name:
+            return "AtomGroup"
         return self.name
 
     def __len__(self):

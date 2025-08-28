@@ -366,7 +366,9 @@ class AminoAcid(Residue):
                 position = atoms[0].np_pos
 
             else:
-                atoms = self.get_atom(atoms)
+                atoms = [a for a in self.get_atom(atoms) if a]
+                if not atoms:
+                    continue
                 position = np.mean([a.np_pos for a in atoms], axis=0).round(3)
 
             feature = Feature(

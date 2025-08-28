@@ -8,7 +8,7 @@ A python package for parsing, modifying, and analysis of molecular structure fil
 
 It is recommended to import as the acronym:
 
-	import molparse as mp
+        import molparse as mp
 
 Key features
 ============
@@ -18,65 +18,65 @@ Parsing coordinate files into System objects
 
 ::
 
-	system = mp.parsePDB(filestr)
-	system = mp.parseGRO(filestr)
+        system = mp.parsePDB(filestr)
+        system = mp.parseGRO(filestr)
 
 * Viewing the molecular hierarchy of a system:
 
-	mp.tree(system)
+        mp.tree(system)
 
 * Parsing of delimited text files:
 
-	see help(mp.signal.parseDat)
+        see help(mp.signal.parseDat)
 
 * Writing System or ase.Atoms objects or lists thereof:
 
-	mp.write(filestr,object)
+        mp.write(filestr,object)
 
 * An object oriented approach to molecular system hierarchies:
 
-	mp.System
-	    |__ mp.Chain
-	            |__ mp.Residue
-	                    |__ mp.Atom
+        mp.System
+            |__ mp.Chain
+                    |__ mp.Residue
+                            |__ mp.Atom
 
-	See also:
+        See also:
 
-	help(mp.System), help(mp.Chain), etc.
+        help(mp.System), help(mp.Chain), etc.
 
 * Wrappers for common ASE methods (with mp class support):
 
-	mp.read --> ase.io.read
-	mp.write --> ase.io.write
-	mp.view --> ase.visualize.view
+        mp.read --> ase.io.read
+        mp.write --> ase.io.write
+        mp.view --> ase.visualize.view
 
 * Functions to render images and animations of ASE Atoms:
 
-	with matplotlib:
-		mp.makeImage,
-		mp.makeImages,
-		mp.makeAnimation
+        with matplotlib:
+                mp.makeImage,
+                mp.makeImages,
+                mp.makeAnimation
 
-	with PoVRay:
-		mp.makePovImage,
-		mp.makePovImages,
-		mp.makePovAnimation
+        with PoVRay:
+                mp.makePovImage,
+                mp.makePovImages,
+                mp.makePovAnimation
 
 * Methods relating to DNA:
 
-	see help(mp.dna)
+        see help(mp.dna)
 
 * Finding the stationary points of a double well potential
 
-	see help(mp.tunnel.find_barrier_stationary_points)
+        see help(mp.tunnel.find_barrier_stationary_points)
 
 * Graphing of common molecular properties:
 
-	see help(mp.graphing)
+        see help(mp.graphing)
 
 * Analysis of common molecular properties:
 
-	see help(mp.analysis)
+        see help(mp.analysis)
 
 """
 
