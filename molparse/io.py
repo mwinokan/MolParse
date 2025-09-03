@@ -2,8 +2,9 @@ def write(filename, payload, verbosity=1, **parameters):
     """Write an object to a filename."""
     from ase import io
     from ase import atoms as aseatoms
-    import mcol
-    import mout
+    # import mcol
+    # import mout
+    import mrich
     import json
     from .system import System
     from .group import AtomGroup
@@ -13,9 +14,7 @@ def write(filename, payload, verbosity=1, **parameters):
     filename = str(filename)
 
     if verbosity > 0:
-        mout.out(
-            "writing " + mcol.file + filename + mcol.clear + " ... ", end=""
-        )  # user output
+        mrich.writing(filename)
 
     # Different behaviour depending on format:
     try:
@@ -65,12 +64,12 @@ def write(filename, payload, verbosity=1, **parameters):
             elif all([isinstance(i, aseatoms.Atoms) for i in payload]):
                 io.write(filename, payload, **parameters)
             else:
-                mout.errorOut("Unsupported", fatal=True)
+                mrich.error("Unsupported")
+                raise NotImplementedError
 
         elif isinstance(payload, System):
-            mout.errorOut(
+            mrich.error(
                 f"Filetype {mcol.file}{filename.split('.')[-1]}{mcol.error} not supported for mp.System object",
-                code="amp.io.write[1]",
             )
             return None
 
@@ -89,17 +88,10 @@ def write(filename, payload, verbosity=1, **parameters):
         else:
             io.write(filename, payload, **parameters)
     except TypeError as e:
-        mout.out("Fail.")
-        mout.error(e)
-        mout.error(
-            f"{type(payload)} could not be written to " + mcol.file + filename,
-            code="amp.io.write[1]",
-        )
+        mrich.error("Fail.")
+        mrich.error(e)
+        mrich.error(type(payload),"could not be written to ", filename)
         return None
-
-    if verbosity > 0:
-        mout.out("Done.")  # user output
-
 
 def read(
     filename, index=None, verbosity=1, tagging=True, tagByResidue=False, **parameters
