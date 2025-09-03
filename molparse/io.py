@@ -494,6 +494,8 @@ def parsePDB(
                                 continue
                             elif line.startswith("COMPND"):
                                 continue
+                            elif line.startswith("CRYST"):
+                                continue
                             elif line.startswith("AUTHO"):
                                 continue
                             elif line.startswith("MASTER"):
