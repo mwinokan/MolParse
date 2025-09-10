@@ -43,7 +43,7 @@ def mol_to_AtomGroup(mol):
 
 
 def mol_from_AtomGroup(group):
-    return group.mol
+    return group.rdkit_mol
 
 
 def protonate(mol, embed=True, align=True, verbosity=1):
