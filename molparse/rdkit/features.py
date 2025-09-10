@@ -8,7 +8,7 @@ from ..group import AtomGroup
 FDEF = AllChem.BuildFeatureFactory(
     os.path.join(RDConfig.RDDataDir, "BaseFeatures.fdef")
 )
-FEATURE_FAMILIES = FDEF.GetFeatureFamilies()
+FEATURE_FAMILIES = list(FDEF.GetFeatureFamilies()) + ["Sulfur"]
 
 COMPLEMENTARY_FEATURES = {
     "Donor": ["Acceptor"],  # hydrogen bond
@@ -18,6 +18,7 @@ COMPLEMENTARY_FEATURES = {
     "Aromatic": ["Aromatic", "PosIonizable"],  # pi-stacking, pi-cation
     "Hydrophobe": ["Hydrophobe", "LumpedHydrophobe"],  # hydrophobic
     "LumpedHydrophobe": ["Hydrophobe", "LumpedHydrophobe"],  # hydrophobic
+    "Sulfur": ["Sulfur"],  # sulfur-sulfur
 }
 
 INTERACTION_TYPES = {
@@ -32,6 +33,7 @@ INTERACTION_TYPES = {
     ("Aromatic", "Aromatic"): "π-stacking",
     ("Aromatic", "PosIonizable"): "π-cation",
     ("PosIonizable", "Aromatic"): "π-cation",
+    ("Sulfur", "Sulfur"): "Sulfur-Sulfur",
 }
 
 
@@ -61,6 +63,23 @@ def features_from_mol(mol, protonate=True, group=None):
             family=family,
             atoms=atoms,
             position=position,
+            res_name=None,
+            res_number=None,
+            res_chain=None,
+        )
+
+        feature_list.append(feat_obj)
+
+    ### Add Sulfur
+
+    sulfurs = [atom for atom in group.atoms if atom.symbol == "S"]
+
+    for atom in sulfurs:
+
+        feat_obj = Feature(
+            family="Sulfur",
+            atoms=[atom],
+            position=atom.np_pos,
             res_name=None,
             res_number=None,
             res_chain=None,

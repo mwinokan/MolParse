@@ -479,6 +479,7 @@ FEATURES = {
         dict(family="Hydrophobe", atoms=["CB"], source="unsure"),
         dict(family="PosIonizable", atoms=["SG"], source="unsure"),
         dict(family="Donor", atoms=["SG"], source="unsure"),
+        dict(family="Sulfur", atoms=["SG"], source="unsure"),
     ],
     "GLN": [
         dict(family="Hydrophobe", atoms=["CG"], source="ZV PLIP"),
@@ -687,6 +688,7 @@ INTERACTION_SITES = {
     ],
     "CYS": [
         {"type": "pi_cation", "atoms": ["SG"], "source": "unsure"},
+        {"type": "sulfur_sulfur", "atoms": ["SG"], "source": "unsure"},
         {"type": "hydrophobic", "atoms": ["CB"], "source": "unsure"},
     ],
     "GLN": [
