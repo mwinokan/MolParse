@@ -2,6 +2,7 @@ def write(filename, payload, verbosity=1, **parameters):
     """Write an object to a filename."""
     from ase import io
     from ase import atoms as aseatoms
+
     # import mcol
     # import mout
     import mrich
@@ -90,8 +91,9 @@ def write(filename, payload, verbosity=1, **parameters):
     except TypeError as e:
         mrich.error("Fail.")
         mrich.error(e)
-        mrich.error(type(payload),"could not be written to ", filename)
+        mrich.error(type(payload), "could not be written to ", filename)
         return None
+
 
 def read(
     filename, index=None, verbosity=1, tagging=True, tagByResidue=False, **parameters

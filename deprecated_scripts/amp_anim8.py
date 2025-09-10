@@ -11,7 +11,7 @@ Help & Usage: python amp_anim8.py -h
 
 - Max Winokan
 
-[ Part of AseMolPlot 
+[ Part of AseMolPlot
   https://github.com/mwinokan/AseMolPlot ]
 
 """
@@ -28,21 +28,42 @@ import molparse as amp  # https://github.com/mwinokan/AseMolPlot
 
 ##########################################################################
 
-argparser = argparse.ArgumentParser(description="Animate multi-model PDB's, and ASE trajectories")
+argparser = argparse.ArgumentParser(
+    description="Animate multi-model PDB's, and ASE trajectories"
+)
 
 argparser.add_argument("input", metavar="INPUT", help="Input PDB/TRAJ")
-argparser.add_argument("-pov", "--povray", help="Use PoV-Ray", default=False, action='store_true')
-argparser.add_argument("-dr", "--dry-run", help="Only generate first image", default=False, action='store_true')
+argparser.add_argument(
+    "-pov", "--povray", help="Use PoV-Ray", default=False, action="store_true"
+)
+argparser.add_argument(
+    "-dr",
+    "--dry-run",
+    help="Only generate first image",
+    default=False,
+    action="store_true",
+)
 argparser.add_argument("-o", "--output", help="Output keyword", type=str)
-argparser.add_argument("-ps", "--print-script", type=mout.str2bool, nargs='?', const=True, default=False,
-                       help="Print the script name in console output.")
-argparser.add_argument("-i", "--interval", type=int, default=1, help="Animation frame interval")
+argparser.add_argument(
+    "-ps",
+    "--print-script",
+    type=mout.str2bool,
+    nargs="?",
+    const=True,
+    default=False,
+    help="Print the script name in console output.",
+)
+argparser.add_argument(
+    "-i", "--interval", type=int, default=1, help="Animation frame interval"
+)
 argparser.add_argument("-rx", "--rotate-x", type=float, help="Rotation x")
 argparser.add_argument("-ry", "--rotate-y", type=float, help="Rotation x")
 argparser.add_argument("-rz", "--rotate-z", type=float, help="Rotation x")
 argparser.add_argument("-s", "--scale", type=float, help="Scale for non PoV-ray")
 argparser.add_argument("-fr", "--frame-rate", type=int, help="Animation frame rate")
-argparser.add_argument("-m", "--mask", help="Plot only atoms in this mask (PDB)", type=str)
+argparser.add_argument(
+    "-m", "--mask", help="Plot only atoms in this mask (PDB)", type=str
+)
 
 argparser.add_argument("-cw", "--width", type=int, help="Canvas Width")
 argparser.add_argument("-ch", "--height", type=int, help="Canvas Height")
@@ -61,7 +82,9 @@ verbosity = 2
 
 if args.output is None:
     out_prefix = "amp_out"
-    mout.warningOut("Defaulted to output keyword 'amp_out'.", printScript=printScript, code=3)
+    mout.warningOut(
+        "Defaulted to output keyword 'amp_out'.", printScript=printScript, code=3
+    )
 else:
     out_prefix = args.output
 
@@ -75,15 +98,17 @@ custom_style = amp.styles.standard_cell.copy()
 if args.mask is not None:
 
     # load the mask
-    if args.mask.endswith('.pdb'):
+    if args.mask.endswith(".pdb"):
         mask = amp.parsePDB(args.mask)
     else:
         mout.errorOut("Only PDB masks are currently supported", fatal=True)
 
-    if infile.endswith('.pdb'):
+    if infile.endswith(".pdb"):
         system = amp.parsePDB(infile)
     else:
-        mout.errorOut("Only PDB inputs are currently supported with masking", fatal=True)
+        mout.errorOut(
+            "Only PDB inputs are currently supported with masking", fatal=True
+        )
 
     # get the indices from the mask
     indices = [a.pdb_index for a in mask.atoms]
@@ -118,12 +143,16 @@ if args.rotate_x is not None or args.rotate_y is not None or args.rotate_z is no
         if custom_style["rotation"] == "":
             custom_style["rotation"] = str(args.rotate_y) + "y"
         else:
-            custom_style["rotation"] = custom_style["rotation"] + "," + str(args.rotate_y) + "y"
+            custom_style["rotation"] = (
+                custom_style["rotation"] + "," + str(args.rotate_y) + "y"
+            )
     if args.rotate_z is not None:
         if custom_style["rotation"] == "":
             custom_style["rotation"] = str(args.rotate_z) + "z"
         else:
-            custom_style["rotation"] = custom_style["rotation"] + "," + str(args.rotate_z) + "z"
+            custom_style["rotation"] = (
+                custom_style["rotation"] + "," + str(args.rotate_z) + "z"
+            )
 
 custom_style["canvas_width"] = 1200
 custom_style["canvas_height"] = 1200
@@ -159,7 +188,7 @@ if not infile.endswith(".pdb"):
     amp.write("__temp__.pdb", thing)
     infile = "__temp__.pdb"
 
-infile_read = open(infile, 'r').read()
+infile_read = open(infile, "r").read()
 
 model_count = infile_read.count("MODEL")
 
@@ -169,11 +198,25 @@ if model_count > 1:
     mout.headerOut("Animating...")
 
     if args.povray:
-        amp.makePovAnimation(infile, subdirectory=out_prefix, verbosity=verbosity, interval=args.interval,
-                             dryRun=args.dry_run, gifstyle=custom_gifstyle, **custom_style)
+        amp.makePovAnimation(
+            infile,
+            subdirectory=out_prefix,
+            verbosity=verbosity,
+            interval=args.interval,
+            dryRun=args.dry_run,
+            gifstyle=custom_gifstyle,
+            **custom_style,
+        )
     else:
-        amp.makeAnimation(infile, subdirectory=out_prefix, verbosity=verbosity, interval=args.interval,
-                          dryRun=args.dry_run, gifstyle=custom_gifstyle, **custom_style)
+        amp.makeAnimation(
+            infile,
+            subdirectory=out_prefix,
+            verbosity=verbosity,
+            interval=args.interval,
+            dryRun=args.dry_run,
+            gifstyle=custom_gifstyle,
+            **custom_style,
+        )
 
 else:
     mout.headerOut("Rendering...")

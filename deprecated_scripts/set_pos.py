@@ -8,10 +8,14 @@ import mcol
 
 import argparse
 
-argparser = argparse.ArgumentParser(description="Shift the z-coordinate of a single atom")
+argparser = argparse.ArgumentParser(
+    description="Shift the z-coordinate of a single atom"
+)
 
 argparser.add_argument("input", metavar="INPUT", help="Input .gro or .pdb file")
-argparser.add_argument("index", metavar="INDEX", help="Atom index to be shifted [0:N-1]")
+argparser.add_argument(
+    "index", metavar="INDEX", help="Atom index to be shifted [0:N-1]"
+)
 argparser.add_argument("xpos", metavar="X", help="X-coordinate [nanometres]")
 argparser.add_argument("ypos", metavar="Y", help="Y-ccordinate [nanometres]")
 argparser.add_argument("zpos", metavar="Z", help="Z-ccordinate [nanometres]")
@@ -36,15 +40,25 @@ if args.zpos != " ":
 
 # print(atom.position)
 
-mout.headerOut("Set coordinates of atom " +
-               mcol.result + atom.name +
-               mcol.clear + " (" +
-               mcol.arg + str(args.index) +
-               mcol.clear + ") of residue " +
-               mcol.result + atom.residue +
-               mcol.clear + " to " +
-               mcol.arg + str(atom.position) +
-               mcol.varType + " nanometres")
+mout.headerOut(
+    "Set coordinates of atom "
+    + mcol.result
+    + atom.name
+    + mcol.clear
+    + " ("
+    + mcol.arg
+    + str(args.index)
+    + mcol.clear
+    + ") of residue "
+    + mcol.result
+    + atom.residue
+    + mcol.clear
+    + " to "
+    + mcol.arg
+    + str(atom.position)
+    + mcol.varType
+    + " nanometres"
+)
 
 # system.summary()
 

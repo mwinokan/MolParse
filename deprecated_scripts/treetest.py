@@ -2,7 +2,9 @@
 
 import molparse as mp
 
-sys = mp.parse("/Users/mw00368/OneDrive/Leverhulme/Projects/ArcherUmbrellaHelicase/gro/2CR_dry.gro")
+sys = mp.parse(
+    "/Users/mw00368/OneDrive/Leverhulme/Projects/ArcherUmbrellaHelicase/gro/2CR_dry.gro"
+)
 
 sys.name = "2CR_dry"
 

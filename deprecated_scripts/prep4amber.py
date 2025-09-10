@@ -4,7 +4,9 @@ import mout
 import argparse
 import molparse as amp
 
-argparser = argparse.ArgumentParser(description='Prepare a PDB file for an Amber pipeline')
+argparser = argparse.ArgumentParser(
+    description="Prepare a PDB file for an Amber pipeline"
+)
 argparser.add_argument("-i", "--input", help="Input filename")
 argparser.add_argument("-o", "--output", help="Output filename")
 args = argparser.parse_args()
